@@ -1,0 +1,155 @@
+<h2 mat-dialog-title>{{ isEdit ? 'Editar Pregunta' : 'Nueva Pregunta' }}</h2>
+<mat-dialog-content>
+  <form [formGroup]="questionForm" class="pt-3">
+    
+    <div class="row">
+      <div class="col-md-6">
+        <mat-form-field appearance="outline" class="w-100 mb-3">
+          <mat-label>Tema</mat-label>
+          <mat-select formControlName="topicId" required>
+            <mat-option *ngFor="let topic of topics" [value]="topic._id">{{ topic.name }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+      <div class="col-md-6">
+        <mat-form-field appearance="outline" class="w-100 mb-3">
+          <mat-label>Tipo de Pregunta</mat-label>
+          <mat-select formControlName="type" required>
+            <mat-option value="single-choice">Opción Única</mat-option>
+            <mat-option value="multiple-choice">Opción Múltiple</mat-option>
+            <mat-option value="true-false">Verdadero o Falso</mat-option>
+            <mat-option value="fill-blank">Completar Espacios</mat-option>
+            <mat-option value="matching">Emparejamiento</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <mat-form-field appearance="outline" class="w-100 mb-3">
+      <mat-label>Enunciado</mat-label>
+      <textarea matInput formControlName="statement" rows="3" required></textarea>
+    </mat-form-field>
+
+    <div class="row">
+      <div class="col-md-6">
+        <mat-form-field appearance="outline" class="w-100 mb-3">
+          <mat-label>Dificultad</mat-label>
+          <mat-select formControlName="difficulty" required>
+            <mat-option value="easy">Fácil</mat-option>
+            <mat-option value="medium">Medio</mat-option>
+            <mat-option value="hard">Difícil</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+      <div class="col-md-6">
+        <mat-form-field appearance="outline" class="w-100 mb-3">
+          <mat-label>Puntos</mat-label>
+          <input matInput type="number" formControlName="points" min="1" required />
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- OPCIÓN ÚNICA -->
+    <div *ngIf="questionForm.get('type')?.value === 'single-choice'" class="mb-3">
+      <h6>Opciones de Respuesta</h6>
+      <p class="text-muted small">Seleccione la opción correcta haciendo click en el botón circular.</p>
+      <mat-radio-group [value]="getSingleCorrectAnswer()" (change)="setSingleCorrectAnswer($event.value)">
+        <div formArrayName="options">
+          <div *ngFor="let opt of options.controls; let i = index" class="d-flex align-items-center mb-2">
+            <mat-radio-button [value]="opt.value" class="me-2"></mat-radio-button>
+            <mat-form-field appearance="outline" class="flex-grow-1 mb-0">
+              <mat-label>Opción {{ i + 1 }}</mat-label>
+              <input matInput [formControlName]="i" required />
+            </mat-form-field>
+            <button mat-icon-button color="warn" (click)="removeOption(i)" [disabled]="options.length <= 2">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+      </mat-radio-group>
+      <button mat-button color="primary" (click)="addOption()">+ Agregar Opción</button>
+    </div>
+
+    <!-- OPCIÓN MÚLTIPLE -->
+    <div *ngIf="questionForm.get('type')?.value === 'multiple-choice'" class="mb-3">
+      <h6>Opciones de Respuesta</h6>
+      <p class="text-muted small">Seleccione las opciones correctas marcando la casilla.</p>
+      <div formArrayName="options">
+        <div *ngFor="let opt of options.controls; let i = index" class="d-flex align-items-center mb-2">
+          <mat-checkbox [checked]="isMultipleCorrect(opt.value)" (change)="toggleMultipleCorrectAnswer(opt.value, $event)" class="me-2"></mat-checkbox>
+          <mat-form-field appearance="outline" class="flex-grow-1 mb-0">
+            <mat-label>Opción {{ i + 1 }}</mat-label>
+            <input matInput [formControlName]="i" required />
+          </mat-form-field>
+          <button mat-icon-button color="warn" (click)="removeOption(i)" [disabled]="options.length <= 2">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      </div>
+      <button mat-button color="primary" (click)="addOption()">+ Agregar Opción</button>
+    </div>
+
+    <!-- VERDADERO O FALSO -->
+    <div *ngIf="questionForm.get('type')?.value === 'true-false'" class="mb-3">
+      <h6>Respuesta Correcta</h6>
+      <mat-radio-group [value]="getSingleCorrectAnswer()" (change)="setSingleCorrectAnswer($event.value)">
+        <mat-radio-button value="Verdadero" class="me-3">Verdadero</mat-radio-button>
+        <mat-radio-button value="Falso">Falso</mat-radio-button>
+      </mat-radio-group>
+    </div>
+
+    <!-- COMPLETAR ESPACIOS -->
+    <div *ngIf="questionForm.get('type')?.value === 'fill-blank'" class="mb-3">
+      <h6>Palabras/Frases Aceptadas</h6>
+      <p class="text-muted small">Ingrese todas las variantes que se considerarán correctas.</p>
+      <div formArrayName="correctAnswers">
+        <div *ngFor="let ans of correctAnswers.controls; let i = index" class="d-flex align-items-center mb-2">
+          <mat-form-field appearance="outline" class="flex-grow-1 mb-0">
+            <mat-label>Respuesta Aceptada {{ i + 1 }}</mat-label>
+            <input matInput [formControlName]="i" required />
+          </mat-form-field>
+          <button mat-icon-button color="warn" (click)="removeCorrectAnswer(i)" [disabled]="correctAnswers.length <= 1">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      </div>
+      <button mat-button color="primary" (click)="addCorrectAnswer()">+ Agregar Variante</button>
+    </div>
+
+    <!-- EMPAREJAMIENTO -->
+    <div *ngIf="questionForm.get('type')?.value === 'matching'" class="mb-3">
+      <h6>Pares de Emparejamiento (Mínimo 3)</h6>
+      <p class="text-muted small">Ingrese el concepto en la izquierda y su correspondiente respuesta en la derecha.</p>
+      
+      <div *ngFor="let opt of options.controls; let i = index" class="row align-items-center mb-2">
+        <div class="col-5" formArrayName="options">
+          <mat-form-field appearance="outline" class="w-100 mb-0">
+            <mat-label>Concepto {{ i + 1 }}</mat-label>
+            <input matInput [formControlName]="i" required />
+          </mat-form-field>
+        </div>
+        <div class="col-1 text-center">
+          <mat-icon>arrow_forward</mat-icon>
+        </div>
+        <div class="col-5" formArrayName="correctAnswers">
+          <mat-form-field appearance="outline" class="w-100 mb-0">
+            <mat-label>Respuesta Correcta {{ i + 1 }}</mat-label>
+            <input matInput [formControlName]="i" required />
+          </mat-form-field>
+        </div>
+        <div class="col-1 text-end">
+          <button mat-icon-button color="warn" (click)="removeMatchingPair(i)" [disabled]="options.length <= 3">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      </div>
+      
+      <button mat-button color="primary" (click)="addMatchingPair()">+ Agregar Par</button>
+    </div>
+
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Cancelar</button>
+  <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="questionForm.invalid">Guardar</button>
+</mat-dialog-actions>

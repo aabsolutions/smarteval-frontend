@@ -1,0 +1,233 @@
+<section class="content">
+  <div class="content-block">
+    <div class="block-header" *ngFor="let breadscrum of breadscrums">
+      <app-breadcrumb [title]="resultsData?.assessment?.title || breadscrum.title" [items]="breadscrum.items" [active_item]="breadscrum.active">
+      </app-breadcrumb>
+    </div>
+
+    <div class="row clearfix" *ngIf="resultsData">
+      <!-- Metrics Cards -->
+      <div class="col-lg-4 col-md-4 col-sm-12">
+        <div class="card card-statistic-2">
+          <div class="clearfix">
+            <div class="card-icon shadow-primary bg-primary">
+              <i class="fas fa-users"></i>
+            </div>
+            <div class="card-right">
+              <div>
+                <h5 class="float-end">Respondieron</h5>
+              </div>
+              <div class="m-r-10 m-l-10">
+                <h3 class="font-weight-bold float-end mb-0">{{ resultsData.metrics.totalRespondieron }}</h3>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-4 col-sm-12" *ngIf="!resultsData.assessment.isSimulator">
+        <div class="card card-statistic-2">
+          <div class="clearfix">
+            <div class="card-icon shadow-primary bg-info">
+              <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="card-right">
+              <div>
+                <h5 class="float-end">Promedio General</h5>
+              </div>
+              <div class="m-r-10 m-l-10">
+                <h3 class="font-weight-bold float-end mb-0">{{ resultsData.metrics.promedio }}%</h3>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-4 col-sm-12" *ngIf="!resultsData.assessment.isSimulator">
+        <div class="card card-statistic-2">
+          <div class="clearfix">
+            <div class="card-icon shadow-primary" [ngClass]="resultsData.metrics.aprobados > 0 ? 'bg-success' : 'bg-warning'">
+              <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="card-right">
+              <div>
+                <h5 class="float-end">Aprobados</h5>
+              </div>
+              <div class="m-r-10 m-l-10">
+                <h3 class="font-weight-bold float-end mb-0">{{ resultsData.metrics.aprobados }}</h3>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="row clearfix">
+      <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="card">
+          <div class="header d-flex justify-content-between align-items-center">
+            <h2>Detalle de Resultados</h2>
+            <div class="actions">
+              <button mat-raised-button color="primary" class="ms-2" (click)="exportExcel()">
+                <mat-icon>table_view</mat-icon> Exportar Excel
+              </button>
+              <button mat-icon-button (click)="goBack()" class="ms-2" matTooltip="Volver">
+                <mat-icon>arrow_back</mat-icon>
+              </button>
+            </div>
+          </div>
+          <div class="body">
+            <mat-tab-group>
+              
+              <!-- Tab 1: Calificaciones -->
+              <mat-tab label="Calificaciones">
+                <div class="table-responsive p-3">
+                  <table mat-table [dataSource]="dataSource" multiTemplateDataRows class="w-100">
+                    
+                    <ng-container matColumnDef="studentName">
+                      <th mat-header-cell *matHeaderCellDef> Estudiante </th>
+                      <td mat-cell *matCellDef="let element"> {{element.student?.name || 'N/A'}} </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="identifier">
+                      <th mat-header-cell *matHeaderCellDef> Cédula/Código </th>
+                      <td mat-cell *matCellDef="let element"> {{element.student?.username || 'N/A'}} </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="email">
+                      <th mat-header-cell *matHeaderCellDef> Email </th>
+                      <td mat-cell *matCellDef="let element"> {{element.student?.email || 'N/A'}} </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="attemptsCount">
+                      <th mat-header-cell *matHeaderCellDef> Intentos </th>
+                      <td mat-cell *matCellDef="let element"> <span class="badge badge-solid-orange">{{element.attemptsCount}}</span> </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="score">
+                      <th mat-header-cell *matHeaderCellDef> Puntaje </th>
+                      <td mat-cell *matCellDef="let element"> {{element.score}} / {{element.maxScore}} </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="percentage">
+                      <th mat-header-cell *matHeaderCellDef> % </th>
+                      <td mat-cell *matCellDef="let element" 
+                          [ngClass]="element.percentage >= 70 ? 'text-success fw-bold' : 'text-danger fw-bold'">
+                        {{element.percentage}}%
+                      </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="duration">
+                      <th mat-header-cell *matHeaderCellDef> Tiempo </th>
+                      <td mat-cell *matCellDef="let element"> {{element.durationMinutes}} min </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="status">
+                      <th mat-header-cell *matHeaderCellDef> Estado </th>
+                      <td mat-cell *matCellDef="let element">
+                        <span class="badge" [ngClass]="element.percentage >= 70 ? 'badge-solid-green' : 'badge-solid-red'">
+                          {{ element.percentage >= 70 ? 'Aprobado' : 'Reprobado' }}
+                        </span>
+                      </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="warnings">
+                      <th mat-header-cell *matHeaderCellDef> Alertas </th>
+                      <td mat-cell *matCellDef="let element">
+                        <mat-icon *ngIf="hasWarnings(element)" color="warn" [matTooltip]="getWarningsTooltip(element)" style="cursor: help">warning</mat-icon>
+                        <mat-icon *ngIf="!hasWarnings(element)" color="primary" matTooltip="Todo en orden">check_circle</mat-icon>
+                      </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="expand">
+                      <th mat-header-cell *matHeaderCellDef aria-label="row actions">&nbsp;</th>
+                      <td mat-cell *matCellDef="let element">
+                        <button mat-icon-button aria-label="expand row" (click)="(expandedElement = expandedElement === element ? null : element); $event.stopPropagation()">
+                          <mat-icon *ngIf="expandedElement !== element">keyboard_arrow_down</mat-icon>
+                          <mat-icon *ngIf="expandedElement === element">keyboard_arrow_up</mat-icon>
+                        </button>
+                      </td>
+                    </ng-container>
+
+                    <!-- Expanded Content Column - The detail row is made up of this one column that spans across all columns -->
+                    <ng-container matColumnDef="expandedDetail">
+                      <td mat-cell *matCellDef="let element" [attr.colspan]="columnsToDisplayWithExpand.length" class="p-0 border-0">
+                        <div class="example-element-detail"
+                             [@detailExpand]="element == expandedElement ? 'expanded' : 'collapsed'">
+                          <div class="p-4 w-100 bg-light rounded m-3" *ngIf="hasWarnings(element)">
+                            <h5 class="mb-3 text-danger"><mat-icon class="align-middle me-2">history</mat-icon> Registro de Faltas Anti-Trampas</h5>
+                            
+                            <table class="table table-sm table-bordered bg-white" *ngIf="element.antiCheatLog?.events?.length > 0; else noEvents">
+                              <thead>
+                                <tr>
+                                  <th>Hora</th>
+                                  <th>Tipo de Falta</th>
+                                  <th>Descripción</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr *ngFor="let event of element.antiCheatLog.events">
+                                  <td>{{ event.timestamp | date:'mediumTime' }}</td>
+                                  <td><span class="badge bg-danger">{{ event.type }}</span></td>
+                                  <td>{{ event.description }}</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                            <ng-template #noEvents>
+                              <p class="text-muted">No hay registro temporal detallado de estas faltas. (Registrado con versión antigua)</p>
+                            </ng-template>
+                          </div>
+                        </div>
+                      </td>
+                    </ng-container>
+
+                    <tr mat-header-row *matHeaderRowDef="columnsToDisplayWithExpand"></tr>
+                    <tr mat-row *matRowDef="let element; columns: columnsToDisplayWithExpand;"
+                        class="example-element-row"
+                        [class.example-expanded-row]="expandedElement === element"
+                        (click)="expandedElement = expandedElement === element ? null : element">
+                    </tr>
+                    <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="example-detail-row border-0" [style.display]="resultsData.assessment.isSimulator ? 'none' : ''"></tr>
+                  </table>
+                  <div *ngIf="dataSource.data.length === 0" class="text-center p-4 text-muted">
+                    Nadie ha completado el examen todavía.
+                  </div>
+                </div>
+              </mat-tab>
+
+              <!-- Tab 2: Análisis por Pregunta -->
+              <mat-tab label="Análisis por Pregunta" *ngIf="!resultsData.assessment.isSimulator">
+                <div class="p-3">
+                  <div class="alert alert-info">
+                    <mat-icon style="vertical-align: middle;">info</mat-icon> 
+                    Este análisis te ayuda a detectar qué temas fueron más difíciles para los estudiantes.
+                  </div>
+
+                  <div *ngFor="let q of analyticsData" class="mb-4">
+                    <div class="d-flex justify-content-between align-items-end mb-1">
+                      <div class="w-75">
+                        <span class="badge badge-solid-blue me-2">{{ q.type }}</span>
+                        <strong>{{ q.statement }}</strong>
+                      </div>
+                      <div class="text-end">
+                        <small class="text-muted d-block">{{ q.correctCount }} correctas de {{ q.totalCount }}</small>
+                        <strong [ngClass]="q.percentage >= 70 ? 'text-success' : (q.percentage >= 40 ? 'text-warning' : 'text-danger')">
+                          {{ q.percentage }}% Acierto
+                        </strong>
+                      </div>
+                    </div>
+                    <mat-progress-bar mode="determinate" [value]="q.percentage" [color]="getProgressBarColor(q.percentage)"></mat-progress-bar>
+                  </div>
+
+                  <div *ngIf="analyticsData.length === 0" class="text-center p-4 text-muted">
+                    No hay datos suficientes para el análisis.
+                  </div>
+                </div>
+              </mat-tab>
+
+            </mat-tab-group>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

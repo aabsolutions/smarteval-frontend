@@ -1,0 +1,76 @@
+<section class="content">
+  <div class="content-block pt-5" *ngIf="attempt">
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-6">
+        <mat-card class="text-center p-5">
+          <mat-icon [ngClass]="isApproved ? 'text-success' : 'text-danger'" style="font-size: 80px; width: 80px; height: 80px;">
+            {{ isApproved ? 'check_circle' : 'cancel' }}
+          </mat-icon>
+          
+          <h2 class="mt-4 mb-2">Examen Finalizado</h2>
+          <h3 class="text-muted mb-4">Tu nota ha sido calculada automáticamente</h3>
+
+          <div class="display-3 fw-bold mb-3" [ngClass]="isApproved ? 'text-success' : 'text-danger'">
+            {{ attempt.score }} <span class="fs-4 text-muted">/ {{ attempt.maxScore }}</span>
+          </div>
+
+          <p class="fs-5 mb-5">
+            {{ isApproved ? '¡Felicidades! Has aprobado el examen.' : 'No has alcanzado la calificación mínima. Puedes volver a intentarlo si tienes intentos disponibles.' }}
+          </p>
+
+          <button mat-raised-button color="primary" size="large" (click)="goBack()">Volver al Dashboard</button>
+        </mat-card>
+        
+        <!-- Feedback Detallado -->
+        <mat-card class="mt-4 p-4" *ngIf="processedQuestions.length > 0">
+          <h3 class="mb-4">Detalle de Respuestas</h3>
+          
+          <div *ngFor="let q of processedQuestions; let i = index" class="mb-4 pb-3 border-bottom">
+            <div class="d-flex align-items-start mb-2">
+              <span class="fw-bold me-2">{{ i + 1 }}.</span>
+              <p class="mb-0 flex-grow-1" [innerHTML]="q.statement"></p>
+              
+              <mat-icon [ngClass]="q.isCorrect ? 'text-success' : 'text-danger'" class="ms-3">
+                {{ q.isCorrect ? 'check_circle' : 'cancel' }}
+              </mat-icon>
+            </div>
+            
+            <div class="ms-4 mt-2">
+              <ng-container *ngIf="q.type !== 'fill-blank'">
+                <div *ngFor="let option of q.options" class="p-2 rounded mb-1 d-flex align-items-center"
+                     [ngClass]="{
+                       'bg-success-subtle border border-success': q.correctAnswers.includes(option),
+                       'bg-danger-subtle border border-danger': !q.correctAnswers.includes(option) && q.studentAnswers.includes(option),
+                       'bg-light': !q.correctAnswers.includes(option) && !q.studentAnswers.includes(option)
+                     }">
+                  <mat-icon class="me-2" style="font-size: 18px; width: 18px; height: 18px;"
+                            [ngClass]="{
+                              'text-success': q.correctAnswers.includes(option),
+                              'text-danger': !q.correctAnswers.includes(option) && q.studentAnswers.includes(option)
+                            }">
+                    {{ q.studentAnswers.includes(option) ? (q.correctAnswers.includes(option) ? 'check_box' : 'disabled_by_default') : (q.correctAnswers.includes(option) ? 'check_box' : 'check_box_outline_blank') }}
+                  </mat-icon>
+                  <span [innerHTML]="option" [ngClass]="{'fw-bold': q.studentAnswers.includes(option)}"></span>
+                  <span *ngIf="q.correctAnswers.includes(option)" class="ms-auto text-success small fw-bold">Respuesta Correcta</span>
+                  <span *ngIf="!q.correctAnswers.includes(option) && q.studentAnswers.includes(option)" class="ms-auto text-danger small fw-bold">Tu Respuesta (Incorrecta)</span>
+                </div>
+              </ng-container>
+
+              <ng-container *ngIf="q.type === 'fill-blank'">
+                <div class="p-3 bg-light border rounded">
+                  <p class="mb-2"><strong>Tu respuesta:</strong> 
+                    <span [ngClass]="q.isCorrect ? 'text-success fw-bold' : 'text-danger fw-bold'">
+                      {{ q.studentAnswers.length > 0 && q.studentAnswers[0] ? q.studentAnswers[0] : '(Sin responder)' }}
+                    </span>
+                  </p>
+                  <p class="mb-0 text-success"><strong>Respuesta(s) aceptada(s):</strong> {{ q.correctAnswers.join(' | ') }}</p>
+                </div>
+              </ng-container>
+            </div>
+          </div>
+        </mat-card>
+
+      </div>
+    </div>
+  </div>
+</section>

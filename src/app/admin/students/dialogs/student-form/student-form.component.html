@@ -1,0 +1,44 @@
+<h2 mat-dialog-title>{{ isEdit ? 'Editar Estudiante' : 'Nuevo Estudiante' }}</h2>
+<mat-dialog-content>
+  <form [formGroup]="studentForm" class="pt-3">
+    
+    <mat-form-field appearance="outline" class="w-100 mb-3">
+      <mat-label>Nombre Completo</mat-label>
+      <input matInput formControlName="name" required />
+      <mat-error *ngIf="studentForm.get('name')?.hasError('required')">El nombre es requerido</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-100 mb-3">
+      <mat-label>Cédula/Código</mat-label>
+      <input matInput formControlName="identifier" required />
+      <mat-error *ngIf="studentForm.get('identifier')?.hasError('required')">El identificador es requerido</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-100 mb-3">
+      <mat-label>Correo Electrónico (Opcional)</mat-label>
+      <input matInput type="email" formControlName="email" />
+      <mat-error *ngIf="studentForm.get('email')?.hasError('email')">Correo inválido</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-100 mb-3" *ngIf="!isEdit">
+      <mat-label>Contraseña</mat-label>
+      <input matInput type="password" formControlName="password" required />
+      <mat-error *ngIf="studentForm.get('password')?.hasError('required')">La contraseña es requerida</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-100">
+      <mat-label>Asignar Grupo</mat-label>
+      <mat-select formControlName="groupId" required>
+        <mat-option *ngFor="let group of groups" [value]="group._id">
+          {{ group.name }}
+        </mat-option>
+      </mat-select>
+      <mat-error *ngIf="studentForm.get('groupId')?.hasError('required')">Debe seleccionar un grupo</mat-error>
+    </mat-form-field>
+
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Cancelar</button>
+  <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="studentForm.invalid">Guardar</button>
+</mat-dialog-actions>

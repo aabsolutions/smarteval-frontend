@@ -1,0 +1,105 @@
+<section class="content">
+  <div class="content-block pt-5" *ngIf="assessment">
+    <div class="row justify-content-center">
+      <div class="col-md-10 col-lg-8 col-xl-6">
+
+        <div class="waitroom-card" [class.simulator-mode]="assessment.isSimulator">
+          <div class="card-glow"></div>
+
+          <div class="waitroom-header text-center">
+            <span *ngIf="assessment.isSimulator" class="simulator-badge mb-3 mx-auto">
+              <mat-icon inline>science</mat-icon> Modo Simulador
+            </span>
+            <h2 class="assessment-title">{{ assessment.title }}</h2>
+            <p class="assessment-desc" *ngIf="assessment.description">{{ assessment.description }}</p>
+          </div>
+
+          <div class="metrics-container">
+            <div class="metric-box">
+              <div class="icon-circle time-icon">
+                <mat-icon>schedule</mat-icon>
+              </div>
+              <div class="metric-details">
+                <span class="value">{{ assessment.durationMinutes }}</span>
+                <span class="label">Minutos</span>
+              </div>
+            </div>
+
+            <div class="metric-divider"></div>
+
+            <div class="metric-box">
+              <div class="icon-circle question-icon">
+                <mat-icon>quiz</mat-icon>
+              </div>
+              <div class="metric-details">
+                <span class="value">{{ assessment.totalQuestionsToPull }}</span>
+                <span class="label">Preguntas</span>
+              </div>
+            </div>
+
+            <div class="metric-divider" *ngIf="status"></div>
+
+            <div class="metric-box" *ngIf="status">
+              <div class="icon-circle attempt-icon">
+                <mat-icon>replay</mat-icon>
+              </div>
+              <div class="metric-details">
+                <span class="value">{{ assessment.maxAttempts - status.attemptsCount }}</span>
+                <span class="label">Intentos Restantes</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="rules-section">
+            <h5 class="rules-title"><mat-icon inline>gavel</mat-icon> Reglas e Instrucciones</h5>
+            <ul class="rules-list">
+              <li>El tiempo comenzará a correr en cuanto hagas clic en "Comenzar Examen".</li>
+              <li>Asegúrate de tener una conexión a internet estable.</li>
+              <li>No cierres el navegador. Si sales, el intento seguirá contando su tiempo.</li>
+              <li *ngIf="assessment.antiCheat" class="anti-cheat-rule mt-3">
+                <div class="d-flex align-items-start">
+                  <mat-icon color="warn" class="me-2 flex-shrink-0" style="overflow: visible">visibility</mat-icon>
+                  <div>
+                    <strong>MONITOREO ACTIVO (Anti-Trampa)</strong>
+                    <p class="mb-0 text-muted small mt-1">Este examen requiere pantalla completa y registra detalladamente tus acciones. Si cambias de pestaña o intentas copiar/pegar, el sistema notificará al profesor.</p>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <div class="status-alert" *ngIf="status?.history[0]?.status === 'in-progress'">
+            <div class="d-flex align-items-center">
+              <mat-icon class="pulse-icon text-warning me-3">play_circle_filled</mat-icon>
+              <div>
+                <strong class="d-block text-warning">¡Intento en curso!</strong>
+                <span class="text-muted small">Cerraste el navegador o se interrumpió la conexión.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="action-section mt-5">
+            <button class="btn-back" (click)="goBack()">
+              <mat-icon>arrow_back</mat-icon> Volver
+            </button>
+
+            <button class="btn-start"
+                    (click)="start()"
+                    [disabled]="isStarting || (status?.attemptsCount >= assessment.maxAttempts && status?.history[0]?.status === 'completed')">
+              <span class="btn-content" *ngIf="!isStarting">
+                {{ status?.history[0]?.status === 'in-progress' ? 'Retomar Examen' : 'Comenzar Examen' }}
+                <mat-icon>rocket_launch</mat-icon>
+              </span>
+              <span class="btn-content" *ngIf="isStarting">
+                Preparando entorno...
+                <mat-icon class="spin-icon">autorenew</mat-icon>
+              </span>
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>

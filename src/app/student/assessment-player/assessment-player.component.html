@@ -1,0 +1,95 @@
+<section class="content">
+  <div class="content-block pt-3" *ngIf="assessment && currentQuestion">
+    
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h3 class="m-0">{{ assessment.title }}</h3>
+      <div class="d-flex align-items-center gap-3">
+        <div class="timer text-danger fw-bold fs-5">
+          <i class="material-icons align-middle" style="font-size: 24px;">timer</i> {{ timeRemaining }}
+        </div>
+        <button mat-raised-button color="accent" (click)="submit()" [disabled]="isSubmitting">
+          {{ isSubmitting ? 'Enviando...' : 'Entregar Examen' }}
+        </button>
+      </div>
+    </div>
+
+    <mat-progress-bar mode="determinate" [value]="((currentIndex + 1) / questions.length) * 100" class="mb-4"></mat-progress-bar>
+
+    <div class="row justify-content-center">
+      <div class="col-md-10 col-lg-8">
+        <mat-card class="p-4">
+          <div class="d-flex justify-content-between text-muted small mb-3">
+            <span>Pregunta {{ currentIndex + 1 }} de {{ questions.length }}</span>
+            <span>Valor: {{ currentQuestion.points }} pt(s)</span>
+          </div>
+
+          <h4 class="mb-4">{{ currentQuestion.statement }}</h4>
+
+          <!-- SINGLE CHOICE & TRUE/FALSE -->
+          <div *ngIf="currentQuestion.type === 'single-choice' || currentQuestion.type === 'true-false'">
+            <mat-radio-group [(ngModel)]="singleAnswer" class="d-flex flex-column gap-3">
+              <mat-radio-button *ngFor="let opt of currentQuestion.options" [value]="opt" class="fs-6">
+                {{ opt }}
+              </mat-radio-button>
+            </mat-radio-group>
+          </div>
+
+          <!-- MULTIPLE CHOICE -->
+          <div *ngIf="currentQuestion.type === 'multiple-choice'">
+            <div class="d-flex flex-column gap-3">
+              <mat-checkbox *ngFor="let opt of currentQuestion.options" 
+                            [checked]="isMultipleChecked(opt)"
+                            (change)="toggleMultipleAnswer(opt, $event.checked)"
+                            class="fs-6">
+                {{ opt }}
+              </mat-checkbox>
+            </div>
+          </div>
+
+          <!-- FILL BLANK -->
+          <div *ngIf="currentQuestion.type === 'fill-blank'">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Tu Respuesta</mat-label>
+              <input matInput [(ngModel)]="fillBlankAnswer" placeholder="Escribe aquí..." />
+            </mat-form-field>
+          </div>
+
+          <!-- MATCHING -->
+          <div *ngIf="currentQuestion.type === 'matching'">
+            <div class="row mb-3 align-items-center" *ngFor="let opt of currentQuestion.options; let i = index">
+              <div class="col-12 col-md-5 mb-2 mb-md-0">
+                <span class="fs-6 fw-bold">{{ opt }}</span>
+              </div>
+              <div class="col-12 col-md-7">
+                <mat-form-field appearance="outline" class="w-100 mb-0">
+                  <mat-label>Selecciona su par...</mat-label>
+                  <mat-select [value]="getMatchingAnswer(i)" (selectionChange)="setMatchingAnswer(i, $event.value)">
+                    <mat-option *ngFor="let target of currentQuestion.matchingOptions" [value]="target">
+                      {{ target }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+            </div>
+          </div>
+
+        </mat-card>
+
+        <div class="d-flex justify-content-between mt-4">
+          <button mat-stroked-button color="primary" (click)="prev()" [disabled]="currentIndex === 0">
+            <mat-icon>chevron_left</mat-icon> Anterior
+          </button>
+          
+          <button mat-stroked-button color="primary" (click)="next()" *ngIf="currentIndex < questions.length - 1">
+            Siguiente <mat-icon>chevron_right</mat-icon>
+          </button>
+          
+          <button mat-raised-button color="accent" (click)="submit()" *ngIf="currentIndex === questions.length - 1" [disabled]="isSubmitting">
+            Entregar Examen
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>

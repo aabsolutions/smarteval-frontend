@@ -33,8 +33,8 @@
                 <ng-container matColumnDef="avatar">
                   <th mat-header-cell *matHeaderCellDef> Profile </th>
                   <td mat-cell *matCellDef="let user">
-                    <img [src]="'assets/images/user/' + user.avatar" alt="Avatar" class="user-avatar" 
-                         onerror="this.src='assets/images/user/default.jpg'">
+                    <img [src]="'assets/images/user/' + (user.avatar || 'new.jpg')" alt="Avatar" class="user-avatar" 
+                         onerror="this.onerror=null;this.src='assets/images/user/new.jpg';">
                   </td>
                 </ng-container>
 

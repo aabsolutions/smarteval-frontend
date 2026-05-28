@@ -6,7 +6,10 @@ export interface Group {
   _id: string;
   name: string;
   description?: string;
-  createdBy: any;
+  teachers?: string[] | any[];
+  createdBy?: any;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 @Injectable({ providedIn: 'root' })

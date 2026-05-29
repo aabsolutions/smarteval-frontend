@@ -1,5 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, formatNumber } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
@@ -11,6 +11,14 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { BreadcrumbComponent } from '@shared/components/breadcrumb/breadcrumb.component';
 import { AssessmentsService } from '../assessments.service';
+import * as pdfMakeLib from 'pdfmake/build/pdfmake';
+import * as pdfFontsLib from 'pdfmake/build/vfs_fonts';
+
+const pdfMake: any = (pdfMakeLib as any).default || pdfMakeLib;
+const pdfFonts: any = (pdfFontsLib as any).default || pdfFontsLib;
+
+pdfMake.vfs = pdfFonts.pdfMake ? pdfFonts.pdfMake.vfs : pdfFonts.vfs;
+
 
 @Component({
   selector: 'app-assessment-results',
@@ -49,8 +57,8 @@ export class AssessmentResultsComponent implements OnInit {
   assessmentId: string = '';
   resultsData: any = null;
   analyticsData: any[] = [];
-  
-  displayedColumns: string[] = ['studentName', 'identifier', 'score', 'percentage', 'duration', 'status', 'warnings'];
+
+  displayedColumns: string[] = ['studentName', 'identifier', 'group', 'score', 'percentage', 'duration', 'status', 'warnings'];
   columnsToDisplayWithExpand = [...this.displayedColumns, 'expand'];
   expandedElement: any | null = null;
   dataSource = new MatTableDataSource<any>([]);
@@ -73,7 +81,7 @@ export class AssessmentResultsComponent implements OnInit {
         this.dataSource.data = data.results;
 
         if (this.resultsData.assessment.isSimulator) {
-          this.displayedColumns = ['studentName', 'identifier', 'email', 'attemptsCount'];
+          this.displayedColumns = ['studentName', 'identifier', 'group', 'email', 'attemptsCount'];
           this.columnsToDisplayWithExpand = [...this.displayedColumns];
         } else {
           this.assessmentsService.getAnalytics(this.assessmentId).subscribe({
@@ -115,7 +123,7 @@ export class AssessmentResultsComponent implements OnInit {
   hasWarnings(element: any): boolean {
     if (element.outOfTime || element.isTimeout) return true;
     if (!element.antiCheatLog) return false;
-    
+
     const log = element.antiCheatLog;
     return (log.tabSwitches > 0 || log.fullscreenExits > 0 || log.copyPasteAttempts > 0 || log.devtoolsAttempts > 0);
   }
@@ -124,7 +132,7 @@ export class AssessmentResultsComponent implements OnInit {
     let msgs = [];
     if (element.outOfTime) msgs.push('Se excedió del tiempo límite.');
     if (element.isTimeout) msgs.push('Cierre automático por tiempo.');
-    
+
     if (element.antiCheatLog) {
       const log = element.antiCheatLog;
       if (log.tabSwitches > 0) msgs.push(`${log.tabSwitches} cambios de pestaña.`);
@@ -133,5 +141,342 @@ export class AssessmentResultsComponent implements OnInit {
       if (log.devtoolsAttempts > 0) msgs.push(`Intento de abrir devtools.`);
     }
     return msgs.join('\n');
+  }
+
+  downloadPdf(element: any) {
+    this.assessmentsService.getAttemptDetail(this.assessmentId, element._id).subscribe({
+      next: (attempt) => {
+        this.generatePdf(attempt, element);
+      },
+      error: (err) => console.error('Error fetching attempt details', err)
+    });
+  }
+
+  checkIfCorrect(type: string, studentAnswers: string[], correctAnswers: string[]): boolean {
+    if (!studentAnswers || studentAnswers.length === 0) return false;
+
+    if (type === 'fill-blank') {
+      const userAns = studentAnswers[0].toLowerCase().trim();
+      return correctAnswers.some(c => c.toLowerCase().trim() === userAns);
+    }
+
+    if (type === 'matching') {
+      if (studentAnswers.length !== correctAnswers.length) return false;
+      return studentAnswers.every((ans, i) => ans === correctAnswers[i]);
+    }
+
+    if (studentAnswers.length !== correctAnswers.length) return false;
+
+    const sortedStudent = [...studentAnswers].sort();
+    const sortedCorrect = [...correctAnswers].sort();
+
+    return sortedStudent.every((val, index) => val === sortedCorrect[index]);
+  }
+
+  generatePdf(attempt: any, element: any) {
+    const studentName = attempt.studentId?.name || 'Estudiante';
+    const identifier = attempt.studentId?.username || 'N/A';
+    const isApproved = element.percentage >= 70;
+
+    // Extracted populated fields
+    const assessmentDetails = attempt.assessmentId || {};
+    const teacherName = assessmentDetails.teacherId?.name || 'Docente';
+
+    const formatDate = (dateString: string) => {
+      if (!dateString) return 'N/A';
+      const d = new Date(dateString);
+      return d.toLocaleString('es-ES', { dateStyle: 'medium', timeStyle: 'short' });
+    };
+
+    const evalStart = formatDate(assessmentDetails.startTime);
+    const evalEnd = formatDate(assessmentDetails.endTime);
+    const attemptStart = formatDate(attempt.startTime);
+    const duration = element.durationMinutes || 0;
+
+    const content: any[] = [];
+
+    // Header section with background
+    content.push({
+      table: {
+        widths: ['*'],
+        body: [
+          [
+            {
+              text: `REPORTE DE EVALUACIÓN`,
+              style: 'header',
+              border: [false, false, false, false],
+              fillColor: '#8082f2',
+              color: 'white',
+              margin: [20, 20, 20, 5],
+              alignment: 'center'
+            }
+          ],
+          [
+            {
+              text: this.resultsData.assessment.title.toUpperCase(),
+              style: 'subHeaderTitle',
+              border: [false, false, false, false],
+              fillColor: '#2563eb',
+              color: '#eff6ff',
+              margin: [20, 0, 20, 20],
+              alignment: 'center'
+            }
+          ]
+        ]
+      },
+      layout: 'noBorders',
+      margin: [0, -20, 0, 20]
+    });
+
+    // Info section (Student & Teacher)
+    content.push({
+      table: {
+        widths: ['*', '*'],
+        body: [
+          [
+            { text: 'ESTUDIANTE', style: 'tableHeader', border: [false, false, false, false] },
+            { text: 'DOCENTE', style: 'tableHeader', alignment: 'right', border: [false, false, false, false] }
+          ],
+          [
+            { text: `${studentName} (${identifier})`, style: 'infoText', border: [false, false, false, false] },
+            { text: teacherName, style: 'infoText', alignment: 'right', border: [false, false, false, false] }
+          ],
+          [
+            { text: `Grupo: ${attempt.studentGroup || 'N/A'}`, style: 'infoText', color: '#6b7280', fontSize: 9, border: [false, false, false, false] },
+            { text: '', border: [false, false, false, false] }
+          ],
+          [
+            { text: 'PERIODO DE EVALUACIÓN', style: 'tableHeader', margin: [0, 15, 0, 0], border: [false, false, false, false] },
+            { text: 'REGISTRO DE RESPUESTA', style: 'tableHeader', alignment: 'right', margin: [0, 15, 0, 0], border: [false, false, false, false] }
+          ],
+          [
+            { text: `${evalStart} - ${evalEnd}`, style: 'infoText', border: [false, false, false, false] },
+            { text: attemptStart, style: 'infoText', alignment: 'right', border: [false, false, false, false] }
+          ]
+        ]
+      },
+      layout: {
+        hLineWidth: (i: number, node: any) => (i === 3) ? 0.5 : 0,
+        vLineWidth: () => 0,
+        hLineColor: () => '#e5e7eb'
+      },
+      margin: [0, 0, 0, 20]
+    });
+
+    // Results summary cards (horizontal table)
+    const formattedScore = new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(element.score);
+    content.push({
+      table: {
+        widths: ['*', '*', '*', '*'],
+        body: [
+          [
+            { text: 'PUNTAJE', style: 'cardTitle' },
+            { text: 'PORCENTAJE', style: 'cardTitle' },
+            { text: 'TIEMPO', style: 'cardTitle' },
+            { text: 'ESTADO', style: 'cardTitle' }
+          ],
+          [
+            { text: `${formattedScore} / ${element.maxScore}`, style: 'cardValue' },
+            { text: `${element.percentage}%`, style: 'cardValue', color: isApproved ? '#16a34a' : '#dc2626' },
+            { text: `${duration} min`, style: 'cardValue' },
+            { text: isApproved ? 'APROBADO' : 'REPROBADO', style: 'cardValue', color: isApproved ? '#16a34a' : '#dc2626' }
+          ]
+        ]
+      },
+      layout: {
+        fillColor: (rowIndex: number) => rowIndex === 0 ? '#f3f4f6' : null,
+        hLineWidth: (i: number, node: any) => (i === 0 || i === node.table.body.length) ? 0 : 1,
+        vLineWidth: () => 0,
+        hLineColor: () => '#e5e7eb',
+        paddingLeft: () => 10,
+        paddingRight: () => 10,
+        paddingTop: () => 8,
+        paddingBottom: () => 8
+      },
+      margin: [0, 0, 0, 30]
+    });
+
+    // Detailed answers
+    content.push({ text: 'DETALLE DE RESPUESTAS', style: 'sectionTitle', margin: [0, 0, 0, 15] });
+
+    attempt.questionsPulled.forEach((q: any, i: number) => {
+      const studentAnswerObj = attempt.studentAnswers?.find((sa: any) => sa.questionId === q.questionId);
+      const studentAnswers = studentAnswerObj?.answers || [];
+      const isCorrect = this.checkIfCorrect(q.type, studentAnswers, q.correctAnswers);
+
+      const statementRaw = q.statement.replace(/<[^>]+>/g, '');
+
+      const questionBody: any[] = [];
+
+      questionBody.push([
+        {
+          text: [
+            { text: `${i + 1}. `, bold: true },
+            { text: statementRaw }
+          ],
+          style: 'questionTitle',
+          colSpan: 2,
+          border: [false, false, false, false],
+          fillColor: '#f8fafc',
+          margin: [10, 8, 10, 8]
+        },
+        {}
+      ]);
+
+      questionBody.push([
+        {
+          text: isCorrect ? '✓ Correcto' : '✗ Incorrecto',
+          color: isCorrect ? '#16a34a' : '#dc2626',
+          bold: true,
+          colSpan: 2,
+          border: [false, false, false, false],
+          margin: [10, 0, 10, 5],
+          fontSize: 10
+        },
+        {}
+      ]);
+
+      if (q.type === 'matching') {
+        q.options.forEach((opt: string, optIndex: number) => {
+          const optRaw = opt.replace(/<[^>]+>/g, '');
+          const studentPicked = (studentAnswers.length > optIndex) ? studentAnswers[optIndex] : '';
+          const correctPick = (q.correctAnswers.length > optIndex) ? q.correctAnswers[optIndex] : '';
+          const isMatchedCorrectly = studentPicked === correctPick;
+
+          questionBody.push([
+            { text: '•', width: 20, alignment: 'right', border: [false, false, false, false], color: '#6b7280', margin: [0, 2, 5, 2] },
+            { 
+              text: [
+                { text: optRaw + '\n', color: '#374151', bold: true },
+                { text: `Tu respuesta: ${studentPicked || '(Ninguna)'}`, color: isMatchedCorrectly ? '#16a34a' : '#dc2626', fontSize: 10 },
+                isMatchedCorrectly ? '' : { text: `\nRespuesta esperada: ${correctPick}`, color: '#16a34a', fontSize: 10 }
+              ], 
+              border: [false, false, false, false], 
+              margin: [0, 2, 10, 8] 
+            }
+          ]);
+        });
+      } else if (q.type !== 'fill-blank') {
+        q.options.forEach((opt: string) => {
+          const optRaw = opt.replace(/<[^>]+>/g, '');
+          const isStudentAns = studentAnswers.includes(opt);
+          const isCorrectAns = q.correctAnswers.includes(opt);
+
+          let marker = isStudentAns ? '●' : '○';
+          let markerColor = isStudentAns ? '#2563eb' : '#9ca3af'; // Blue if selected, Gray if not
+
+          let feedbackText = '';
+          let feedbackColor = '';
+
+          if (isStudentAns && isCorrectAns) {
+            feedbackText = ' ✓ Tu respuesta correcta';
+            feedbackColor = '#16a34a';
+          } else if (isStudentAns && !isCorrectAns) {
+            feedbackText = ' ✗ Tu respuesta incorrecta';
+            feedbackColor = '#dc2626';
+          } else if (!isStudentAns && isCorrectAns) {
+            feedbackText = ' ⇦ Respuesta esperada';
+            feedbackColor = '#16a34a';
+          }
+
+          questionBody.push([
+            { text: marker, width: 20, alignment: 'right', border: [false, false, false, false], color: markerColor, margin: [0, 2, 5, 2] },
+            {
+              text: [
+                { text: optRaw, color: '#374151', bold: isStudentAns },
+                { text: feedbackText, color: feedbackColor, bold: true, fontSize: 9 }
+              ],
+              border: [false, false, false, false],
+              margin: [0, 2, 10, 2]
+            }
+          ]);
+        });
+      } else {
+        questionBody.push([
+          { text: 'Tu respuesta:', width: 80, border: [false, false, false, false], margin: [10, 2, 5, 2], fontSize: 10, color: '#6b7280' },
+          { text: studentAnswers.length > 0 ? studentAnswers[0] : '(Sin responder)', border: [false, false, false, false], color: isCorrect ? '#16a34a' : '#dc2626', bold: true, margin: [0, 2, 10, 2], fontSize: 10 }
+        ]);
+        questionBody.push([
+          { text: 'Aceptada(s):', width: 80, border: [false, false, false, false], margin: [10, 2, 5, 2], fontSize: 10, color: '#6b7280' },
+          { text: q.correctAnswers.join(' | '), border: [false, false, false, false], color: '#16a34a', margin: [0, 2, 10, 2], fontSize: 10 }
+        ]);
+      }
+
+      content.push({
+        table: {
+          widths: ['auto', '*'],
+          body: questionBody
+        },
+        layout: {
+          hLineWidth: (i: number, node: any) => (i === node.table.body.length) ? 0.5 : 0,
+          vLineWidth: () => 0,
+          hLineColor: () => '#e5e7eb'
+        },
+        margin: [0, 0, 0, 15]
+      });
+    });
+
+    // Anti-cheat summary section
+    if (attempt.antiCheatLog || element.outOfTime || element.isTimeout) {
+      content.push({ text: 'SUMARIO DE ADVERTENCIAS Y FALTAS', style: 'sectionTitle', margin: [0, 20, 0, 10], color: '#dc2626' });
+
+      const warningsList: any[] = [];
+
+      if (element.outOfTime) warningsList.push({ text: 'Se excedió del tiempo límite.', color: '#dc2626', margin: [0, 2] });
+      if (element.isTimeout) warningsList.push({ text: 'La evaluación se cerró automáticamente por tiempo.', color: '#dc2626', margin: [0, 2] });
+
+      if (attempt.antiCheatLog) {
+        const log = attempt.antiCheatLog;
+        if (log.tabSwitches > 0) warningsList.push({ text: `Cambios de pestaña detectados: ${log.tabSwitches}`, color: '#dc2626', margin: [0, 2] });
+        if (log.fullscreenExits > 0) warningsList.push({ text: `Salidas de pantalla completa: ${log.fullscreenExits}`, color: '#dc2626', margin: [0, 2] });
+        if (log.copyPasteAttempts > 0) warningsList.push({ text: `Intentos de copiar/pegar bloqueados: ${log.copyPasteAttempts}`, color: '#dc2626', margin: [0, 2] });
+        if (log.devtoolsAttempts > 0) warningsList.push({ text: `Intentos de abrir herramientas de desarrollador: ${log.devtoolsAttempts}`, color: '#dc2626', margin: [0, 2] });
+
+        if (log.events && log.events.length > 0) {
+          warningsList.push({ text: 'Registro temporal detallado:', margin: [0, 5, 0, 2], bold: true, color: '#dc2626' });
+          const eventsDetails = log.events.map((ev: any) => {
+            const evTime = formatDate(ev.timestamp);
+            return `${evTime} - [${ev.type}] ${ev.description}`;
+          });
+          warningsList.push({ ul: eventsDetails, margin: [10, 0, 0, 0], fontSize: 9, color: '#dc2626' });
+        }
+      }
+
+      if (warningsList.length > 0) {
+        content.push({
+          stack: warningsList,
+          margin: [10, 0, 0, 0],
+          border: [true, false, false, false],
+          borderColor: ['#dc2626', '', '', '']
+        });
+      } else {
+        content.push({ text: 'No se registraron advertencias.', italics: true, color: '#6b7280' });
+      }
+    } else {
+      content.push({ text: 'SUMARIO DE ADVERTENCIAS Y FALTAS', style: 'sectionTitle', margin: [0, 20, 0, 10], color: '#16a34a' });
+      content.push({ text: 'No se registraron advertencias. Todo en orden.', italics: true, color: '#16a34a', margin: [10, 0, 0, 0] });
+    }
+
+    const documentDefinition: any = {
+      content: content,
+      styles: {
+        header: { fontSize: 20, bold: true, letterSpacing: 1 },
+        subHeaderTitle: { fontSize: 14, letterSpacing: 0.5 },
+        sectionTitle: { fontSize: 12, bold: true, color: '#1f2937', letterSpacing: 0.5 },
+        tableHeader: { fontSize: 9, bold: true, color: '#6b7280' },
+        infoText: { fontSize: 11, color: '#111827', bold: true },
+        cardTitle: { fontSize: 9, bold: true, color: '#6b7280', alignment: 'center' },
+        cardValue: { fontSize: 14, bold: true, color: '#111827', alignment: 'center' },
+        questionTitle: { fontSize: 11, color: '#111827' }
+      },
+      defaultStyle: {
+        fontSize: 10,
+        color: '#374151',
+        lineHeight: 1.2
+      },
+      pageMargins: [40, 40, 40, 40]
+    };
+
+    pdfMake.createPdf(documentDefinition).download(`Resultado_${identifier}_${this.resultsData.assessment.title}.pdf`);
   }
 }

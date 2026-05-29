@@ -47,6 +47,10 @@ export class AssessmentsService {
     return this.http.get<any>(`${this.apiUrl}/${id}/results`);
   }
 
+  getAttemptDetail(id: string, attemptId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${id}/results/${attemptId}`);
+  }
+
   getAnalytics(id: string): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/${id}/analytics`);
   }

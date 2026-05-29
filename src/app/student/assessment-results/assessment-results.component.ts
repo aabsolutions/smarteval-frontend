@@ -59,6 +59,11 @@ export class AssessmentResultsComponent implements OnInit {
       const userAns = studentAnswers[0].toLowerCase().trim();
       return correctAnswers.some(c => c.toLowerCase().trim() === userAns);
     }
+
+    if (type === 'matching') {
+      if (studentAnswers.length !== correctAnswers.length) return false;
+      return studentAnswers.every((ans, i) => ans === correctAnswers[i]);
+    }
     
     if (studentAnswers.length !== correctAnswers.length) return false;
     

@@ -36,23 +36,30 @@
             </div>
             
             <div class="ms-4 mt-2">
-              <ng-container *ngIf="q.type !== 'fill-blank'">
-                <div *ngFor="let option of q.options" class="p-2 rounded mb-1 d-flex align-items-center"
+              <ng-container *ngIf="q.type !== 'fill-blank' && q.type !== 'matching'">
+                <div *ngFor="let option of q.options" class="p-3 rounded mb-2 d-flex align-items-center border"
                      [ngClass]="{
-                       'bg-success-subtle border border-success': q.correctAnswers.includes(option),
-                       'bg-danger-subtle border border-danger': !q.correctAnswers.includes(option) && q.studentAnswers.includes(option),
-                       'bg-light': !q.correctAnswers.includes(option) && !q.studentAnswers.includes(option)
+                       'bg-white border-secondary': !q.studentAnswers.includes(option),
+                       'bg-light border-primary': q.studentAnswers.includes(option)
                      }">
-                  <mat-icon class="me-2" style="font-size: 18px; width: 18px; height: 18px;"
-                            [ngClass]="{
-                              'text-success': q.correctAnswers.includes(option),
-                              'text-danger': !q.correctAnswers.includes(option) && q.studentAnswers.includes(option)
-                            }">
-                    {{ q.studentAnswers.includes(option) ? (q.correctAnswers.includes(option) ? 'check_box' : 'disabled_by_default') : (q.correctAnswers.includes(option) ? 'check_box' : 'check_box_outline_blank') }}
+                  <mat-icon class="me-3" style="font-size: 24px; width: 24px; height: 24px;"
+                            [ngClass]="{'text-primary': q.studentAnswers.includes(option), 'text-muted': !q.studentAnswers.includes(option)}">
+                    {{ q.studentAnswers.includes(option) ? 'radio_button_checked' : 'radio_button_unchecked' }}
                   </mat-icon>
-                  <span [innerHTML]="option" [ngClass]="{'fw-bold': q.studentAnswers.includes(option)}"></span>
-                  <span *ngIf="q.correctAnswers.includes(option)" class="ms-auto text-success small fw-bold">Respuesta Correcta</span>
-                  <span *ngIf="!q.correctAnswers.includes(option) && q.studentAnswers.includes(option)" class="ms-auto text-danger small fw-bold">Tu Respuesta (Incorrecta)</span>
+                  <span [innerHTML]="option" class="fs-6" [ngClass]="{'fw-bold': q.studentAnswers.includes(option)}"></span>
+                  
+                  <!-- Badges for feedback -->
+                  <div class="ms-auto d-flex gap-2">
+                    <span *ngIf="q.studentAnswers.includes(option) && q.correctAnswers.includes(option)" class="badge bg-success d-flex align-items-center gap-1 p-2">
+                      <mat-icon style="font-size: 16px; width: 16px; height: 16px;">check</mat-icon> Tu respuesta correcta
+                    </span>
+                    <span *ngIf="q.studentAnswers.includes(option) && !q.correctAnswers.includes(option)" class="badge bg-danger d-flex align-items-center gap-1 p-2">
+                      <mat-icon style="font-size: 16px; width: 16px; height: 16px;">close</mat-icon> Tu respuesta incorrecta
+                    </span>
+                    <span *ngIf="!q.studentAnswers.includes(option) && q.correctAnswers.includes(option)" class="badge bg-success-subtle text-success border border-success d-flex align-items-center gap-1 p-2">
+                      <mat-icon style="font-size: 16px; width: 16px; height: 16px;">check</mat-icon> Respuesta esperada
+                    </span>
+                  </div>
                 </div>
               </ng-container>
 
@@ -64,6 +71,28 @@
                     </span>
                   </p>
                   <p class="mb-0 text-success"><strong>Respuesta(s) aceptada(s):</strong> {{ q.correctAnswers.join(' | ') }}</p>
+                </div>
+              </ng-container>
+
+              <ng-container *ngIf="q.type === 'matching'">
+                <div *ngFor="let option of q.options; let j = index" class="p-3 rounded mb-2 border bg-light">
+                  <div class="row align-items-center">
+                    <div class="col-md-5 fw-bold fs-6">{{ option }}</div>
+                    <div class="col-md-7 border-start">
+                      <div class="d-flex align-items-center mb-1">
+                        <span class="text-muted me-2 small">Tu respuesta:</span>
+                        <span [ngClass]="q.studentAnswers[j] === q.correctAnswers[j] ? 'text-success fw-bold' : 'text-danger fw-bold'">
+                          {{ q.studentAnswers[j] || '(Ninguna)' }}
+                        </span>
+                        <mat-icon *ngIf="q.studentAnswers[j] === q.correctAnswers[j]" class="text-success ms-2" style="font-size: 16px; width:16px; height: 16px;">check_circle</mat-icon>
+                        <mat-icon *ngIf="q.studentAnswers[j] !== q.correctAnswers[j]" class="text-danger ms-2" style="font-size: 16px; width:16px; height: 16px;">cancel</mat-icon>
+                      </div>
+                      <div class="d-flex align-items-center" *ngIf="q.studentAnswers[j] !== q.correctAnswers[j]">
+                        <span class="text-muted me-2 small">Respuesta esperada:</span>
+                        <span class="text-success fw-bold">{{ q.correctAnswers[j] }}</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </ng-container>
             </div>

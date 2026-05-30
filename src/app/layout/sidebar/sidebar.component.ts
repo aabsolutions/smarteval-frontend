@@ -82,27 +82,33 @@ export class SidebarComponent
     }
   }
   ngOnInit() {
-    if (this.authService.currentUserValue) {
-      const userRole = this.authService.currentUserValue.roles?.[0]?.name;
-      this.userFullName = this.authService.currentUserValue.name;
-      this.userImg =
-        './assets/images/user/' + this.authService.currentUserValue.avatar;
-
-      this.subs.sink = this.sidebarService
-        .getRouteInfo()
-        .subscribe((routes: RouteInfo[]) => {
-          this.sidebarItems = routes;
-        });
-      if (userRole === Role.Admin) {
-        this.userType = this.capitalizeString(Role.Admin);
-      } else if (userRole === Role.Teacher) {
-        this.userType = this.capitalizeString(Role.Teacher);
-      } else if (userRole === Role.Student) {
-        this.userType = this.capitalizeString(Role.Student);
-      } else {
-        this.userType = this.capitalizeString(Role.Admin);
+    this.subs.sink = this.authService.user$.subscribe(user => {
+      if (user && Object.keys(user).length > 0) {
+        const userRole = user.roles?.[0]?.name;
+        this.userFullName = user.name || (user as any)['firstName'] + ' ' + (user as any)['lastName'];
+        this.userImg = './assets/images/user/' + (user.avatar || 'user.jpg');
+        
+        if (userRole === Role.Admin) {
+          this.userType = this.capitalizeString(Role.Admin);
+        } else if (userRole === Role.Teacher) {
+          this.userType = this.capitalizeString(Role.Teacher);
+        } else if (userRole === Role.Student) {
+          this.userType = this.capitalizeString(Role.Student);
+        } else {
+          this.userType = this.capitalizeString(Role.Admin);
+        }
       }
+    });
+
+    if (Object.keys(this.authService.currentUserValue).length > 0) {
+      this.authService.user$.next(this.authService.currentUserValue);
     }
+
+    this.subs.sink = this.sidebarService
+      .getRouteInfo()
+      .subscribe((routes: RouteInfo[]) => {
+        this.sidebarItems = routes;
+      });
 
     this.initLeftSidebar();
     this.bodyTag = this.document.body;

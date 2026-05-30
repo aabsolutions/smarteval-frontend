@@ -27,5 +27,9 @@ export const STUDENT_ROUTE: Route[] = [
     path: 'assessments/:id/results/:attemptId',
     component: AssessmentResultsComponent,
   },
+  {
+    path: 'profile',
+    loadComponent: () => import('@shared/components/profile/profile.component').then(m => m.ProfileComponent)
+  },
   { path: '**', component: Page404Component },
 ];

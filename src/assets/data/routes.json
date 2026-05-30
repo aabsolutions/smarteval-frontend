@@ -9,10 +9,11 @@
       "groupTitle": true,
       "badge": "",
       "badgeClass": "",
-      "role": ["ADMIN"],
+      "role": [
+        "ADMIN"
+      ],
       "submenu": []
     },
-
     {
       "path": "",
       "title": "MENUITEMS.DASHBOARD.TEXT",
@@ -22,7 +23,10 @@
       "groupTitle": false,
       "badge": "",
       "badgeClass": "",
-      "role": ["ADMIN", "SUPERADMIN"],
+      "role": [
+        "ADMIN",
+        "SUPERADMIN"
+      ],
       "submenu": [
         {
           "path": "/admin/dashboard/main",
@@ -33,7 +37,9 @@
           "groupTitle": false,
           "badge": "",
           "badgeClass": "",
-          "role": [""],
+          "role": [
+            ""
+          ],
           "submenu": []
         },
         {
@@ -45,7 +51,9 @@
           "groupTitle": false,
           "badge": "",
           "badgeClass": "",
-          "role": [""],
+          "role": [
+            ""
+          ],
           "submenu": []
         },
         {
@@ -57,7 +65,9 @@
           "groupTitle": false,
           "badge": "",
           "badgeClass": "",
-          "role": [""],
+          "role": [
+            ""
+          ],
           "submenu": []
         },
         {
@@ -69,7 +79,9 @@
           "groupTitle": false,
           "badge": "",
           "badgeClass": "",
-          "role": [""],
+          "role": [
+            ""
+          ],
           "submenu": []
         },
         {
@@ -81,7 +93,9 @@
           "groupTitle": false,
           "badge": "",
           "badgeClass": "",
-          "role": [""],
+          "role": [
+            ""
+          ],
           "submenu": []
         },
         {
@@ -93,7 +107,9 @@
           "groupTitle": false,
           "badge": "",
           "badgeClass": "",
-          "role": [""],
+          "role": [
+            ""
+          ],
           "submenu": []
         }
       ]
@@ -107,7 +123,10 @@
       "groupTitle": false,
       "badge": "",
       "badgeClass": "",
-      "role": ["ADMIN", "SUPERADMIN"],
+      "role": [
+        "ADMIN",
+        "SUPERADMIN"
+      ],
       "submenu": []
     },
     {
@@ -119,7 +138,10 @@
       "groupTitle": false,
       "badge": "",
       "badgeClass": "",
-      "role": ["ADMIN", "SUPERADMIN"],
+      "role": [
+        "ADMIN",
+        "SUPERADMIN"
+      ],
       "submenu": []
     },
     {
@@ -131,7 +153,10 @@
       "groupTitle": false,
       "badge": "",
       "badgeClass": "",
-      "role": ["ADMIN", "SUPERADMIN"],
+      "role": [
+        "ADMIN",
+        "SUPERADMIN"
+      ],
       "submenu": []
     },
     {
@@ -143,7 +168,9 @@
       "groupTitle": false,
       "badge": "",
       "badgeClass": "",
-      "role": ["TEACHER"],
+      "role": [
+        "TEACHER"
+      ],
       "submenu": [
         {
           "path": "/teacher/topics",
@@ -189,7 +216,9 @@
       "groupTitle": false,
       "badge": "",
       "badgeClass": "",
-      "role": ["STUDENT"],
+      "role": [
+        "STUDENT"
+      ],
       "submenu": []
     },
     {
@@ -201,205 +230,10 @@
       "groupTitle": false,
       "badge": "",
       "badgeClass": "",
-      "role": ["STUDENT"],
+      "role": [
+        "STUDENT"
+      ],
       "submenu": []
-    },
-    {
-      "path": "",
-      "title": "Authentication",
-      "iconType": "material-icons-outlined",
-      "icon": "supervised_user_circle",
-      "class": "menu-toggle",
-      "groupTitle": false,
-      "badge": "",
-      "badgeClass": "",
-      "role": ["ADMIN"],
-      "submenu": [
-        {
-          "path": "/authentication/signin",
-          "title": "Sign In",
-          "iconType": "",
-          "icon": "",
-          "class": "ml-menu",
-          "groupTitle": false,
-          "badge": "",
-          "badgeClass": "",
-          "role": [""],
-          "submenu": []
-        },
-        {
-          "path": "/authentication/signup",
-          "title": "Sign Up",
-          "iconType": "",
-          "icon": "",
-          "class": "ml-menu",
-          "groupTitle": false,
-          "badge": "",
-          "badgeClass": "",
-          "role": [""],
-          "submenu": []
-        },
-        {
-          "path": "/authentication/forgot-password",
-          "title": "Forgot Password",
-          "iconType": "",
-          "icon": "",
-          "class": "ml-menu",
-          "groupTitle": false,
-          "badge": "",
-          "badgeClass": "",
-          "role": [""],
-          "submenu": []
-        },
-        {
-          "path": "/authentication/locked",
-          "title": "Locked",
-          "iconType": "",
-          "icon": "",
-          "class": "ml-menu",
-          "groupTitle": false,
-          "badge": "",
-          "badgeClass": "",
-          "role": [""],
-          "submenu": []
-        },
-        {
-          "path": "/authentication/page404",
-          "title": "404 - Not Found",
-          "iconType": "",
-          "icon": "",
-          "class": "ml-menu",
-          "groupTitle": false,
-          "badge": "",
-          "badgeClass": "",
-          "role": [""],
-          "submenu": []
-        },
-        {
-          "path": "/authentication/page500",
-          "title": "500 - Server Error",
-          "iconType": "",
-          "icon": "",
-          "class": "ml-menu",
-          "groupTitle": false,
-          "badge": "",
-          "badgeClass": "",
-          "role": [""],
-          "submenu": []
-        }
-      ]
-    },
-    {
-      "path": "",
-      "title": "Extra Pages",
-      "iconType": "material-icons-outlined",
-      "icon": "description",
-      "class": "menu-toggle",
-      "groupTitle": false,
-      "badge": "",
-      "badgeClass": "",
-      "role": ["ADMIN"],
-      "submenu": [
-        {
-          "path": "/extra-pages/blank",
-          "title": "Blank Page",
-          "iconType": "",
-          "icon": "",
-          "class": "ml-menu",
-          "groupTitle": false,
-          "badge": "",
-          "badgeClass": "",
-          "role": [""],
-          "submenu": []
-        }
-      ]
-    },
-    {
-      "path": "",
-      "title": "Multi level Menu",
-      "iconType": "material-icons-outlined",
-      "icon": "slideshow",
-      "class": "menu-toggle",
-      "groupTitle": false,
-      "badge": "",
-      "badgeClass": "",
-      "role": ["ADMIN"],
-      "submenu": [
-        {
-          "path": "/multilevel/first1",
-          "title": "First",
-          "iconType": "",
-          "icon": "",
-          "class": "ml-menu",
-          "groupTitle": false,
-          "badge": "",
-          "badgeClass": "",
-          "role": [""],
-          "submenu": []
-        },
-        {
-          "path": "/",
-          "title": "Second",
-          "iconType": "",
-          "icon": "",
-          "class": "ml-sub-menu",
-          "groupTitle": false,
-          "badge": "",
-          "badgeClass": "",
-          "role": [""],
-          "submenu": [
-            {
-              "path": "/multilevel/secondlevel/second1",
-              "title": "Second 1",
-              "iconType": "",
-              "icon": "",
-              "class": "ml-menu2",
-              "groupTitle": false,
-              "badge": "",
-              "badgeClass": "",
-              "role": [""],
-              "submenu": []
-            },
-            {
-              "path": "/",
-              "title": "Second 2",
-              "iconType": "",
-              "icon": "",
-              "class": "ml-sub-menu2",
-              "groupTitle": false,
-              "badge": "",
-              "badgeClass": "",
-              "role": [""],
-              "submenu": [
-                {
-                  "path": "/multilevel/thirdlevel/third1",
-                  "title": "third 1",
-                  "iconType": "",
-                  "icon": "",
-                  "class": "ml-menu3",
-                  "groupTitle": false,
-                  "badge": "",
-                  "badgeClass": "",
-                  "role": [""],
-                  "submenu": []
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "path": "/multilevel/first3",
-          "title": "Third",
-          "iconType": "",
-          "icon": "",
-          "class": "ml-menu",
-          "groupTitle": false,
-          "badge": "",
-          "badgeClass": "",
-          "role": [""],
-          "submenu": []
-        }
-      ]
     }
   ]
 }

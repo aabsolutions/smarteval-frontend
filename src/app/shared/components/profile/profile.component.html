@@ -1,0 +1,87 @@
+<section class="content">
+  <div class="content-block">
+    <div class="block-header">
+      <h2>Mi Perfil</h2>
+    </div>
+
+    <div class="row">
+      <!-- Datos Personales -->
+      <div class="col-lg-6 col-md-12">
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>Datos Personales</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <form [formGroup]="profileForm" (ngSubmit)="updateProfile()" class="pt-3">
+              <mat-form-field appearance="outline" class="w-100 mb-3">
+                <mat-label>Nombre Completo</mat-label>
+                <input matInput formControlName="name">
+                @if (profileForm.get('name')?.hasError('required')) {
+                  <mat-error>El nombre es obligatorio</mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="w-100 mb-3">
+                <mat-label>Correo Electrónico</mat-label>
+                <input matInput formControlName="email" type="email">
+                @if (profileForm.get('email')?.hasError('required')) {
+                  <mat-error>El correo es obligatorio</mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="w-100 mb-3">
+                <mat-label>Usuario (No editable)</mat-label>
+                <input matInput formControlName="username">
+              </mat-form-field>
+
+              <div class="d-flex justify-content-end">
+                <button mat-flat-button color="primary" type="submit" [disabled]="profileForm.invalid || !profileForm.dirty">
+                  Guardar Cambios
+                </button>
+              </div>
+            </form>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- Cambiar Contraseña -->
+      <div class="col-lg-6 col-md-12">
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>Cambiar Contraseña</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" class="pt-3">
+              <mat-form-field appearance="outline" class="w-100 mb-3">
+                <mat-label>Contraseña Actual</mat-label>
+                <input matInput formControlName="currentPassword" type="password">
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="w-100 mb-3">
+                <mat-label>Nueva Contraseña</mat-label>
+                <input matInput formControlName="newPassword" type="password">
+                @if (passwordForm.get('newPassword')?.hasError('minlength')) {
+                  <mat-error>Mínimo 6 caracteres</mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="w-100 mb-3">
+                <mat-label>Confirmar Nueva Contraseña</mat-label>
+                <input matInput formControlName="confirmPassword" type="password">
+                @if (passwordForm.hasError('mismatch')) {
+                  <mat-error>Las contraseñas no coinciden</mat-error>
+                }
+              </mat-form-field>
+
+              <div class="d-flex justify-content-end">
+                <button mat-flat-button color="accent" type="submit" [disabled]="passwordForm.invalid">
+                  Actualizar Contraseña
+                </button>
+              </div>
+            </form>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+  </div>
+</section>

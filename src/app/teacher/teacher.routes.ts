@@ -26,5 +26,9 @@ export const TEACHER_ROUTE: Route[] = [
     path: 'assessments/:id/results',
     loadComponent: () => import('./assessments/results/assessment-results.component').then(m => m.AssessmentResultsComponent)
   },
+  {
+    path: 'profile',
+    loadComponent: () => import('@shared/components/profile/profile.component').then(m => m.ProfileComponent)
+  },
   { path: '**', component: Page404Component },
 ];

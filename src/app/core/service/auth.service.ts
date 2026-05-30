@@ -75,6 +75,13 @@ export class AuthService {
     return of({ success: false });
   }
 
+  updateCurrentUser(updatedUser: Partial<User>) {
+    const current = this.currentUserValue;
+    const nextUser = { ...current, ...updatedUser };
+    this.store.set('currentUser', nextUser);
+    this.user$.next(nextUser);
+  }
+
   assignUser(_user: BehaviorSubject<User>): Observable<User> {
     this.user$.next(this.currentUserValue); // Update the user$ BehaviorSubject with the new value
     return this.user$.asObservable(); // Return an observable that emits the new user value

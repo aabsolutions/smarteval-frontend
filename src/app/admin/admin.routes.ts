@@ -22,5 +22,9 @@ export const ADMIN_ROUTE: Route[] = [
     loadChildren: () =>
       import('./students/students.routes').then((m) => m.STUDENTS_ROUTE),
   },
+  {
+    path: 'profile',
+    loadComponent: () => import('@shared/components/profile/profile.component').then(m => m.ProfileComponent)
+  },
   { path: '**', component: Page404Component },
 ];

@@ -65,6 +65,7 @@ export class HeaderComponent
 
   public config!: InConfiguration;
   userImg?: string;
+  userName?: string;
   homePage?: string;
   isNavbarCollapsed = true;
   flagvalue: string | string[] | undefined;
@@ -84,20 +85,33 @@ export class HeaderComponent
 
   ngOnInit() {
     this.config = this.configService.configData;
-    const userRole = this.authService.currentUserValue.roles?.[0]?.name;
-    this.userImg =
-      './assets/images/user/' + this.authService.currentUserValue.avatar;
-    this.docElement = document.documentElement;
+    
+    // Subscribe to user changes to dynamically update header
+    this.subs.sink = this.authService.user$.subscribe(user => {
+      if (user && Object.keys(user).length > 0) {
+        this.userImg = './assets/images/user/' + (user.avatar || 'user.jpg');
+        const u: any = user;
+        this.userName = u['name'] || (u['firstName'] ? u['firstName'] + ' ' + u['lastName'] : 'User');
+        
+        const userRole = user.roles?.[0]?.name;
+        if (userRole === Role.Admin) {
+          this.homePage = 'admin/dashboard/main';
+        } else if (userRole === Role.Teacher) {
+          this.homePage = 'teacher/dashboard';
+        } else if (userRole === Role.Student) {
+          this.homePage = 'student/dashboard';
+        } else {
+          this.homePage = 'admin/dashboard/main';
+        }
+      }
+    });
 
-    if (userRole === Role.Admin) {
-      this.homePage = 'admin/dashboard/main';
-    } else if (userRole === Role.Teacher) {
-      this.homePage = 'teacher/dashboard';
-    } else if (userRole === Role.Student) {
-      this.homePage = 'student/dashboard';
-    } else {
-      this.homePage = 'admin/dashboard/main';
+    // Trigger initial emission if needed
+    if (Object.keys(this.authService.currentUserValue).length > 0) {
+      this.authService.user$.next(this.authService.currentUserValue);
     }
+
+    this.docElement = document.documentElement;
 
     this.langStoreValue = this.localStorageService.get('lang') as string;
     const val = this.listLang.filter((x) => x.lang === this.langStoreValue);
@@ -234,7 +248,14 @@ export class HeaderComponent
   }
 
   onAccountClicked() {
-    this.router.navigate(['/extra-pages/profile']);
+    const userRole = this.authService.currentUserValue.roles?.[0]?.name;
+    if (userRole === Role.Teacher) {
+      this.router.navigate(['/teacher/profile']);
+    } else if (userRole === Role.Student) {
+      this.router.navigate(['/student/profile']);
+    } else {
+      this.router.navigate(['/admin/profile']);
+    }
   }
 
   onInboxClicked() {

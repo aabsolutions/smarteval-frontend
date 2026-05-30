@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://smarteval-backend-ytpv.onrender.comgit',
+  apiUrl: 'https://smarteval-backend-ytpv.onrender.com',
 };

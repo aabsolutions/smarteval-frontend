@@ -6,36 +6,36 @@
       </app-breadcrumb>
     </div>
     }
-    
+
     <div class="row clearfix">
       <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
         <div class="card users-card">
           <div class="header d-flex justify-content-between align-items-center flex-wrap gap-3">
             <h2>User Management</h2>
-            
+
             <div class="header-actions d-flex align-items-center gap-3">
               <div class="search-box">
                 <mat-icon class="search-icon">search</mat-icon>
                 <input type="text" (keyup)="applyFilter($event)" placeholder="Search users..." class="search-input">
               </div>
-              
+
               <app-table-show-hide-column [columnDefinitions]="columnDefinitions"></app-table-show-hide-column>
-              
+
             <button mat-flat-button color="primary" class="add-user-btn" (click)="openUserDialog()">
               <mat-icon>person_add</mat-icon> Add New User
             </button>
             </div>
           </div>
-          
+
           <div class="body">
             <div class="table-responsive">
               <table mat-table [dataSource]="dataSource" class="mat-elevation-z0 w-100 modern-table">
-                
+
                 <!-- Avatar Column -->
                 <ng-container matColumnDef="avatar">
                   <th mat-header-cell *matHeaderCellDef> Profile </th>
                   <td mat-cell *matCellDef="let user">
-                    <img [src]="'assets/images/user/' + (user.avatar || 'new.jpg')" alt="Avatar" class="user-avatar" 
+                    <img [src]="'assets/images/user/' + (user.avatar || 'new.jpg')" alt="Avatar" class="user-avatar"
                          onerror="this.onerror=null;this.src='assets/images/user/new.jpg';">
                   </td>
                 </ng-container>
@@ -43,15 +43,15 @@
                 <!-- Name Column -->
                 <ng-container matColumnDef="name">
                   <th mat-header-cell *matHeaderCellDef> Name </th>
-                  <td mat-cell *matCellDef="let user"> 
-                    <div class="user-name">{{user.name}}</div>
+                  <td mat-cell *matCellDef="let user">
+                    <div class="user-name" style="text-align: left;">{{user.name}}</div>
                   </td>
                 </ng-container>
 
                 <!-- Username Column -->
                 <ng-container matColumnDef="username">
                   <th mat-header-cell *matHeaderCellDef> Username </th>
-                  <td mat-cell *matCellDef="let user"> 
+                  <td mat-cell *matCellDef="let user">
                     <div class="user-handle">@{{user.username}}</div>
                   </td>
                 </ng-container>
@@ -91,7 +91,7 @@
                 <tr mat-header-row *matHeaderRowDef="getDisplayedColumns()"></tr>
                 <tr mat-row *matRowDef="let row; columns: getDisplayedColumns();" class="user-row"></tr>
               </table>
-              
+
               @if (dataSource.data.length === 0) {
                 <div class="no-data-msg">
                   <mat-icon class="no-data-icon">people_outline</mat-icon>
@@ -99,7 +99,7 @@
                 </div>
               }
 
-              <mat-paginator 
+              <mat-paginator
                 [length]="totalUsers"
                 [pageSize]="pageSize"
                 [pageSizeOptions]="[5, 10, 25, 100]"

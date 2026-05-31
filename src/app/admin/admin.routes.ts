@@ -23,6 +23,14 @@ export const ADMIN_ROUTE: Route[] = [
       import('./students/students.routes').then((m) => m.STUDENTS_ROUTE),
   },
   {
+    path: 'teachers',
+    loadComponent: () => import('./teachers/teachers.component').then(m => m.TeachersComponent)
+  },
+  {
+    path: 'institutions',
+    loadComponent: () => import('./institutions/institutions.component').then(m => m.InstitutionsComponent)
+  },
+  {
     path: 'profile',
     loadComponent: () => import('@shared/components/profile/profile.component').then(m => m.ProfileComponent)
   },

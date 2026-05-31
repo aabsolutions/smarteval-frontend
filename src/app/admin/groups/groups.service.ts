@@ -6,7 +6,10 @@ export interface Group {
   _id: string;
   name: string;
   description?: string;
-  teachers?: string[] | any[];
+  institution?: any;
+  jornada?: string;
+  nivel?: string;
+  teacher?: any;
   createdBy?: any;
   createdAt?: string;
   updatedAt?: string;
@@ -31,5 +34,9 @@ export class GroupsService {
 
   deleteGroup(id: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`);
+  }
+
+  assignTeacher(groupId: string, teacherId: string): Observable<Group> {
+    return this.http.post<Group>(`${this.apiUrl}/${groupId}/assign-teacher`, { teacherId });
   }
 }

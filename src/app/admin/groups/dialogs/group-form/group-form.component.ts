@@ -2,6 +2,8 @@ import { Component, Inject, inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { GroupsService, Group } from '../../groups.service';
+import { InstitutionsService, Institution } from '../../../institutions/institutions.service';
+import { TeachersService, Teacher } from '../../../teachers/teachers.service';
 import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -30,9 +32,14 @@ import { HttpClient } from '@angular/common/http';
 export class GroupFormDialogComponent implements OnInit {
   groupForm: FormGroup;
   isEdit = false;
-  teachersList: any[] = [];
+  teachersList: Teacher[] = [];
+  institutionsList: Institution[] = [];
+  jornadas = ['MATUTINA', 'VESPERTINA', 'NOCTURNA', 'VIRTUAL'];
+  niveles = ['EGB MEDIA', 'EGB SUPERIOR', 'BACHILLERATO', 'SUPERIOR'];
 
   private groupsService = inject(GroupsService);
+  private institutionsService = inject(InstitutionsService);
+  private teachersService = inject(TeachersService);
   private fb = inject(FormBuilder);
   private alertService = inject(AlertService);
   private http = inject(HttpClient);
@@ -43,26 +50,35 @@ export class GroupFormDialogComponent implements OnInit {
   ) {
     this.isEdit = !!data?.group;
     
-    // Si viene group.teachers, nos aseguramos que si son objetos, sacamos el id, si ya son strings los dejamos.
-    const selectedTeachers = data?.group?.teachers?.map(t => typeof t === 'string' ? t : t._id) || [];
-    
+    const selectedTeacher = typeof data?.group?.teacher === 'object' ? data?.group?.teacher?._id : data?.group?.teacher;
+    const selectedInstitution = typeof data?.group?.institution === 'object' ? data?.group?.institution?._id : data?.group?.institution;
+
     this.groupForm = this.fb.group({
       name: [data?.group?.name || '', [Validators.required]],
       description: [data?.group?.description || ''],
-      teachers: [selectedTeachers]
+      institution: [selectedInstitution || '', [Validators.required]],
+      jornada: [data?.group?.jornada || '', [Validators.required]],
+      nivel: [data?.group?.nivel || '', [Validators.required]],
+      teacher: [selectedTeacher || null]
     });
   }
 
   ngOnInit() {
     this.fetchTeachers();
+    this.fetchInstitutions();
+  }
+
+  fetchInstitutions() {
+    this.institutionsService.getAllInstitutions().subscribe({
+      next: (data) => this.institutionsList = data,
+      error: (err) => console.error('Error fetching institutions', err)
+    });
   }
 
   fetchTeachers() {
-    this.http.get<any[]>('/api/users').subscribe({
-      next: (users) => {
-        // Asumiendo que el admin tiene permiso para ver todos los usuarios o ya vienen filtrados
-        // Filtramos localmente para asegurarnos de mostrar solo TEACHER
-        this.teachersList = users.filter(u => u.roles && u.roles[0]?.name === 'TEACHER');
+    this.teachersService.getAllTeachers().subscribe({
+      next: (res) => {
+        this.teachersList = res;
       },
       error: (err) => console.error('Error fetching teachers', err)
     });

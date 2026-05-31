@@ -10,7 +10,7 @@
             <div class="left">
               <ul class="header-buttons-left ms-0">
                 <li class="tbl-title">
-                  <h2>Gestión de Grupos</h2>
+                  <h2>Gestión de Instituciones</h2>
                 </li>
                 <li class="tbl-search-box">
                   <label for="search-input"><i class="material-icons search-icon">search</i></label>
@@ -22,15 +22,8 @@
               <ul class="tbl-export-btn">
                 <li class="tbl-header-btn">
                   <div class="m-l-10" matTooltip="AGREGAR">
-                    <button mat-mini-fab color="primary" (click)="openGroupDialog()">
+                    <button mat-mini-fab color="primary" (click)="openInstitutionDialog()">
                       <mat-icon class="col-white">add</mat-icon>
-                    </button>
-                  </div>
-                </li>
-                <li class="tbl-header-btn">
-                  <div class="m-l-10" matTooltip="ACTUALIZAR">
-                    <button mat-mini-fab color="primary" (click)="loadGroups()">
-                      <mat-icon class="col-white">refresh</mat-icon>
                     </button>
                   </div>
                 </li>
@@ -46,38 +39,14 @@
                   <td mat-cell *matCellDef="let row"> {{row.name}} </td>
                 </ng-container>
 
-                <!-- Institution Column -->
-                <ng-container matColumnDef="institution">
-                  <th mat-header-cell *matHeaderCellDef> Institución </th>
-                  <td mat-cell *matCellDef="let row"> {{row.institution?.name || 'N/A'}} </td>
-                </ng-container>
-
-                <!-- Jornada Column -->
-                <ng-container matColumnDef="jornada">
-                  <th mat-header-cell *matHeaderCellDef> Jornada </th>
-                  <td mat-cell *matCellDef="let row"> {{row.jornada}} </td>
-                </ng-container>
-
-                <!-- Nivel Column -->
-                <ng-container matColumnDef="nivel">
-                  <th mat-header-cell *matHeaderCellDef> Nivel </th>
-                  <td mat-cell *matCellDef="let row"> {{row.nivel}} </td>
-                </ng-container>
-
-                <!-- Teacher Column -->
-                <ng-container matColumnDef="teacher">
-                  <th mat-header-cell *matHeaderCellDef> Docente </th>
-                  <td mat-cell *matCellDef="let row"> {{row.teacher?.name || 'Sin Asignar'}} </td>
-                </ng-container>
-
                 <!-- Actions Column -->
                 <ng-container matColumnDef="actions">
                   <th mat-header-cell *matHeaderCellDef> Acciones </th>
                   <td mat-cell *matCellDef="let row" class="pr-0">
-                    <button mat-icon-button color="accent" (click)="$event.stopPropagation()" (click)="openGroupDialog(row)" class="tbl-action-btn" matTooltip="Editar">
+                    <button mat-icon-button color="accent" (click)="$event.stopPropagation()" (click)="openInstitutionDialog(row)" class="tbl-action-btn" matTooltip="Editar">
                       <app-feather-icons [icon]="'edit'" [class]="'tbl-fav-edit'"></app-feather-icons>
                     </button>
-                    <button mat-icon-button color="accent" (click)="$event.stopPropagation()" (click)="deleteGroup(row)" class="tbl-action-btn" matTooltip="Eliminar">
+                    <button mat-icon-button color="accent" (click)="$event.stopPropagation()" (click)="deleteInstitution(row)" class="tbl-action-btn" matTooltip="Eliminar">
                       <app-feather-icons [icon]="'trash-2'" [class]="'tbl-fav-delete'"></app-feather-icons>
                     </button>
                   </td>

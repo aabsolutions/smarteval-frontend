@@ -130,6 +130,20 @@
       "submenu": []
     },
     {
+      "path": "/admin/institutions",
+      "title": "Instituciones",
+      "iconType": "material-icons-outlined",
+      "icon": "account_balance",
+      "class": "",
+      "groupTitle": false,
+      "badge": "",
+      "badgeClass": "",
+      "role": [
+        "SUPERADMIN"
+      ],
+      "submenu": []
+    },
+    {
       "path": "/admin/groups",
       "title": "Grupos",
       "iconType": "material-icons-outlined",
@@ -160,6 +174,21 @@
       "submenu": []
     },
     {
+      "path": "/admin/teachers",
+      "title": "Docentes",
+      "iconType": "material-icons-outlined",
+      "icon": "person_pin",
+      "class": "",
+      "groupTitle": false,
+      "badge": "",
+      "badgeClass": "",
+      "role": [
+        "ADMIN",
+        "SUPERADMIN"
+      ],
+      "submenu": []
+    },
+    {
       "path": "/teacher/dashboard",
       "title": "MENUITEMS.TEACHER.LIST.DASHBOARD",
       "iconType": "material-icons-outlined",
@@ -177,6 +206,17 @@
           "title": "Temas (Topics)",
           "iconType": "feather",
           "icon": "book-open",
+          "class": "",
+          "groupTitle": false,
+          "badge": "",
+          "badgeClass": "",
+          "submenu": []
+        },
+        {
+          "path": "/teacher/teacher-groups",
+          "title": "Mis Grupos",
+          "iconType": "feather",
+          "icon": "users",
           "class": "",
           "groupTitle": false,
           "badge": "",

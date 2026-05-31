@@ -38,7 +38,7 @@ export class GroupsComponent implements OnInit {
     },
   ];
 
-  displayedColumns: string[] = ['name', 'description', 'actions'];
+  displayedColumns: string[] = ['name', 'institution', 'jornada', 'nivel', 'teacher', 'actions'];
   dataSource = new MatTableDataSource<Group>([]);
   
   private groupsService = inject(GroupsService);

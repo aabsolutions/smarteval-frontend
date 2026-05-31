@@ -7,12 +7,42 @@
       <mat-error *ngIf="groupForm.get('name')?.hasError('required')">El nombre es requerido</mat-error>
     </mat-form-field>
     <mat-form-field appearance="outline" class="w-100 mb-3">
-      <mat-label>Docentes Asignados</mat-label>
-      <mat-select formControlName="teachers" multiple>
-        <mat-option *ngFor="let teacher of teachersList" [value]="teacher._id">
-          {{ teacher.name }} ({{ teacher.username }})
+      <mat-label>Institución</mat-label>
+      <mat-select formControlName="institution" required>
+        <mat-option *ngFor="let inst of institutionsList" [value]="inst._id">
+          {{ inst.name }}
         </mat-option>
       </mat-select>
+      <mat-error *ngIf="groupForm.get('institution')?.hasError('required')">Requerido</mat-error>
+    </mat-form-field>
+
+    <div class="row">
+      <div class="col-md-6">
+        <mat-form-field appearance="outline" class="w-100 mb-3">
+          <mat-label>Jornada</mat-label>
+          <mat-select formControlName="jornada" required>
+            <mat-option *ngFor="let j of jornadas" [value]="j">{{ j }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+      <div class="col-md-6">
+        <mat-form-field appearance="outline" class="w-100 mb-3">
+          <mat-label>Nivel</mat-label>
+          <mat-select formControlName="nivel" required>
+            <mat-option *ngFor="let n of niveles" [value]="n">{{ n }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <mat-form-field appearance="outline" class="w-100 mb-3">
+      <mat-label>Docente Asignado (Responsable)</mat-label>
+        <mat-select formControlName="teacher">
+          <mat-option [value]="null">-- Sin asignar --</mat-option>
+          <mat-option *ngFor="let t of teachersList" [value]="t._id">
+            {{ t.name }} ({{ t.identifier }})
+          </mat-option>
+        </mat-select>
     </mat-form-field>
     
     <mat-form-field appearance="outline" class="w-100">

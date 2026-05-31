@@ -14,6 +14,10 @@ export const TEACHER_ROUTE: Route[] = [
       import('./topics/topics.routes').then((m) => m.TOPICS_ROUTE),
   },
   {
+    path: 'teacher-groups',
+    loadComponent: () => import('./teacher-groups/teacher-groups.component').then(m => m.TeacherGroupsComponent)
+  },
+  {
     path: 'questions',
     loadChildren: () =>
       import('./questions/questions.routes').then((m) => m.QUESTIONS_ROUTE),

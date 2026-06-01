@@ -5,12 +5,15 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { BreadcrumbComponent } from '@shared/components/breadcrumb/breadcrumb.component';
 import { FeatherIconsComponent } from '@shared/components/feather-icons/feather-icons.component';
+import { TableShowHideColumnComponent } from '@shared/components/table-show-hide-column/table-show-hide-column.component';
 import { GroupsService, Group } from './groups.service';
 import { GroupFormDialogComponent } from './dialogs/group-form/group-form.component';
 import { MatInputModule } from '@angular/material/input';
 import { AlertService } from '@core/services/alert.service';
+import { ViewChild } from '@angular/core';
 
 @Component({
   selector: 'app-groups',
@@ -24,7 +27,9 @@ import { AlertService } from '@core/services/alert.service';
     MatDialogModule,
     BreadcrumbComponent,
     FeatherIconsComponent,
-    MatInputModule
+    MatInputModule,
+    MatPaginatorModule,
+    TableShowHideColumnComponent
   ],
   templateUrl: './groups.component.html',
   styleUrls: ['./groups.component.scss'],
@@ -38,15 +43,29 @@ export class GroupsComponent implements OnInit {
     },
   ];
 
-  displayedColumns: string[] = ['name', 'institution', 'jornada', 'nivel', 'teacher', 'actions'];
+  columnDefinitions = [
+    { def: 'name', label: 'Nombre', visible: true },
+    { def: 'institution', label: 'Institución', visible: true },
+    { def: 'jornada', label: 'Jornada', visible: true },
+    { def: 'nivel', label: 'Nivel', visible: true },
+    { def: 'teacher', label: 'Docente', visible: true },
+    { def: 'actions', label: 'Acciones', visible: true }
+  ];
   dataSource = new MatTableDataSource<Group>([]);
+  
+  @ViewChild(MatPaginator, { static: true }) paginator!: MatPaginator;
   
   private groupsService = inject(GroupsService);
   public dialog = inject(MatDialog);
   private alertService = inject(AlertService);
 
   ngOnInit(): void {
+    this.dataSource.paginator = this.paginator;
     this.loadGroups();
+  }
+
+  getDisplayedColumns(): string[] {
+    return this.columnDefinitions.filter((cd) => cd.visible).map((cd) => cd.def);
   }
 
   loadGroups() {

@@ -30,7 +30,7 @@
       <mat-label>Asignar Grupo</mat-label>
       <mat-select formControlName="groupId" required>
         <mat-option *ngFor="let group of groups" [value]="group._id">
-          {{ group.name }}
+          {{ group.name }} - {{ group.institution?.name || 'Sin institución' }}
         </mat-option>
       </mat-select>
       <mat-error *ngIf="studentForm.get('groupId')?.hasError('required')">Debe seleccionar un grupo</mat-error>

@@ -64,7 +64,7 @@ export class ProfileComponent implements OnInit {
     if (user) {
       this.profileForm.patchValue({
         name: user['firstName'] ? user['firstName'] + ' ' + user['lastName'] : user['name'],
-        email: user['email'] || user['username'], // placeholder mapping
+        email: user['email'] || '', // Don't fallback to username
         username: user['username']
       });
     }

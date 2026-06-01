@@ -4,7 +4,7 @@
     <mat-form-field appearance="outline" class="w-100">
       <mat-label>Selecciona el Curso / Grupo (Requerido)</mat-label>
       <mat-select [(ngModel)]="selectedGroupId">
-        <mat-option *ngFor="let g of data.groups" [value]="g._id">{{ g.name }}</mat-option>
+        <mat-option *ngFor="let g of data.groups" [value]="g._id">{{ g.name }} - {{ g.institution?.name || 'Sin institución' }}</mat-option>
       </mat-select>
     </mat-form-field>
   </div>

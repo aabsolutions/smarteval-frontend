@@ -5,10 +5,13 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { BreadcrumbComponent } from '@shared/components/breadcrumb/breadcrumb.component';
 import { FeatherIconsComponent } from '@shared/components/feather-icons/feather-icons.component';
+import { TableShowHideColumnComponent } from '@shared/components/table-show-hide-column/table-show-hide-column.component';
 import { TeachersService, Teacher } from './teachers.service';
 import { TeacherFormDialogComponent } from './dialogs/teacher-form-dialog/teacher-form-dialog.component';
+import { ViewChild } from '@angular/core';
 
 @Component({
   selector: 'app-teachers',
@@ -21,7 +24,9 @@ import { TeacherFormDialogComponent } from './dialogs/teacher-form-dialog/teache
     MatTooltipModule,
     MatDialogModule,
     BreadcrumbComponent,
-    FeatherIconsComponent
+    FeatherIconsComponent,
+    MatPaginatorModule,
+    TableShowHideColumnComponent
   ],
   templateUrl: './teachers.component.html',
   styleUrls: ['./teachers.component.scss'],
@@ -35,14 +40,27 @@ export class TeachersComponent implements OnInit {
     },
   ];
 
-  displayedColumns: string[] = ['identifier', 'name', 'email', 'phone', 'actions'];
+  columnDefinitions = [
+    { def: 'identifier', label: 'Cédula', visible: true },
+    { def: 'name', label: 'Nombre', visible: true },
+    { def: 'email', label: 'Email', visible: true },
+    { def: 'phone', label: 'Teléfono', visible: true },
+    { def: 'actions', label: 'Acciones', visible: true }
+  ];
   dataSource = new MatTableDataSource<Teacher>([]);
+  
+  @ViewChild(MatPaginator, { static: true }) paginator!: MatPaginator;
   
   private teachersService = inject(TeachersService);
   public dialog = inject(MatDialog);
 
   ngOnInit(): void {
+    this.dataSource.paginator = this.paginator;
     this.loadTeachers();
+  }
+
+  getDisplayedColumns(): string[] {
+    return this.columnDefinitions.filter((cd) => cd.visible).map((cd) => cd.def);
   }
 
   loadTeachers() {

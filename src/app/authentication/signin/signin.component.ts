@@ -20,7 +20,6 @@ import Swal from 'sweetalert2';
   templateUrl: './signin.component.html',
   styleUrls: ['./signin.component.scss'],
   imports: [
-    RouterLink,
     MatButtonModule,
     FormsModule,
     ReactiveFormsModule,

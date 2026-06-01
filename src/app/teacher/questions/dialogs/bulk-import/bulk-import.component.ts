@@ -35,11 +35,12 @@ export class BulkImportDialogComponent {
 
   downloadTemplate() {
     const ws_data = [
-      ['Enunciado (Requerido)', 'Tipo (single-choice, multiple-choice, true-false, fill-blank)', 'Dificultad (easy, medium, hard)', 'Puntos (Número)', 'Opciones (Separadas por |)', 'Respuestas Correctas (Separadas por |)'],
+      ['Enunciado (Requerido)', 'Tipo (single-choice, multiple-choice, true-false, fill-blank, matching)', 'Dificultad (easy, medium, hard)', 'Puntos (Número)', 'Opciones (Separadas por |)', 'Respuestas Correctas (Separadas por |)'],
       ['¿Cuál es la capital de Francia?', 'single-choice', 'easy', 1, 'Madrid|París|Berlín|Londres', 'París'],
       ['Seleccione los lenguajes frontend', 'multiple-choice', 'medium', 2, 'HTML|Python|CSS|Java', 'HTML|CSS'],
       ['El sol gira alrededor de la tierra', 'true-false', 'easy', 1, '', 'Falso'],
-      ['El lenguaje oficial de Android es', 'fill-blank', 'medium', 1, '', 'Kotlin|Java']
+      ['El lenguaje oficial de Android es', 'fill-blank', 'medium', 1, '', 'Kotlin|Java'],
+      ['Empareje los países con sus capitales', 'matching', 'medium', 2, 'Francia|España|Italia', 'París|Madrid|Roma']
     ];
     const ws = XLSX.utils.aoa_to_sheet(ws_data);
     const wb = XLSX.utils.book_new();
@@ -99,9 +100,10 @@ export class BulkImportDialogComponent {
 
   validateRow(statement: string, type: string, difficulty: string, options: string[], correctAnswers: string[]): boolean {
     if (!statement) return false;
-    if (!['single-choice', 'multiple-choice', 'true-false', 'fill-blank'].includes(type)) return false;
+    if (!['single-choice', 'multiple-choice', 'true-false', 'fill-blank', 'matching'].includes(type)) return false;
     if (!['easy', 'medium', 'hard'].includes(difficulty)) return false;
     if ((type === 'single-choice' || type === 'multiple-choice') && options.length < 2) return false;
+    if (type === 'matching' && (options.length < 3 || correctAnswers.length !== options.length)) return false;
     if (correctAnswers.length === 0) return false;
     return true;
   }

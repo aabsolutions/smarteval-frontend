@@ -50,12 +50,12 @@ export class UsersComponent implements OnInit {
 
   displayedColumns: string[] = ['avatar', 'name', 'username', 'email', 'roles', 'actions'];
   columnDefinitions = [
-    { def: 'avatar', label: 'Avatar', hide: false },
-    { def: 'name', label: 'Name', hide: false },
-    { def: 'username', label: 'Username', hide: false },
-    { def: 'email', label: 'Email', hide: false },
-    { def: 'roles', label: 'Roles', hide: false },
-    { def: 'actions', label: 'Actions', hide: false }
+    { def: 'avatar', label: 'Avatar', visible: true },
+    { def: 'name', label: 'Name', visible: true },
+    { def: 'username', label: 'Username', visible: true },
+    { def: 'email', label: 'Email', visible: true },
+    { def: 'roles', label: 'Roles', visible: true },
+    { def: 'actions', label: 'Actions', visible: true }
   ];
   
   dataSource = new MatTableDataSource<User>([]);
@@ -91,7 +91,7 @@ export class UsersComponent implements OnInit {
   }
 
   getDisplayedColumns(): string[] {
-    return this.columnDefinitions.filter((cd) => !cd.hide).map((cd) => cd.def);
+    return this.columnDefinitions.filter((cd) => cd.visible).map((cd) => cd.def);
   }
 
   resetPassword(user: User) {

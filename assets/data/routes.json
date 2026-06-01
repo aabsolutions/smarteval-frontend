@@ -15,11 +15,11 @@
       "submenu": []
     },
     {
-      "path": "",
+      "path": "/admin/dashboard/main",
       "title": "MENUITEMS.DASHBOARD.TEXT",
       "iconType": "material-icons-outlined",
       "icon": "space_dashboard",
-      "class": "menu-toggle",
+      "class": "",
       "groupTitle": false,
       "badge": "",
       "badgeClass": "",
@@ -27,92 +27,7 @@
         "ADMIN",
         "SUPERADMIN"
       ],
-      "submenu": [
-        {
-          "path": "/admin/dashboard/main",
-          "title": "MENUITEMS.DASHBOARD.LIST.DASHBOARD1",
-          "iconType": "",
-          "icon": "",
-          "class": "ml-menu",
-          "groupTitle": false,
-          "badge": "",
-          "badgeClass": "",
-          "role": [
-            ""
-          ],
-          "submenu": []
-        },
-        {
-          "path": "/admin/dashboard/dashboard2",
-          "title": "MENUITEMS.DASHBOARD.LIST.DASHBOARD2",
-          "iconType": "",
-          "icon": "",
-          "class": "ml-menu",
-          "groupTitle": false,
-          "badge": "",
-          "badgeClass": "",
-          "role": [
-            ""
-          ],
-          "submenu": []
-        },
-        {
-          "path": "/admin/dashboard/teacher-dashboard",
-          "title": "MENUITEMS.DASHBOARD.LIST.TEACHER-DASHBOARD",
-          "iconType": "material-icons-outlined",
-          "icon": "",
-          "class": "ml-menu",
-          "groupTitle": false,
-          "badge": "",
-          "badgeClass": "",
-          "role": [
-            ""
-          ],
-          "submenu": []
-        },
-        {
-          "path": "/admin/dashboard/student-dashboard",
-          "title": "MENUITEMS.DASHBOARD.LIST.STUDENT-DASHBOARD",
-          "iconType": "material-icons-outlined",
-          "icon": "",
-          "class": "ml-menu",
-          "groupTitle": false,
-          "badge": "",
-          "badgeClass": "",
-          "role": [
-            ""
-          ],
-          "submenu": []
-        },
-        {
-          "path": "/admin/dashboard/library-dashboard",
-          "title": "MENUITEMS.DASHBOARD.LIST.LIBRARY-DASHBOARD",
-          "iconType": "material-icons-outlined",
-          "icon": "",
-          "class": "ml-menu",
-          "groupTitle": false,
-          "badge": "",
-          "badgeClass": "",
-          "role": [
-            ""
-          ],
-          "submenu": []
-        },
-        {
-          "path": "/admin/dashboard/transport-dashboard",
-          "title": "MENUITEMS.DASHBOARD.LIST.TRANSPORT-DASHBOARD",
-          "iconType": "material-icons-outlined",
-          "icon": "",
-          "class": "ml-menu",
-          "groupTitle": false,
-          "badge": "",
-          "badgeClass": "",
-          "role": [
-            ""
-          ],
-          "submenu": []
-        }
-      ]
+      "submenu": []
     },
     {
       "path": "/admin/users",

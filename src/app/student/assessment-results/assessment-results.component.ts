@@ -16,6 +16,7 @@ export class AssessmentResultsComponent implements OnInit {
   attemptId!: string;
   assessmentId!: string;
   attempt: any;
+  history: any[] = [];
   processedQuestions: any[] = [];
 
   private route = inject(ActivatedRoute);
@@ -30,6 +31,16 @@ export class AssessmentResultsComponent implements OnInit {
       const attempt = status.history.find((h: any) => h._id === this.attemptId);
       if (attempt) {
         this.attempt = attempt;
+        
+        this.history = status.history.sort((a: any, b: any) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+        
+        let maxScore = -1;
+        this.history.forEach((h: any) => { if (h.score >= maxScore) maxScore = h.score; });
+        if (this.history.length > 1) {
+           const bestAttempt = this.history.filter((h: any) => h.score === maxScore).pop();
+           if (bestAttempt) bestAttempt.isHighestScore = true;
+        }
+
         this.processFeedback();
       } else {
         this.router.navigate(['/student/assessments']);
@@ -56,8 +67,9 @@ export class AssessmentResultsComponent implements OnInit {
     if (studentAnswers.length === 0) return false;
     
     if (type === 'fill-blank') {
-      const userAns = studentAnswers[0].toLowerCase().trim();
-      return correctAnswers.some(c => c.toLowerCase().trim() === userAns);
+      const normalizeStr = (str: string) => (str || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+      const userAns = normalizeStr(studentAnswers[0]);
+      return correctAnswers.some(c => normalizeStr(c) === userAns);
     }
 
     if (type === 'matching') {

@@ -1,25 +1,60 @@
 <section class="content">
   <div class="content-block pt-5" *ngIf="attempt">
     <div class="row justify-content-center">
-      <div class="col-md-8 col-lg-6">
-        <mat-card class="text-center p-5">
-          <mat-icon [ngClass]="isApproved ? 'text-success' : 'text-danger'" style="font-size: 80px; width: 80px; height: 80px;">
-            {{ isApproved ? 'check_circle' : 'cancel' }}
-          </mat-icon>
+      <div class="col-lg-10">
+        <div class="row">
           
-          <h2 class="mt-4 mb-2">Examen Finalizado</h2>
-          <h3 class="text-muted mb-4">Tu nota ha sido calculada automáticamente</h3>
+          <!-- Tarjeta del Intento Actual -->
+          <div class="col-md-7 mb-4">
+            <mat-card class="text-center p-4 h-100 d-flex flex-column justify-content-center align-items-center">
+              <mat-icon [ngClass]="isApproved ? 'text-success' : 'text-danger'" style="font-size: 80px; width: 80px; height: 80px;">
+                {{ isApproved ? 'check_circle' : 'cancel' }}
+              </mat-icon>
+              
+              <h2 class="mt-4 mb-2">Examen Finalizado</h2>
+              <h3 class="text-muted mb-4">Tu nota ha sido calculada automáticamente</h3>
 
-          <div class="display-3 fw-bold mb-3" [ngClass]="isApproved ? 'text-success' : 'text-danger'">
-            {{ attempt.score }} <span class="fs-4 text-muted">/ {{ attempt.maxScore }}</span>
+              <div class="display-3 fw-bold mb-3" [ngClass]="isApproved ? 'text-success' : 'text-danger'">
+                {{ attempt.score }} <span class="fs-4 text-muted">/ {{ attempt.maxScore }}</span>
+              </div>
+
+              <p class="fs-5 mb-4">
+                {{ isApproved ? '¡Felicidades! Has aprobado el examen.' : 'No has alcanzado la calificación mínima. Puedes volver a intentarlo si tienes intentos disponibles.' }}
+              </p>
+
+              <button mat-raised-button color="primary" size="large" (click)="goBack()">Volver al Dashboard</button>
+            </mat-card>
           </div>
 
-          <p class="fs-5 mb-5">
-            {{ isApproved ? '¡Felicidades! Has aprobado el examen.' : 'No has alcanzado la calificación mínima. Puedes volver a intentarlo si tienes intentos disponibles.' }}
-          </p>
-
-          <button mat-raised-button color="primary" size="large" (click)="goBack()">Volver al Dashboard</button>
-        </mat-card>
+          <!-- Tarjeta de Historial -->
+          <div class="col-md-5 mb-4" *ngIf="history && history.length > 0">
+            <mat-card class="p-4 h-100">
+              <h3 class="mb-4">Historial de Intentos</h3>
+              <div class="list-group list-group-flush" style="overflow-y: auto; max-height: 350px;">
+                <div *ngFor="let h of history; let i = index" 
+                     class="list-group-item d-flex justify-content-between align-items-center"
+                     [ngClass]="{'bg-light border-primary border-start border-4': h._id === attemptId}">
+                  <div>
+                    <div class="d-flex align-items-center">
+                      <span class="fw-bold fs-6">Intento #{{ i + 1 }}</span>
+                      <span *ngIf="h._id === attemptId" class="badge bg-primary ms-2">Viendo</span>
+                    </div>
+                    <small class="text-muted d-block mt-1">{{ h.endTime | date:'medium' }}</small>
+                  </div>
+                  <div class="text-end">
+                    <div class="d-flex align-items-center justify-content-end">
+                      <span class="fs-5" [ngClass]="(h.score / h.maxScore) >= 0.7 ? 'text-success fw-bold' : 'text-danger fw-bold'">
+                        {{ h.score | number: '1.2-2' }}
+                      </span>
+                      <mat-icon *ngIf="h.isHighestScore" style="color: #fbbf24; font-size: 20px; width: 20px; height: 20px;" class="ms-1" matTooltip="Mejor intento">star</mat-icon>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </mat-card>
+          </div>
+          
+        </div>
         
         <!-- Feedback Detallado -->
         <mat-card class="mt-4 p-4" *ngIf="processedQuestions.length > 0">

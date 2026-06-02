@@ -18,10 +18,8 @@ export interface AssessmentAttempt {
 export class StudentAssessmentsService {
   private http = inject(HttpClient);
 
-  getAvailableAssessments(groupId?: string): Observable<any[]> {
-    let params = new HttpParams();
-    if (groupId) params = params.set('groupId', groupId);
-    return this.http.get<any[]>('/api/assessments/student', { params });
+  getAvailableAssessments(): Observable<any[]> {
+    return this.http.get<any[]>('/api/assessments/student');
   }
 
   startAttempt(assessmentId: string): Observable<AssessmentAttempt> {

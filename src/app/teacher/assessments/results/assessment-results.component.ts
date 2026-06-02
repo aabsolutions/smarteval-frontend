@@ -58,7 +58,7 @@ export class AssessmentResultsComponent implements OnInit {
   resultsData: any = null;
   analyticsData: any[] = [];
 
-  displayedColumns: string[] = ['studentName', 'identifier', 'group', 'score', 'percentage', 'duration', 'status', 'warnings'];
+  displayedColumns: string[] = ['studentName', 'identifier', 'group', 'attemptNumber', 'score', 'percentage', 'endTime', 'duration', 'status', 'warnings'];
   columnsToDisplayWithExpand = [...this.displayedColumns, 'expand'];
   expandedElement: any | null = null;
   dataSource = new MatTableDataSource<any>([]);
@@ -156,8 +156,9 @@ export class AssessmentResultsComponent implements OnInit {
     if (!studentAnswers || studentAnswers.length === 0) return false;
 
     if (type === 'fill-blank') {
-      const userAns = studentAnswers[0].toLowerCase().trim();
-      return correctAnswers.some(c => c.toLowerCase().trim() === userAns);
+      const normalizeStr = (str: string) => (str || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+      const userAns = normalizeStr(studentAnswers[0]);
+      return correctAnswers.some(c => normalizeStr(c) === userAns);
     }
 
     if (type === 'matching') {

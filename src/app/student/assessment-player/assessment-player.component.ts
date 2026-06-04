@@ -14,6 +14,7 @@ import { StudentAssessmentsService, AssessmentAttempt } from '../services/studen
 import { AssessmentsService } from '../../teacher/assessments/assessments.service';
 import { AntiCheatService } from '../services/anti-cheat.service';
 import { AlertService } from '@core/services/alert.service';
+import { BreadcrumbComponent } from '@shared/components/breadcrumb/breadcrumb.component';
 
 @Component({
   selector: 'app-assessment-player',
@@ -21,7 +22,7 @@ import { AlertService } from '@core/services/alert.service';
   imports: [
     CommonModule, FormsModule, MatCardModule, MatButtonModule, 
     MatRadioModule, MatCheckboxModule, MatInputModule, MatProgressBarModule, MatIconModule,
-    MatSelectModule
+    MatSelectModule, BreadcrumbComponent
   ],
   templateUrl: './assessment-player.component.html'
 })
@@ -39,6 +40,14 @@ export class AssessmentPlayerComponent implements OnInit, OnDestroy {
   timeRemaining = '00:00';
   private timerInterval: any;
   isSubmitting = false;
+
+  breadscrums = [
+    {
+      title: 'Rendición de Examen',
+      items: ['Exámenes'],
+      active: 'Rendir'
+    }
+  ];
 
   private route = inject(ActivatedRoute);
   private router = inject(Router);

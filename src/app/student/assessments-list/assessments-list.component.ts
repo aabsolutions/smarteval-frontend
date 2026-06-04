@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -17,24 +17,46 @@ import { StudentAssessmentsService } from '../services/student-assessments.servi
 })
 export class AssessmentsListComponent implements OnInit {
   assessments: any[] = [];
+  allAssessments: any[] = [];
+  filter: 'open' | 'closed' = 'open';
   breadscrums = [
-    { title: 'Mis Exámenes', items: ['Estudiante'], active: 'Exámenes' }
+    { title: 'Mis Exámenes', items: ['Estudiante'], active: 'Abiertos' }
   ];
 
   private assessmentsService = inject(StudentAssessmentsService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   ngOnInit(): void {
+    this.filter = this.route.snapshot.data['filter'] || 'open';
+    this.breadscrums = [
+      {
+        title: this.filter === 'open' ? 'Exámenes Abiertos' : 'Exámenes Cerrados',
+        items: ['Estudiante', 'Mis Exámenes'],
+        active: this.filter === 'open' ? 'Abiertos' : 'Cerrados'
+      }
+    ];
+
     this.assessmentsService.getAvailableAssessments().subscribe({
       next: (data) => {
-        this.assessments = data;
+        this.allAssessments = data;
+        this.applyFilter();
         this.checkStatuses();
       }
     });
   }
 
+  applyFilter(): void {
+    const now = new Date();
+    if (this.filter === 'open') {
+      this.assessments = this.allAssessments.filter(a => new Date(a.endTime) > now);
+    } else {
+      this.assessments = this.allAssessments.filter(a => new Date(a.endTime) <= now);
+    }
+  }
+
   checkStatuses() {
-    this.assessments.forEach(a => {
+    this.allAssessments.forEach(a => {
       this.assessmentsService.getAttemptStatus(a._id).subscribe(status => {
         a.attemptsCount = status.attemptsCount;
         a.lastAttempt = status.history[0];
@@ -45,4 +67,9 @@ export class AssessmentsListComponent implements OnInit {
   goToAssessment(assessmentId: string) {
     this.router.navigate(['/student/assessments', assessmentId, 'waitroom']);
   }
+
+  goToResults(assessmentId: string, attemptId: string) {
+    this.router.navigate(['/student/assessments', assessmentId, 'results', attemptId]);
+  }
 }
+

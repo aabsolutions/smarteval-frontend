@@ -177,18 +177,41 @@
       "submenu": []
     },
     {
-      "path": "/student/assessments",
+      "path": "",
       "title": "Mis Exámenes",
       "iconType": "material-icons-outlined",
       "icon": "quiz",
-      "class": "",
+      "class": "menu-toggle",
       "groupTitle": false,
       "badge": "",
       "badgeClass": "",
       "role": [
         "STUDENT"
       ],
-      "submenu": []
+      "submenu": [
+        {
+          "path": "/student/assessments/open",
+          "title": "Abiertos",
+          "iconType": "feather",
+          "icon": "unlock",
+          "class": "",
+          "groupTitle": false,
+          "badge": "",
+          "badgeClass": "",
+          "submenu": []
+        },
+        {
+          "path": "/student/assessments/closed",
+          "title": "Cerrados",
+          "iconType": "feather",
+          "icon": "lock",
+          "class": "",
+          "groupTitle": false,
+          "badge": "",
+          "badgeClass": "",
+          "submenu": []
+        }
+      ]
     }
   ]
 }

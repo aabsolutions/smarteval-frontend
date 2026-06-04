@@ -6,7 +6,7 @@
     
     <div class="row assessment-grid">
       <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12" *ngFor="let item of assessments">
-        <div class="assessment-card" [class.simulator-card]="item.isSimulator">
+        <div class="assessment-card" [class.simulator-card]="item.isSimulator" [class.closed-card]="filter === 'closed'">
           <div class="card-glow"></div>
           
           <div class="card-header-section">
@@ -14,6 +14,9 @@
               <span class="topic-pill">{{ item.topicId?.name }}</span>
               <span *ngIf="item.isSimulator" class="simulator-badge">
                 <mat-icon inline class="me-1">science</mat-icon> Simulador
+              </span>
+              <span *ngIf="filter === 'closed'" class="closed-badge">
+                <mat-icon inline class="me-1">lock</mat-icon> Cerrado
               </span>
             </div>
             <h3 class="assessment-title">{{ item.title }}</h3>
@@ -73,12 +76,20 @@
             </div>
           </div>
 
-          <div class="card-action-section">
+          <div class="card-action-section" *ngIf="filter === 'open'">
             <button class="btn-start-assessment w-100" 
                     (click)="goToAssessment(item._id)"
                     [disabled]="item.attemptsCount >= item.maxAttempts && (!item.lastAttempt || item.lastAttempt.status === 'completed')">
               <span class="btn-text">{{ item.lastAttempt && item.lastAttempt.status === 'in-progress' ? 'Continuar Examen' : 'Rendir Examen' }}</span>
               <mat-icon class="btn-icon">arrow_forward</mat-icon>
+            </button>
+          </div>
+
+          <div class="card-action-section" *ngIf="filter === 'closed' && item.lastAttempt && item.lastAttempt.status === 'completed'">
+            <button class="btn-view-results w-100" 
+                    (click)="goToResults(item._id, item.lastAttempt._id)">
+              <span class="btn-text">Ver Resultados</span>
+              <mat-icon class="btn-icon">visibility</mat-icon>
             </button>
           </div>
         </div>
@@ -87,10 +98,13 @@
 
     <div *ngIf="assessments.length === 0" class="empty-state">
       <div class="empty-state-icon">
-        <mat-icon>task_alt</mat-icon>
+        <mat-icon>{{ filter === 'open' ? 'task_alt' : 'history' }}</mat-icon>
       </div>
-      <h3>¡Todo al día!</h3>
-      <p>No tienes exámenes asignados en este momento. Tómate un descanso o repasa tus lecciones.</p>
+      <h3>{{ filter === 'open' ? '¡Todo al día!' : 'Sin exámenes cerrados' }}</h3>
+      <p>{{ filter === 'open' 
+        ? 'No tienes exámenes abiertos en este momento. Tómate un descanso o repasa tus lecciones.' 
+        : 'Aún no tienes exámenes finalizados. Cuando un examen cierre, aparecerá aquí con tus resultados.' }}</p>
     </div>
   </div>
 </section>
+

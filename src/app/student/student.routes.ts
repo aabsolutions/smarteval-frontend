@@ -12,8 +12,19 @@ export const STUDENT_ROUTE: Route[] = [
     component: DashboardComponent,
   },
   {
-    path: 'assessments',
+    path: 'assessments/open',
     component: AssessmentsListComponent,
+    data: { filter: 'open' },
+  },
+  {
+    path: 'assessments/closed',
+    component: AssessmentsListComponent,
+    data: { filter: 'closed' },
+  },
+  {
+    path: 'assessments',
+    redirectTo: 'assessments/open',
+    pathMatch: 'full',
   },
   {
     path: 'assessments/:id/waitroom',

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
@@ -11,6 +11,8 @@ import { HttpClient } from '@angular/common/http';
 import { UserFormDialogComponent } from './user-form-dialog/user-form-dialog.component';
 import { AlertService } from '@core/services/alert.service';
 import { TableShowHideColumnComponent } from '@shared/components/table-show-hide-column/table-show-hide-column.component';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 export interface User {
   _id: string;
@@ -39,7 +41,7 @@ export interface User {
   templateUrl: './users.component.html',
   styleUrls: ['./users.component.scss'],
 })
-export class UsersComponent implements OnInit {
+export class UsersComponent implements OnInit, OnDestroy {
   breadscrums = [
     {
       title: 'User Management',
@@ -63,17 +65,38 @@ export class UsersComponent implements OnInit {
   totalUsers = 0;
   pageSize = 10;
   pageIndex = 0;
+  searchTerm = '';
+
+  private searchSubject = new Subject<string>();
+  private searchSubscription!: Subscription;
   
   private http = inject(HttpClient);
   public dialog = inject(MatDialog);
   private alertService = inject(AlertService);
 
   ngOnInit(): void {
+    this.searchSubscription = this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe((term) => {
+      this.searchTerm = term;
+      this.pageIndex = 0;
+      this.loadUsers();
+    });
+
     this.loadUsers();
   }
 
+  ngOnDestroy(): void {
+    this.searchSubscription?.unsubscribe();
+  }
+
   loadUsers() {
-    this.http.get<{ data: User[], total: number }>(`/api/users?page=${this.pageIndex + 1}&limit=${this.pageSize}`).subscribe({
+    let url = `/api/users?page=${this.pageIndex + 1}&limit=${this.pageSize}`;
+    if (this.searchTerm) {
+      url += `&search=${encodeURIComponent(this.searchTerm)}`;
+    }
+    this.http.get<{ data: User[], total: number }>(url).subscribe({
       next: (response) => {
         this.dataSource.data = response.data;
         this.totalUsers = response.total;
@@ -136,7 +159,8 @@ export class UsersComponent implements OnInit {
   }
 
   applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
+    const filterValue = (event.target as HTMLInputElement).value.trim().toLowerCase();
+    this.searchSubject.next(filterValue);
   }
 }
+

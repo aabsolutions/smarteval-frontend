@@ -14,7 +14,11 @@ export class LocalStorageService {
     this.config = this.configService.configData;
   }
 
-  private getStoragePrefix(): string {
+  private getStoragePrefix(key: string): string {
+    // Auth keys should be globally persistent and not depend on the UI theme!
+    if (['currentUser', 'redstar-token', 'roleNames'].includes(key)) {
+      return 'auth_';
+    }
     const templateType =
       this.config.layout.variant === 'dark' ? 'dark' : 'light';
     const directionPrefix = this.config.layout.rtl ? 'rtl_' : 'ltr_';
@@ -22,7 +26,7 @@ export class LocalStorageService {
   }
 
   get(key: string): unknown {
-    const prefix = this.getStoragePrefix();
+    const prefix = this.getStoragePrefix(key);
     const item = localStorage.getItem(prefix + key);
     if (item) {
       try {
@@ -35,19 +39,19 @@ export class LocalStorageService {
   }
 
   set(key: string, value: unknown): boolean {
-    const prefix = this.getStoragePrefix();
+    const prefix = this.getStoragePrefix(key);
     localStorage.setItem(prefix + key, JSON.stringify(value));
 
     return true;
   }
 
   has(key: string): boolean {
-    const prefix = this.getStoragePrefix();
+    const prefix = this.getStoragePrefix(key);
     return !!localStorage.getItem(prefix + key);
   }
 
   remove(key: string) {
-    const prefix = this.getStoragePrefix();
+    const prefix = this.getStoragePrefix(key);
     localStorage.removeItem(prefix + key);
   }
 

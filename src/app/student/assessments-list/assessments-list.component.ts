@@ -48,11 +48,10 @@ export class AssessmentsListComponent implements OnInit {
 
   applyFilter(): void {
     const now = new Date();
-    if (this.filter === 'open') {
-      this.assessments = this.allAssessments.filter(a => new Date(a.endTime) > now);
-    } else {
-      this.assessments = this.allAssessments.filter(a => new Date(a.endTime) <= now);
-    }
+    this.assessments = this.allAssessments.filter(a => {
+      const endTimeToUse = a.extensionUntil ? new Date(a.extensionUntil) : new Date(a.endTime);
+      return this.filter === 'open' ? endTimeToUse > now : endTimeToUse <= now;
+    });
   }
 
   checkStatuses() {

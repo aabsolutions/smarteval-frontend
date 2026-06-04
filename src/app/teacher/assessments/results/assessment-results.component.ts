@@ -11,6 +11,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { BreadcrumbComponent } from '@shared/components/breadcrumb/breadcrumb.component';
 import { AssessmentsService } from '../assessments.service';
+import Swal from 'sweetalert2';
 import * as pdfMakeLib from 'pdfmake/build/pdfmake';
 import * as pdfFontsLib from 'pdfmake/build/vfs_fonts';
 
@@ -59,9 +60,12 @@ export class AssessmentResultsComponent implements OnInit {
   analyticsData: any[] = [];
 
   displayedColumns: string[] = ['studentName', 'identifier', 'group', 'attemptNumber', 'score', 'percentage', 'endTime', 'duration', 'status', 'warnings'];
-  columnsToDisplayWithExpand = [...this.displayedColumns, 'expand'];
+  columnsToDisplayWithExpand = [...this.displayedColumns, 'actions', 'expand'];
   expandedElement: any | null = null;
   dataSource = new MatTableDataSource<any>([]);
+
+  archivedDataSource = new MatTableDataSource<any>([]);
+  archivedColumns: string[] = ['studentName', 'identifier', 'group', 'score', 'percentage', 'endTime'];
 
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -90,9 +94,43 @@ export class AssessmentResultsComponent implements OnInit {
             },
             error: (err) => console.error('Error fetching analytics', err)
           });
+          
+          this.loadArchived();
         }
       },
       error: (err) => console.error('Error fetching results', err)
+    });
+  }
+
+  loadArchived() {
+    this.assessmentsService.getArchivedAttempts(this.assessmentId).subscribe({
+      next: (archived) => {
+        this.archivedDataSource.data = archived;
+      },
+      error: (err) => console.error('Error fetching archived', err)
+    });
+  }
+
+  archiveAttempt(element: any) {
+    Swal.fire({
+      title: '¿Eliminar este resultado?',
+      text: "El intento se moverá al historial y el estudiante recuperará su oportunidad para rendir.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.assessmentsService.archiveAttempt(element._id).subscribe({
+          next: () => {
+            Swal.fire('¡Eliminado!', 'El intento ha sido movido al historial.', 'success');
+            this.loadData();
+          },
+          error: () => Swal.fire('Error', 'No se pudo completar la acción.', 'error')
+        });
+      }
     });
   }
 

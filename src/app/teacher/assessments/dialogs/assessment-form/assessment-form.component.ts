@@ -94,7 +94,7 @@ export class AssessmentFormDialogComponent implements OnInit {
       const updateData = { 
         title: formValue.title,
         description: formValue.description,
-        endTime: formValue.endTime,
+        endTime: new Date(formValue.endTime).toISOString(),
         durationMinutes: formValue.durationMinutes,
         maxAttempts: formValue.maxAttempts
       };
@@ -106,7 +106,13 @@ export class AssessmentFormDialogComponent implements OnInit {
         error: (err: any) => this.alertService.errorAlert('Error', err.error?.message || 'Error al actualizar examen'),
       });
     } else {
-      this.assessmentsService.createAssessment(this.assessmentForm.value).subscribe({
+      const createData = {
+        ...this.assessmentForm.value,
+        startTime: new Date(this.assessmentForm.value.startTime).toISOString(),
+        endTime: new Date(this.assessmentForm.value.endTime).toISOString()
+      };
+      
+      this.assessmentsService.createAssessment(createData).subscribe({
         next: (res) => {
           this.alertService.successToast('Examen creado con éxito');
           this.dialogRef.close(res);

@@ -51,7 +51,11 @@
             </div>
             <div class="d-flex align-items-center">
               <mat-icon class="me-2 text-danger">event_available</mat-icon> 
-              <span>Cierra: <strong>{{ item.endTime | date:'medium' }}</strong></span>
+              <span>Cierra: <strong>{{ item.extensionUntil ? (item.extensionUntil | date:'medium') : (item.endTime | date:'medium') }}</strong></span>
+            </div>
+            <div *ngIf="item.extensionUntil" class="mt-2 text-success small d-flex align-items-center">
+              <mat-icon inline class="me-1" style="font-size: 14px;">check_circle</mat-icon>
+              <strong>Plazo extendido concedido</strong>
             </div>
           </div>
             

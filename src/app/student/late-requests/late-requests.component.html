@@ -1,0 +1,112 @@
+<section class="content">
+  <div class="content-block">
+    <div class="block-header" *ngFor="let breadscrum of breadscrums">
+      <app-breadcrumb [title]="breadscrum.title" [items]="breadscrum.items" [active_item]="breadscrum.active"></app-breadcrumb>
+    </div>
+    
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="header d-flex justify-content-between align-items-center p-3">
+            <h2>Mis Solicitudes</h2>
+            <button mat-raised-color color="primary" class="btn btn-primary" (click)="showForm = !showForm">
+              {{ showForm ? 'Cancelar' : 'Nueva Solicitud' }}
+            </button>
+          </div>
+          <div class="body">
+
+  <div *ngIf="showForm" class="card mb-4 p-4 shadow-sm">
+    <h4>Crear Nueva Solicitud</h4>
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label>Examen</label>
+        <select class="form-select" [(ngModel)]="selectedAssessmentId" (change)="autoSelectTeacher()">
+          <option value="">Seleccione un examen...</option>
+          <option *ngFor="let a of assessments" [value]="a._id">{{ a.title }}</option>
+        </select>
+      </div>
+      <div class="col-md-6 mb-3">
+        <label>Docente</label>
+        <select class="form-select" [(ngModel)]="selectedTeacherId" disabled>
+          <option value="">Selección automática al elegir examen...</option>
+          <option *ngFor="let t of teachers" [value]="t._id">{{ t.name }}</option>
+        </select>
+      </div>
+    </div>
+    <div class="mb-3">
+      <label>Motivo de la solicitud</label>
+      <textarea class="form-control" rows="3" [(ngModel)]="reason" placeholder="Explica detalladamente por qué no pudiste rendir en la fecha establecida..."></textarea>
+    </div>
+    <div class="mb-3">
+      <label>Imágenes de Respaldo (Máximo 5)</label>
+      <input type="file" class="form-control" multiple accept="image/*" (change)="onFileChange($event)">
+    </div>
+    <div class="mb-3" *ngIf="existingImageUrls.length > 0">
+      <label class="text-muted small">Imágenes adjuntas anteriormente (Se mantendrán si no subes archivos nuevos):</label>
+      <div class="d-flex flex-wrap gap-2 mt-2">
+        <a *ngFor="let url of existingImageUrls" [href]="url" target="_blank">
+          <img [src]="url" style="max-height: 80px; border-radius: 4px; border: 1px solid #ddd;" />
+        </a>
+      </div>
+    </div>
+    <button class="btn btn-success" (click)="submitRequest()">Enviar Solicitud</button>
+  </div>
+
+  <div class="mat-elevation-z8 bg-white" *ngIf="requests.length > 0">
+    <table mat-table [dataSource]="requests" class="w-100">
+      
+      <ng-container matColumnDef="assessment">
+        <th mat-header-cell *matHeaderCellDef> Examen </th>
+        <td mat-cell *matCellDef="let req"> {{ req.assessmentId?.title || 'Examen eliminado' }} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="teacher">
+        <th mat-header-cell *matHeaderCellDef> Docente </th>
+        <td mat-cell *matCellDef="let req"> {{ req.teacherId?.name || 'Desconocido' }} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef> Estado </th>
+        <td mat-cell *matCellDef="let req"> 
+          <mat-chip-set>
+            <mat-chip [color]="req.status === 'APROBADA' ? 'primary' : (req.status === 'RECHAZADA' ? 'warn' : 'accent')" highlighted>
+              {{ req.status }}
+            </mat-chip>
+          </mat-chip-set>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="createdAt">
+        <th mat-header-cell *matHeaderCellDef> Fecha Solicitud </th>
+        <td mat-cell *matCellDef="let req"> {{ req.createdAt | date:'short' }} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef> Acciones </th>
+        <td mat-cell *matCellDef="let req">
+          <button mat-icon-button color="accent" (click)="viewDetails(req)" title="Ver detalles enviados">
+            <mat-icon>visibility</mat-icon>
+          </button>
+          <button mat-icon-button color="primary" *ngIf="req.status === 'DEVUELTA'" (click)="editRequest(req)" title="Modificar solicitud">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button color="warn" *ngIf="req.status !== 'APROBADA' && req.status !== 'RECHAZADA' && req.status !== 'ANULADA'" (click)="cancelRequest(req._id)" title="Anular solicitud">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+  </div>
+  
+            <div class="alert alert-info" *ngIf="requests.length === 0 && !showForm">
+              No tienes solicitudes de exámenes atrasados.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

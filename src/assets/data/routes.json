@@ -118,7 +118,7 @@
       "submenu": [
         {
           "path": "/teacher/topics",
-          "title": "Temas (Topics)",
+          "title": "Temas",
           "iconType": "feather",
           "icon": "book-open",
           "class": "",
@@ -151,9 +151,20 @@
         },
         {
           "path": "/teacher/assessments",
-          "title": "Configurar Exámenes",
+          "title": "Exámenes",
           "iconType": "feather",
           "icon": "clipboard",
+          "class": "",
+          "groupTitle": false,
+          "badge": "",
+          "badgeClass": "",
+          "submenu": []
+        },
+        {
+          "path": "/teacher/late-requests",
+          "title": "Solicitudes Atrasadas",
+          "iconType": "feather",
+          "icon": "clock",
           "class": "",
           "groupTitle": false,
           "badge": "",
@@ -212,6 +223,20 @@
           "submenu": []
         }
       ]
+    },
+    {
+      "path": "/student/late-requests",
+      "title": "Solicitudes Atrasadas",
+      "iconType": "material-icons-outlined",
+      "icon": "history_toggle_off",
+      "class": "",
+      "groupTitle": false,
+      "badge": "",
+      "badgeClass": "",
+      "role": [
+        "STUDENT"
+      ],
+      "submenu": []
     }
   ]
 }

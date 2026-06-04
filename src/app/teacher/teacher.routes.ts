@@ -2,6 +2,7 @@ import { Page404Component } from '../authentication/page404/page404.component';
 import { Route } from '@angular/router';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { AssessmentsComponent } from './assessments/assessments.component';
+import { LateRequestsComponent } from './late-requests/late-requests.component';
 
 export const TEACHER_ROUTE: Route[] = [
   {
@@ -25,6 +26,10 @@ export const TEACHER_ROUTE: Route[] = [
   {
     path: 'assessments',
     component: AssessmentsComponent,
+  },
+  {
+    path: 'late-requests',
+    component: LateRequestsComponent,
   },
   {
     path: 'assessments/:id/results',

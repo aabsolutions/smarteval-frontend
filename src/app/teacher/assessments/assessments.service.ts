@@ -58,4 +58,12 @@ export class AssessmentsService {
   exportExcel(id: string): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/${id}/export/excel`, { responseType: 'blob' });
   }
+
+  archiveAttempt(attemptId: string): Observable<any> {
+    return this.http.patch(`/api/assessment-attempts/${attemptId}/archive`, {});
+  }
+
+  getArchivedAttempts(assessmentId: string): Observable<any> {
+    return this.http.get(`/api/assessment-attempts/${assessmentId}/archived`);
+  }
 }

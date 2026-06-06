@@ -23,7 +23,11 @@ export class ErrorInterceptor implements HttpInterceptor {
     return next.handle(request).pipe(
       catchError((err) => {
         if (err instanceof HttpErrorResponse && err.status === 401) {
-          if (request.url.includes('/auth/login') || request.url.includes('/auth/refresh')) {
+          if (request.url.includes('/auth/login')) {
+            // No recargar la pagina, permitir que el componente de login muestre el error.
+            return throwError(() => err);
+          }
+          if (request.url.includes('/auth/refresh')) {
             this.authenticationService.logout();
             location.reload();
             return throwError(() => err);

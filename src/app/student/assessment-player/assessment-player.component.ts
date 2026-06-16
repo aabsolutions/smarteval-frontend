@@ -24,7 +24,8 @@ import { BreadcrumbComponent } from '@shared/components/breadcrumb/breadcrumb.co
     MatRadioModule, MatCheckboxModule, MatInputModule, MatProgressBarModule, MatIconModule,
     MatSelectModule, BreadcrumbComponent
   ],
-  templateUrl: './assessment-player.component.html'
+  templateUrl: './assessment-player.component.html',
+  styleUrls: ['./assessment-player.component.scss']
 })
 export class AssessmentPlayerComponent implements OnInit, OnDestroy {
   attemptId!: string;
@@ -174,6 +175,11 @@ export class AssessmentPlayerComponent implements OnInit, OnDestroy {
       this.answersMap[qId] = new Array(this.currentQuestion.options.length).fill('');
     }
     this.answersMap[qId][index] = val;
+  }
+
+  getShapeIcon(index: number): string {
+    const icons = ['change_history', 'diamond', 'circle', 'crop_square', 'star', 'hexagon'];
+    return icons[index % icons.length];
   }
 
   next() {

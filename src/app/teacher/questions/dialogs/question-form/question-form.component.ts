@@ -32,6 +32,10 @@ export class QuestionFormDialogComponent implements OnInit {
   questionForm: FormGroup;
   isEdit = false;
   topics: any[] = [];
+  
+  imageType: 'none' | 'url' | 'upload' = 'none';
+  selectedFile: File | null = null;
+  imagePreviewUrl: string | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -49,6 +53,8 @@ export class QuestionFormDialogComponent implements OnInit {
       statement: ['', Validators.required],
       difficulty: ['medium', Validators.required],
       points: [1, [Validators.required, Validators.min(1)]],
+      imageUrl: [''],
+      imagePublicId: [''],
       options: this.fb.array([]),
       correctAnswers: this.fb.array([]),
     });
@@ -66,7 +72,15 @@ export class QuestionFormDialogComponent implements OnInit {
         statement: this.data.question.statement,
         difficulty: this.data.question.difficulty,
         points: this.data.question.points,
+        imageUrl: this.data.question.imageUrl,
+        imagePublicId: this.data.question.imagePublicId,
       });
+
+      if (this.data.question.imageUrl) {
+        // If it has publicId, it's an uploaded image, otherwise it's just a URL
+        this.imageType = this.data.question.imagePublicId ? 'upload' : 'url';
+        this.imagePreviewUrl = this.data.question.imageUrl;
+      }
 
       const opts = this.data.question.options || [];
       const answers = this.data.question.correctAnswers || [];
@@ -170,6 +184,37 @@ export class QuestionFormDialogComponent implements OnInit {
     return this.correctAnswers.length > 0 ? this.correctAnswers.at(0).value : null;
   }
 
+  onImageTypeChange(type: 'none' | 'url' | 'upload') {
+    this.imageType = type;
+    if (type === 'none') {
+       this.questionForm.patchValue({ imageUrl: null, imagePublicId: null });
+       this.selectedFile = null;
+       this.imagePreviewUrl = null;
+    } else if (type === 'url') {
+       this.selectedFile = null;
+       this.imagePreviewUrl = this.questionForm.get('imageUrl')?.value || null;
+    } else {
+       if (!this.selectedFile && !this.questionForm.get('imagePublicId')?.value) {
+          this.imagePreviewUrl = null;
+       }
+    }
+  }
+
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.selectedFile = file;
+      const reader = new FileReader();
+      reader.onload = e => this.imagePreviewUrl = reader.result as string;
+      reader.readAsDataURL(file);
+    }
+  }
+
+  onUrlChange(event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.imagePreviewUrl = input.value;
+  }
+
   onSubmit() {
     if (this.questionForm.invalid) return;
 
@@ -192,22 +237,43 @@ export class QuestionFormDialogComponent implements OnInit {
       return;
     }
 
-    if (this.isEdit) {
-      this.questionsService.updateQuestion(this.data.question!._id, formValue).subscribe({
-        next: (res) => {
-          this.alertService.successToast('Pregunta actualizada');
-          this.dialogRef.close(res);
-        },
-        error: (err: any) => this.alertService.errorAlert('Error', err.error?.message || 'Error al actualizar'),
-      });
+    const saveQuestion = (finalFormValue: any) => {
+      if (this.isEdit) {
+        this.questionsService.updateQuestion(this.data.question!._id, finalFormValue).subscribe({
+          next: (res) => {
+            this.alertService.successToast('Pregunta actualizada');
+            this.dialogRef.close(res);
+          },
+          error: (err: any) => this.alertService.errorAlert('Error', err.error?.message || 'Error al actualizar'),
+        });
+      } else {
+        this.questionsService.createQuestion(finalFormValue).subscribe({
+          next: (res) => {
+            this.alertService.successToast('Pregunta creada');
+            this.dialogRef.close(res);
+          },
+          error: (err: any) => this.alertService.errorAlert('Error', err.error?.message || 'Error al crear'),
+        });
+      }
+    };
+
+    if (this.imageType === 'upload' && this.selectedFile) {
+       this.questionsService.uploadImage(this.selectedFile).subscribe({
+         next: (res) => {
+           formValue.imageUrl = res.url;
+           formValue.imagePublicId = res.publicId;
+           saveQuestion(formValue);
+         },
+         error: (err) => {
+           this.alertService.errorAlert('Error', 'No se pudo subir la imagen. Intenta de nuevo.');
+         }
+       });
     } else {
-      this.questionsService.createQuestion(formValue).subscribe({
-        next: (res) => {
-          this.alertService.successToast('Pregunta creada');
-          this.dialogRef.close(res);
-        },
-        error: (err: any) => this.alertService.errorAlert('Error', err.error?.message || 'Error al crear'),
-      });
+       if (this.imageType === 'none') {
+           formValue.imageUrl = null;
+           formValue.imagePublicId = null;
+       }
+       saveQuestion(formValue);
     }
   }
 

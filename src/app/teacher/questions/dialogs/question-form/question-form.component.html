@@ -30,6 +30,35 @@
       <textarea matInput formControlName="statement" rows="3" required></textarea>
     </mat-form-field>
 
+    <!-- IMAGEN DE REFERENCIA -->
+    <div class="mb-4 p-3 border rounded">
+      <h6>Imagen de Referencia (Opcional)</h6>
+      <mat-radio-group [value]="imageType" (change)="onImageTypeChange($event.value)" class="mb-3 d-block">
+        <mat-radio-button value="none" class="me-3">Sin Imagen</mat-radio-button>
+        <mat-radio-button value="url" class="me-3">Enlace Web</mat-radio-button>
+        <mat-radio-button value="upload">Subir Archivo</mat-radio-button>
+      </mat-radio-group>
+
+      <div *ngIf="imageType === 'url'" class="mt-2">
+        <mat-form-field appearance="outline" class="w-100 mb-2">
+          <mat-label>URL de la imagen</mat-label>
+          <input matInput formControlName="imageUrl" (input)="onUrlChange($event)" placeholder="https://ejemplo.com/imagen.jpg" />
+        </mat-form-field>
+      </div>
+
+      <div *ngIf="imageType === 'upload'" class="mt-2">
+        <button mat-stroked-button color="primary" type="button" (click)="fileInput.click()" class="mb-2">
+          <mat-icon>upload_file</mat-icon> Seleccionar Archivo
+        </button>
+        <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" style="display: none;" />
+        <p *ngIf="selectedFile" class="text-success small mb-0">Archivo seleccionado: {{ selectedFile.name }}</p>
+      </div>
+
+      <div *ngIf="imagePreviewUrl" class="mt-3 text-center">
+        <img [src]="imagePreviewUrl" alt="Vista previa" class="img-fluid rounded shadow-sm" style="max-height: 150px; object-fit: contain;" />
+      </div>
+    </div>
+
     <div class="row">
       <div class="col-md-6">
         <mat-form-field appearance="outline" class="w-100 mb-3">

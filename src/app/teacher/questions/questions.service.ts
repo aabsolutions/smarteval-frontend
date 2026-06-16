@@ -12,6 +12,8 @@ export interface Question {
   difficulty: 'easy' | 'medium' | 'hard';
   topicId: any;
   teacherId: any;
+  imageUrl?: string;
+  imagePublicId?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -41,5 +43,11 @@ export class QuestionsService {
 
   deleteQuestion(id: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`);
+  }
+
+  uploadImage(file: File): Observable<{ url: string; publicId: string }> {
+    const formData = new FormData();
+    formData.append('image', file);
+    return this.http.post<{ url: string; publicId: string }>(`${this.apiUrl}/upload-image`, formData);
   }
 }

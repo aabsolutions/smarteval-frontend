@@ -1,101 +1,96 @@
 <section class="content">
-  <div class="content-block pt-3">
-    <div class="block-header" *ngFor="let breadscrum of breadscrums">
-      <app-breadcrumb [title]="breadscrum.title" [items]="breadscrum.items" [active_item]="breadscrum.active"></app-breadcrumb>
+  <div class="kahoot-theme" *ngIf="assessment && currentQuestion">
+    
+    <div class="top-bar">
+      <div class="question-counter">
+        {{ currentIndex + 1 }} / {{ questions.length }}
+      </div>
+      <div class="timer-pill" [class.danger]="timeRemaining.startsWith('00:') && +timeRemaining.split(':')[1] < 30">
+        <mat-icon>timer</mat-icon> {{ timeRemaining }}
+      </div>
     </div>
 
-    <div *ngIf="assessment && currentQuestion">
+    <mat-progress-bar mode="determinate" [value]="((currentIndex + 1) / questions.length) * 100" class="mb-4 bg-white" color="accent"></mat-progress-bar>
+
+    <div class="question-container">
+      <div class="question-type-badge mb-3 text-uppercase">
+        <span *ngIf="currentQuestion.type === 'single-choice' || currentQuestion.type === 'true-false'">Selecciona una sola opción</span>
+        <span *ngIf="currentQuestion.type === 'multiple-choice'">Selecciona todas las opciones correctas</span>
+        <span *ngIf="currentQuestion.type === 'fill-blank'">Escribe tu respuesta abajo</span>
+        <span *ngIf="currentQuestion.type === 'matching'">Empareja cada concepto con su par correcto</span>
+      </div>
+      <h2>{{ currentQuestion.statement }}</h2>
       
-      <div class="d-flex justify-content-between align-items-center mb-3">
-      <h3 class="m-0">{{ assessment.title }}</h3>
-      <div class="d-flex align-items-center gap-3">
-        <div class="timer text-danger fw-bold fs-5">
-          <i class="material-icons align-middle" style="font-size: 24px;">timer</i> {{ timeRemaining }}
-        </div>
-        <button mat-raised-button color="accent" (click)="submit()" [disabled]="isSubmitting">
-          {{ isSubmitting ? 'Enviando...' : 'Entregar Examen' }}
-        </button>
+      <div *ngIf="currentQuestion.imageUrl" class="question-image">
+        <img [src]="currentQuestion.imageUrl" alt="Imagen de referencia" />
       </div>
     </div>
 
-    <mat-progress-bar mode="determinate" [value]="((currentIndex + 1) / questions.length) * 100" class="mb-4"></mat-progress-bar>
-
-    <div class="row justify-content-center">
-      <div class="col-md-10 col-lg-8">
-        <mat-card class="p-4">
-          <div class="d-flex justify-content-between text-muted small mb-3">
-            <span>Pregunta {{ currentIndex + 1 }} de {{ questions.length }}</span>
-            <span>Valor: {{ currentQuestion.points }} pt(s)</span>
-          </div>
-
-          <h4 class="mb-4">{{ currentQuestion.statement }}</h4>
-
-          <!-- SINGLE CHOICE & TRUE/FALSE -->
-          <div *ngIf="currentQuestion.type === 'single-choice' || currentQuestion.type === 'true-false'">
-            <mat-radio-group [(ngModel)]="singleAnswer" class="d-flex flex-column gap-3">
-              <mat-radio-button *ngFor="let opt of currentQuestion.options" [value]="opt" class="fs-6">
-                {{ opt }}
-              </mat-radio-button>
-            </mat-radio-group>
-          </div>
-
-          <!-- MULTIPLE CHOICE -->
-          <div *ngIf="currentQuestion.type === 'multiple-choice'">
-            <div class="d-flex flex-column gap-3">
-              <mat-checkbox *ngFor="let opt of currentQuestion.options" 
-                            [checked]="isMultipleChecked(opt)"
-                            (change)="toggleMultipleAnswer(opt, $event.checked)"
-                            class="fs-6">
-                {{ opt }}
-              </mat-checkbox>
-            </div>
-          </div>
-
-          <!-- FILL BLANK -->
-          <div *ngIf="currentQuestion.type === 'fill-blank'">
-            <mat-form-field appearance="outline" class="w-100">
-              <mat-label>Tu Respuesta</mat-label>
-              <input matInput [(ngModel)]="fillBlankAnswer" placeholder="Escribe aquí..." />
-            </mat-form-field>
-          </div>
-
-          <!-- MATCHING -->
-          <div *ngIf="currentQuestion.type === 'matching'">
-            <div class="row mb-3 align-items-center" *ngFor="let opt of currentQuestion.options; let i = index">
-              <div class="col-12 col-md-5 mb-2 mb-md-0">
-                <span class="fs-6 fw-bold">{{ opt }}</span>
-              </div>
-              <div class="col-12 col-md-7">
-                <mat-form-field appearance="outline" class="w-100 mb-0">
-                  <mat-label>Selecciona su par...</mat-label>
-                  <mat-select [value]="getMatchingAnswer(i)" (selectionChange)="setMatchingAnswer(i, $event.value)">
-                    <mat-option *ngFor="let target of currentQuestion.matchingOptions" [value]="target">
-                      {{ target }}
-                    </mat-option>
-                  </mat-select>
-                </mat-form-field>
-              </div>
-            </div>
-          </div>
-
-        </mat-card>
-
-        <div class="d-flex justify-content-between mt-4">
-          <button mat-stroked-button color="primary" (click)="prev()" [disabled]="currentIndex === 0">
-            <mat-icon>chevron_left</mat-icon> Anterior
-          </button>
-          
-          <button mat-stroked-button color="primary" (click)="next()" *ngIf="currentIndex < questions.length - 1">
-            Siguiente <mat-icon>chevron_right</mat-icon>
-          </button>
-          
-          <button mat-raised-button color="accent" (click)="submit()" *ngIf="currentIndex === questions.length - 1" [disabled]="isSubmitting">
-            Entregar Examen
-          </button>
+    <!-- SINGLE CHOICE & TRUE/FALSE -->
+    <div *ngIf="currentQuestion.type === 'single-choice' || currentQuestion.type === 'true-false'" class="answers-grid">
+      <div *ngFor="let opt of currentQuestion.options; let i = index" 
+           class="answer-card color-{{i % 4}}"
+           [class.selected]="singleAnswer === opt"
+           [class.not-selected-dim]="singleAnswer && singleAnswer !== opt"
+           (click)="singleAnswer = opt">
+        <div class="shape-icon">
+          <mat-icon>{{ getShapeIcon(i) }}</mat-icon>
         </div>
-
+        <div class="answer-text">{{ opt }}</div>
+        <mat-icon *ngIf="singleAnswer === opt" class="check-icon">check</mat-icon>
       </div>
     </div>
-  </div>
+
+    <!-- MULTIPLE CHOICE -->
+    <div *ngIf="currentQuestion.type === 'multiple-choice'" class="answers-grid">
+      <div *ngFor="let opt of currentQuestion.options; let i = index" 
+           class="answer-card color-{{i % 4}}"
+           [class.selected]="isMultipleChecked(opt)"
+           (click)="toggleMultipleAnswer(opt, !isMultipleChecked(opt))">
+        <div class="shape-icon">
+          <mat-icon>{{ getShapeIcon(i) }}</mat-icon>
+        </div>
+        <div class="answer-text">{{ opt }}</div>
+        <mat-icon *ngIf="isMultipleChecked(opt)" class="check-icon">check</mat-icon>
+      </div>
+    </div>
+
+    <!-- FILL BLANK -->
+    <div *ngIf="currentQuestion.type === 'fill-blank'" class="fill-blank-container">
+      <input type="text" [(ngModel)]="fillBlankAnswer" placeholder="Tu respuesta..." />
+    </div>
+
+    <!-- MATCHING -->
+    <div *ngIf="currentQuestion.type === 'matching'" class="matching-container">
+      <div class="matching-row" *ngFor="let opt of currentQuestion.options; let i = index">
+        <div class="matching-concept color-{{i % 4}}">
+          {{ opt }}
+        </div>
+        <div class="matching-select">
+          <mat-form-field appearance="outline" class="w-100 mb-0">
+            <mat-select [value]="getMatchingAnswer(i)" (selectionChange)="setMatchingAnswer(i, $event.value)" placeholder="Seleccionar par...">
+              <mat-option *ngFor="let target of currentQuestion.matchingOptions" [value]="target">
+                {{ target }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-controls">
+      <button mat-raised-button class="btn-prev" (click)="prev()" [disabled]="currentIndex === 0">
+        <mat-icon>chevron_left</mat-icon> Anterior
+      </button>
+      
+      <button mat-raised-button class="btn-next" (click)="next()" *ngIf="currentIndex < questions.length - 1">
+        Siguiente <mat-icon>chevron_right</mat-icon>
+      </button>
+      
+      <button mat-raised-button class="btn-submit" (click)="submit()" *ngIf="currentIndex === questions.length - 1" [disabled]="isSubmitting">
+        Entregar Examen
+      </button>
+    </div>
+
   </div>
 </section>

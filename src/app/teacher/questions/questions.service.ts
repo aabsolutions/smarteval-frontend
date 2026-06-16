@@ -45,6 +45,14 @@ export class QuestionsService {
     return this.http.delete(`${this.apiUrl}/${id}`);
   }
 
+  updateBulkPoints(ids: string[], points: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/bulk-points`, { ids, points });
+  }
+
+  deleteBulk(ids: string[]): Observable<any> {
+    return this.http.post(`${this.apiUrl}/bulk-delete`, { ids });
+  }
+
   uploadImage(file: File): Observable<{ url: string; publicId: string }> {
     const formData = new FormData();
     formData.append('image', file);

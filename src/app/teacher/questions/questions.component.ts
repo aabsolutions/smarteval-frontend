@@ -18,6 +18,9 @@ import { QuestionFormDialogComponent } from './dialogs/question-form/question-fo
 import { BulkImportDialogComponent } from './dialogs/bulk-import/bulk-import.component';
 import { MatInputModule } from '@angular/material/input';
 import { AlertService } from '@core/services/alert.service';
+import { SelectionModel } from '@angular/cdk/collections';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-questions',
@@ -36,7 +39,8 @@ import { AlertService } from '@core/services/alert.service';
     FeatherIconsComponent,
     MatInputModule,
     MatPaginatorModule,
-    TableShowHideColumnComponent
+    TableShowHideColumnComponent,
+    MatCheckboxModule
   ],
   templateUrl: './questions.component.html',
   styleUrls: ['./questions.component.scss'],
@@ -51,6 +55,7 @@ export class QuestionsComponent implements OnInit {
   ];
 
   columnDefinitions = [
+    { def: 'select', label: 'Seleccionar', visible: true },
     { def: 'statement', label: 'Enunciado', visible: true },
     { def: 'type', label: 'Tipo', visible: true },
     { def: 'difficulty', label: 'Dificultad', visible: true },
@@ -64,6 +69,7 @@ export class QuestionsComponent implements OnInit {
   }
 
   dataSource = new MatTableDataSource<Question>([]);
+  selection = new SelectionModel<Question>(true, []);
   @ViewChild(MatPaginator, { static: true }) paginator!: MatPaginator;
   topics: Topic[] = [];
   selectedTopicId: string = '';
@@ -72,6 +78,20 @@ export class QuestionsComponent implements OnInit {
   private topicsService = inject(TopicsService);
   public dialog = inject(MatDialog);
   private alertService = inject(AlertService);
+
+  isAllSelected() {
+    const numSelected = this.selection.selected.length;
+    const numRows = this.dataSource.data.length;
+    return numSelected === numRows && numRows > 0;
+  }
+
+  toggleAllRows() {
+    if (this.isAllSelected()) {
+      this.selection.clear();
+      return;
+    }
+    this.selection.select(...this.dataSource.data);
+  }
 
   ngOnInit(): void {
     this.dataSource.filterPredicate = (data: Question, filter: string) => {
@@ -156,11 +176,60 @@ export class QuestionsComponent implements OnInit {
           next: () => {
             this.alertService.successToast('Pregunta eliminada con éxito');
             this.loadQuestions();
+            this.selection.clear();
           },
           error: (err: any) => this.alertService.errorAlert('Error', err.error?.message || 'Error al eliminar'),
         });
       }
     });
+  }
+
+  deleteSelected() {
+    if (this.selection.selected.length === 0) return;
+    this.alertService.confirmDelete(`${this.selection.selected.length} preguntas seleccionadas`).then((confirmed: boolean) => {
+      if (confirmed) {
+        const ids = this.selection.selected.map(q => q._id);
+        this.questionsService.deleteBulk(ids).subscribe({
+          next: () => {
+            this.alertService.successToast('Preguntas eliminadas con éxito');
+            this.selection.clear();
+            this.loadQuestions();
+          },
+          error: (err: any) => this.alertService.errorAlert('Error', err.error?.message || 'Error al eliminar'),
+        });
+      }
+    });
+  }
+
+  async updatePointsSelected() {
+    if (this.selection.selected.length === 0) return;
+    const { value: points } = await Swal.fire({
+      title: 'Actualizar Puntaje',
+      input: 'number',
+      inputLabel: 'Nuevo puntaje para las preguntas seleccionadas',
+      inputPlaceholder: 'Ej. 5',
+      showCancelButton: true,
+      confirmButtonText: 'Actualizar',
+      cancelButtonText: 'Cancelar',
+      inputValidator: (value) => {
+        if (!value || isNaN(Number(value)) || Number(value) < 0) {
+          return 'Debes ingresar un número válido';
+        }
+        return null;
+      }
+    });
+
+    if (points) {
+      const ids = this.selection.selected.map(q => q._id);
+      this.questionsService.updateBulkPoints(ids, Number(points)).subscribe({
+        next: () => {
+          this.alertService.successToast('Puntajes actualizados con éxito');
+          this.selection.clear();
+          this.loadQuestions();
+        },
+        error: (err: any) => this.alertService.errorAlert('Error', err.error?.message || 'Error al actualizar puntajes'),
+      });
+    }
   }
 
   applyFilter(event: Event) {

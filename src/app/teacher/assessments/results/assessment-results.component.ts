@@ -9,6 +9,9 @@ import { MatCardModule } from '@angular/material/card';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTabsModule } from '@angular/material/tabs';
 import { trigger, state, style, transition, animate } from '@angular/animations';
+import { SelectionModel } from '@angular/cdk/collections';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { forkJoin } from 'rxjs';
 import { BreadcrumbComponent } from '@shared/components/breadcrumb/breadcrumb.component';
 import { AssessmentsService } from '../assessments.service';
 import Swal from 'sweetalert2';
@@ -33,6 +36,7 @@ pdfMake.vfs = pdfFonts.pdfMake ? pdfFonts.pdfMake.vfs : pdfFonts.vfs;
     MatCardModule,
     MatProgressBarModule,
     MatTabsModule,
+    MatCheckboxModule,
     BreadcrumbComponent
   ],
   templateUrl: './assessment-results.component.html',
@@ -59,7 +63,9 @@ export class AssessmentResultsComponent implements OnInit {
   resultsData: any = null;
   analyticsData: any[] = [];
 
-  displayedColumns: string[] = ['studentName', 'identifier', 'group', 'attemptNumber', 'score', 'percentage', 'endTime', 'duration', 'status', 'warnings'];
+  selection = new SelectionModel<any>(true, []);
+
+  displayedColumns: string[] = ['select', 'studentName', 'identifier', 'group', 'attemptNumber', 'score', 'percentage', 'endTime', 'duration', 'status', 'warnings'];
   columnsToDisplayWithExpand = [...this.displayedColumns, 'actions', 'expand'];
   expandedElement: any | null = null;
   dataSource = new MatTableDataSource<any>([]);
@@ -85,7 +91,7 @@ export class AssessmentResultsComponent implements OnInit {
         this.dataSource.data = data.results;
 
         if (this.resultsData.assessment.isSimulator) {
-          this.displayedColumns = ['studentName', 'identifier', 'group', 'email', 'attemptsCount'];
+          this.displayedColumns = ['select', 'studentName', 'identifier', 'group', 'email', 'attemptsCount'];
           this.columnsToDisplayWithExpand = [...this.displayedColumns];
         } else {
           this.assessmentsService.getAnalytics(this.assessmentId).subscribe({
@@ -126,11 +132,68 @@ export class AssessmentResultsComponent implements OnInit {
         this.assessmentsService.archiveAttempt(element._id).subscribe({
           next: () => {
             Swal.fire('¡Eliminado!', 'El intento ha sido movido al historial.', 'success');
+            this.selection.clear();
             this.loadData();
           },
           error: () => Swal.fire('Error', 'No se pudo completar la acción.', 'error')
         });
       }
+    });
+  }
+
+  archiveSelected() {
+    if (this.selection.selected.length === 0) return;
+    
+    Swal.fire({
+      title: '¿Eliminar resultados seleccionados?',
+      text: `Se eliminarán ${this.selection.selected.length} intentos. Los estudiantes recuperarán su oportunidad para rendir.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const requests = this.selection.selected.map(element => this.assessmentsService.archiveAttempt(element._id));
+        forkJoin(requests).subscribe({
+          next: () => {
+            Swal.fire('¡Eliminados!', 'Los intentos han sido movidos al historial.', 'success');
+            this.selection.clear();
+            this.loadData();
+          },
+          error: () => Swal.fire('Error', 'Hubo un error al eliminar algunos intentos.', 'error')
+        });
+      }
+    });
+  }
+
+  isAllSelected() {
+    const numSelected = this.selection.selected.length;
+    const numRows = this.dataSource.data.length;
+    return numSelected === numRows;
+  }
+
+  masterToggle() {
+    this.isAllSelected() ?
+        this.selection.clear() :
+        this.dataSource.data.forEach(row => this.selection.select(row));
+  }
+
+  checkboxLabel(row?: any): string {
+    if (!row) {
+      return `${this.isAllSelected() ? 'deselect' : 'select'} all`;
+    }
+    return `${this.selection.isSelected(row) ? 'deselect' : 'select'} row`;
+  }
+
+  downloadSelected() {
+    if (this.selection.selected.length === 0) return;
+    
+    this.selection.selected.forEach((element, index) => {
+      setTimeout(() => {
+        this.downloadPdf(element);
+      }, index * 800);
     });
   }
 
@@ -516,6 +579,6 @@ export class AssessmentResultsComponent implements OnInit {
       pageMargins: [40, 40, 40, 40]
     };
 
-    pdfMake.createPdf(documentDefinition).download(`Resultado_${identifier}_${this.resultsData.assessment.title}.pdf`);
+    pdfMake.createPdf(documentDefinition).download(`Resultado_${studentName}_${this.resultsData.assessment.title}.pdf`);
   }
 }

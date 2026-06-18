@@ -62,9 +62,9 @@
           <div class="card-status-section" *ngIf="item.lastAttempt">
             <div class="status-indicator" *ngIf="item.lastAttempt.status === 'completed'">
               <div class="score-display">
-                <span class="score-value text-success">{{ item.lastAttempt.score }}</span>
+                <span class="score-value text-success">{{ item.lastAttempt.score | number:'1.2-2' }}</span>
                 <span class="score-divider">/</span>
-                <span class="score-max">{{ item.lastAttempt.maxScore }}</span>
+                <span class="score-max">{{ item.lastAttempt.maxScore | number:'1.2-2' }}</span>
               </div>
               <span class="status-label">Nota Final</span>
             </div>

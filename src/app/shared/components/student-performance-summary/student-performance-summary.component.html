@@ -34,26 +34,26 @@
       <div class="metrics-summary">
         <div class="metric-item">
           <div class="metric-label">Current Average</div>
-          <div class="metric-value">{{ performanceMetrics.currentAverage }}%</div>
+          <div class="metric-value">{{ performanceMetrics.currentAverage | number:'1.2-2' }}%</div>
           <div class="metric-trend" [ngClass]="getTrendColor()">
             <mat-icon>{{ getTrendIcon() }}</mat-icon>
-            <span>{{ performanceMetrics.improvement }}%</span>
+            <span>{{ performanceMetrics.improvement | number:'1.2-2' }}%</span>
           </div>
         </div>
 
         <div class="metric-item">
           <div class="metric-label">Previous Average</div>
-          <div class="metric-value">{{ performanceMetrics.previousAverage }}%</div>
+          <div class="metric-value">{{ performanceMetrics.previousAverage | number:'1.2-2' }}%</div>
         </div>
 
         <div class="metric-item">
           <div class="metric-label">Highest Score</div>
-          <div class="metric-value">{{ performanceMetrics.highestScore }}%</div>
+          <div class="metric-value">{{ performanceMetrics.highestScore | number:'1.2-2' }}%</div>
         </div>
 
         <div class="metric-item">
           <div class="metric-label">Lowest Score</div>
-          <div class="metric-value">{{ performanceMetrics.lowestScore }}%</div>
+          <div class="metric-value">{{ performanceMetrics.lowestScore | number:'1.2-2' }}%</div>
         </div>
       </div>
 

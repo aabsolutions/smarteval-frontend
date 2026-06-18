@@ -20,9 +20,9 @@ import { BreadcrumbComponent } from '@shared/components/breadcrumb/breadcrumb.co
   selector: 'app-assessment-player',
   standalone: true,
   imports: [
-    CommonModule, FormsModule, MatCardModule, MatButtonModule, 
+    CommonModule, FormsModule, MatCardModule, MatButtonModule,
     MatRadioModule, MatCheckboxModule, MatInputModule, MatProgressBarModule, MatIconModule,
-    MatSelectModule, BreadcrumbComponent
+    MatSelectModule
   ],
   templateUrl: './assessment-player.component.html',
   styleUrls: ['./assessment-player.component.scss']
@@ -32,12 +32,12 @@ export class AssessmentPlayerComponent implements OnInit, OnDestroy {
   assessmentId!: string;
   attempt!: AssessmentAttempt;
   assessment: any;
-  
+
   questions: any[] = [];
   currentIndex = 0;
-  
+
   answersMap: { [questionId: string]: string[] } = {};
-  
+
   timeRemaining = '00:00';
   private timerInterval: any;
   isSubmitting = false;
@@ -63,7 +63,7 @@ export class AssessmentPlayerComponent implements OnInit, OnDestroy {
 
     this.assessmentsService.getAssessment(this.assessmentId).subscribe(ass => {
       this.assessment = ass;
-      
+
       this.studentService.getAttemptStatus(this.assessmentId).subscribe(status => {
         const attempt = status.history.find((h: any) => h._id === this.attemptId);
         if (!attempt) {
@@ -79,13 +79,13 @@ export class AssessmentPlayerComponent implements OnInit, OnDestroy {
 
         this.attempt = attempt;
         this.questions = attempt.questionsPulled;
-        
+
         if (attempt.studentAnswers) {
           attempt.studentAnswers.forEach((sa: any) => {
             this.answersMap[sa.questionId] = [...sa.answers];
           });
         }
-        
+
         if (this.assessment.antiCheat) {
           this.antiCheatService.requestFullscreen().then(() => {
             this.antiCheatService.start();
@@ -147,7 +147,7 @@ export class AssessmentPlayerComponent implements OnInit, OnDestroy {
   toggleMultipleAnswer(opt: string, isChecked: boolean) {
     const qId = this.currentQuestion.questionId;
     if (!this.answersMap[qId]) this.answersMap[qId] = [];
-    
+
     if (isChecked) {
       this.answersMap[qId].push(opt);
     } else {
@@ -192,7 +192,7 @@ export class AssessmentPlayerComponent implements OnInit, OnDestroy {
 
   async submit(isTimeout: boolean = false) {
     if (this.isSubmitting) return;
-    
+
     if (!isTimeout) {
       const confirmed = await this.alertService.confirmAction(
         'Entregar Examen',

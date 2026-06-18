@@ -22,7 +22,7 @@
               <p class="grade-subject">{{item.subject}}</p>
               <div class="grade-footer">
                 <span class="grade-date">{{item.date | date:'mediumDate'}}</span>
-                <span class="grade-score">{{item.score}}/{{item.maxScore}}</span>
+                <span class="grade-score">{{item.score | number:'1.2-2'}}/{{item.maxScore | number:'1.2-2'}}</span>
               </div>
             </div>
           </div>

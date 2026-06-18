@@ -30,7 +30,7 @@
               <div class="student-name-row">
                 <h3 class="student-name">{{ student.name }}</h3>
                 <div class="score-chip">
-                  <span>{{ student.score }}%</span>
+                  <span>{{ student.score | number:'1.2-2' }}%</span>
                 </div>
               </div>
               <div class="student-details">
@@ -41,7 +41,7 @@
                 @if (student.improvement !== undefined) {
                   <div class="improvement-chip" [ngClass]="getImprovementColor(student.improvement)">
                     <mat-icon>{{ getImprovementIcon(student.improvement) }}</mat-icon>
-                    <span>{{ student.improvement > 0 ? '+' : '' }}{{ student.improvement }}%</span>
+                    <span>{{ student.improvement > 0 ? '+' : '' }}{{ student.improvement | number:'1.2-2' }}%</span>
                   </div>
                 }
               </div>

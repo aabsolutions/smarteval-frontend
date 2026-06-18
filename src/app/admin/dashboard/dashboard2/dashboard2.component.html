@@ -266,11 +266,11 @@
                 <div class="col-4 text-center">
                   <h6>Top Performer</h6>
                   <h5>{{ staffMetrics.topPerformer }}</h5>
-                  <small>Score: {{ staffMetrics.topScore }}%</small>
+                  <small>Score: {{ staffMetrics.topScore | number:'1.2-2' }}%</small>
                 </div>
                 <div class="col-4 text-center">
                   <h6>Average Score</h6>
-                  <h5>{{ staffMetrics.averageScore }}%</h5>
+                  <h5>{{ staffMetrics.averageScore | number:'1.2-2' }}%</h5>
                   <small>{{ staffMetrics.trend }}</small>
                 </div>
                 <div class="col-4 text-center">

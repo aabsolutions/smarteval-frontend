@@ -14,10 +14,11 @@
 
     <div class="question-container">
       <div class="question-type-badge mb-3 text-uppercase">
-        <span *ngIf="currentQuestion.type === 'single-choice' || currentQuestion.type === 'true-false'">Selecciona una sola opción</span>
-        <span *ngIf="currentQuestion.type === 'multiple-choice'">Selecciona todas las opciones correctas</span>
-        <span *ngIf="currentQuestion.type === 'fill-blank'">Escribe tu respuesta abajo</span>
-        <span *ngIf="currentQuestion.type === 'matching'">Empareja cada concepto con su par correcto</span>
+        <span *ngIf="currentQuestion.type === 'single-choice'">Opción Única: Selecciona una sola opción</span>
+        <span *ngIf="currentQuestion.type === 'true-false'">Verdadero/Falso: Selecciona una sola opción</span>
+        <span *ngIf="currentQuestion.type === 'multiple-choice'">Opción Múltiple: Selecciona todas las opciones correctas</span>
+        <span *ngIf="currentQuestion.type === 'fill-blank'">Completar Espacio: Escribe tu respuesta abajo</span>
+        <span *ngIf="currentQuestion.type === 'matching'">Emparejamiento: Empareja cada concepto con su par correcto</span>
       </div>
       <h2>{{ currentQuestion.statement }}</h2>
       

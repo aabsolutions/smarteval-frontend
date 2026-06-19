@@ -82,17 +82,23 @@
 
           <div class="card-action-section" *ngIf="filter === 'open'">
             <button class="btn-start-assessment w-100" 
-                    (click)="goToAssessment(item._id)"
-                    [disabled]="item.attemptsCount >= item.maxAttempts && (!item.lastAttempt || item.lastAttempt.status === 'completed')">
+                    *ngIf="item.attemptsCount < item.maxAttempts || (item.lastAttempt && item.lastAttempt.status === 'in-progress')"
+                    (click)="goToAssessment(item._id)">
               <span class="btn-text">{{ item.lastAttempt && item.lastAttempt.status === 'in-progress' ? 'Continuar Examen' : 'Rendir Examen' }}</span>
               <mat-icon class="btn-icon">arrow_forward</mat-icon>
+            </button>
+            <button class="btn-view-results w-100 mt-2" 
+                    *ngIf="item.attemptsCount >= item.maxAttempts && (!item.lastAttempt || item.lastAttempt.status === 'completed')"
+                    (click)="goToResults(item._id, item.lastAttempt._id)">
+              <span class="btn-text">Ver Calificaciones</span>
+              <mat-icon class="btn-icon">visibility</mat-icon>
             </button>
           </div>
 
           <div class="card-action-section" *ngIf="filter === 'closed' && item.lastAttempt && item.lastAttempt.status === 'completed'">
             <button class="btn-view-results w-100" 
                     (click)="goToResults(item._id, item.lastAttempt._id)">
-              <span class="btn-text">Ver Resultados</span>
+              <span class="btn-text">Ver Calificaciones</span>
               <mat-icon class="btn-icon">visibility</mat-icon>
             </button>
           </div>

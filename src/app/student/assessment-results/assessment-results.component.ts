@@ -1,5 +1,6 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { interval, Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -12,12 +13,16 @@ import { StudentAssessmentsService } from '../services/student-assessments.servi
   imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule],
   templateUrl: './assessment-results.component.html'
 })
-export class AssessmentResultsComponent implements OnInit {
+export class AssessmentResultsComponent implements OnInit, OnDestroy {
   attemptId!: string;
   assessmentId!: string;
   attempt: any;
   history: any[] = [];
   processedQuestions: any[] = [];
+  
+  canReviewQuestions = false;
+  reviewTimeRemaining = 0;
+  reviewTimerSub?: Subscription;
 
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -42,6 +47,27 @@ export class AssessmentResultsComponent implements OnInit {
         }
 
         this.processFeedback();
+        
+        const REVIEW_LIMIT_MS = 180000; // 3 minutos para revisar
+        const endTimeMs = new Date(this.attempt.endTime).getTime();
+        const nowMs = Date.now();
+        
+        if (nowMs - endTimeMs < REVIEW_LIMIT_MS) {
+          this.canReviewQuestions = true;
+          this.reviewTimeRemaining = Math.floor((REVIEW_LIMIT_MS - (nowMs - endTimeMs)) / 1000);
+          
+          this.reviewTimerSub = interval(1000).subscribe(() => {
+            this.reviewTimeRemaining--;
+            if (this.reviewTimeRemaining <= 0) {
+              this.canReviewQuestions = false;
+              this.reviewTimerSub?.unsubscribe();
+              this.router.navigate(['/student/assessments']);
+            }
+          });
+        } else {
+          this.canReviewQuestions = false;
+        }
+
       } else {
         this.router.navigate(['/student/assessments']);
       }
@@ -92,5 +118,15 @@ export class AssessmentResultsComponent implements OnInit {
 
   goBack() {
     this.router.navigate(['/student/assessments']);
+  }
+  
+  get formattedTimer() {
+    const m = Math.floor(this.reviewTimeRemaining / 60);
+    const s = this.reviewTimeRemaining % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  }
+
+  ngOnDestroy() {
+    this.reviewTimerSub?.unsubscribe();
   }
 }

@@ -57,7 +57,18 @@
         </div>
         
         <!-- Feedback Detallado -->
-        <mat-card class="mt-4 p-4" *ngIf="processedQuestions.length > 0">
+        <mat-card class="mt-4 p-4" *ngIf="processedQuestions.length > 0 && canReviewQuestions">
+          <div class="alert alert-warning d-flex align-items-center justify-content-between mb-4">
+            <div>
+              <mat-icon inline class="me-2 text-warning">warning</mat-icon>
+              <strong>Modo Revisión:</strong> Tienes un tiempo limitado para ver el detalle de tus respuestas. Luego se ocultarán.
+            </div>
+            <div class="fs-4 fw-bold d-flex align-items-center">
+              <mat-icon class="me-2 text-danger">timer</mat-icon>
+              <span class="text-danger">{{ formattedTimer }}</span>
+            </div>
+          </div>
+
           <h3 class="mb-4">Detalle de Respuestas</h3>
           
           <div *ngFor="let q of processedQuestions; let i = index" class="mb-4 pb-3 border-bottom">

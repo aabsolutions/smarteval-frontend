@@ -19,7 +19,7 @@ import { StudentAssessmentsService } from '../services/student-assessments.servi
   imports: [
     CommonModule, FormsModule, ReactiveFormsModule, 
     MatTableModule, MatButtonModule, MatIconModule, 
-    MatDialogModule, MatChipsModule, HttpClientModule,
+    MatDialogModule, MatChipsModule,
     BreadcrumbComponent
   ],
   templateUrl: './late-requests.component.html',

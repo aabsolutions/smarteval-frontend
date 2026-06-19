@@ -118,7 +118,11 @@ export class UsersComponent implements OnInit, OnDestroy {
   }
 
   resetPassword(user: User) {
-    this.alertService.confirmDelete(`y resetear la clave de ${user.name}`).then((confirmed: boolean) => {
+    this.alertService.confirmAction(
+      'Resetear Contraseña',
+      `¿Estás seguro de resetear la clave de ${user.name}?`,
+      'Sí, resetear'
+    ).then((confirmed: boolean) => {
       if (confirmed) {
         this.http.post(`/api/users/${user._id}/reset-password`, {}).subscribe({
           next: () => {

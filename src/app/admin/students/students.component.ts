@@ -67,6 +67,7 @@ export class StudentsComponent implements OnInit {
   
   selectedInstitution = '';
   selectedLevel = '';
+  selectedGroup = '';
   searchText = '';
   
   private studentsService = inject(StudentsService);
@@ -102,6 +103,10 @@ export class StudentsComponent implements OnInit {
         match = false;
       }
       
+      if (filters.group && data.groupId?._id !== filters.group) {
+        match = false;
+      }
+      
       return match;
     };
 
@@ -111,6 +116,11 @@ export class StudentsComponent implements OnInit {
 
   getDisplayedColumns(): string[] {
     return this.columnDefinitions.filter((cd) => cd.visible).map((cd) => cd.def);
+  }
+
+  get filteredGroups() {
+    if (!this.selectedInstitution) return this.groups;
+    return this.groups.filter(g => g.institution?._id === this.selectedInstitution || g.institution === this.selectedInstitution);
   }
 
   loadGroups() {
@@ -184,11 +194,29 @@ export class StudentsComponent implements OnInit {
     });
   }
 
+  resetPassword(student: Student) {
+    this.alertService.confirmAction(
+      'Resetear Contraseña',
+      `¿Estás seguro de resetear la contraseña del estudiante ${student.name}? La nueva contraseña será su número de cédula/código.`,
+      'Sí, resetear'
+    ).then((confirmed: boolean) => {
+      if (confirmed) {
+        this.studentsService.resetPassword(student._id).subscribe({
+          next: () => {
+            this.alertService.successToast('Contraseña reseteada con éxito');
+          },
+          error: (err: any) => this.alertService.errorAlert('Error', err.error?.message || 'Error al resetear contraseña'),
+        });
+      }
+    });
+  }
+
   applyAllFilters() {
     const filterObj = {
       search: this.searchText,
       institution: this.selectedInstitution,
-      level: this.selectedLevel
+      level: this.selectedLevel,
+      group: this.selectedGroup
     };
     this.dataSource.filter = JSON.stringify(filterObj);
   }

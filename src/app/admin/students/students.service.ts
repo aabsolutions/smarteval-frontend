@@ -34,4 +34,8 @@ export class StudentsService {
   deleteStudent(id: string): Observable<Student> {
     return this.http.delete<Student>(`${this.apiUrl}/${id}`);
   }
+
+  resetPassword(id: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${id}/reset-password`, {});
+  }
 }

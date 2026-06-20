@@ -5,13 +5,14 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { BreadcrumbComponent } from '@shared/components/breadcrumb/breadcrumb.component';
 import { StudentAssessmentsService } from '../services/student-assessments.service';
 
 @Component({
   selector: 'app-assessments-list',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule, MatProgressBarModule, BreadcrumbComponent],
+  imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule, MatProgressBarModule, MatTooltipModule, BreadcrumbComponent],
   templateUrl: './assessments-list.component.html',
   styleUrls: ['./assessments-list.component.scss']
 })
@@ -56,9 +57,13 @@ export class AssessmentsListComponent implements OnInit {
 
   checkStatuses() {
     this.allAssessments.forEach(a => {
-      this.assessmentsService.getAttemptStatus(a._id).subscribe(status => {
-        a.attemptsCount = status.attemptsCount;
-        a.lastAttempt = status.history[0];
+      a.attemptsCount = 0; // Initialize to 0
+      this.assessmentsService.getAttemptStatus(a._id).subscribe({
+        next: (status) => {
+          a.attemptsCount = status.attemptsCount || 0;
+          a.lastAttempt = status.history?.[0];
+        },
+        error: (err) => console.error('Error fetching status for', a._id, err)
       });
     });
   }
@@ -69,6 +74,10 @@ export class AssessmentsListComponent implements OnInit {
 
   goToResults(assessmentId: string, attemptId: string) {
     this.router.navigate(['/student/assessments', assessmentId, 'results', attemptId]);
+  }
+
+  goToFlashcards(assessmentId: string) {
+    this.router.navigate(['/student/assessments', assessmentId, 'flashcards']);
   }
 }
 

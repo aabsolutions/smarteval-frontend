@@ -42,4 +42,8 @@ export class StudentAssessmentsService {
   getAttemptStatus(assessmentId: string): Observable<any> {
     return this.http.get<any>(`/api/assessment-attempts/status/${assessmentId}`);
   }
+
+  getFlashcards(assessmentId: string): Observable<{ flashcardsTimeLimitMinutes: number, questions: any[] }> {
+    return this.http.get<{ flashcardsTimeLimitMinutes: number, questions: any[] }>(`/api/assessments/${assessmentId}/flashcards`);
+  }
 }

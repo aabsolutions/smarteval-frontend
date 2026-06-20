@@ -63,12 +63,13 @@ export class AssessmentFormDialogComponent implements OnInit {
       shuffleOptions: [this.assessmentData.shuffleOptions ?? true],
       antiCheat: [this.assessmentData.antiCheat ?? false],
       maxAttempts: [this.assessmentData.maxAttempts || 1, [Validators.required, Validators.min(1)]],
-      isSimulator: [this.assessmentData.isSimulator ?? false]
+      isSimulator: [this.assessmentData.isSimulator ?? false],
+      flashcardsTimeLimitMinutes: [this.assessmentData.flashcardsTimeLimitMinutes || 0, [Validators.min(0)]]
     });
 
     if (this.isEdit) {
       // Disable all fields except allowed ones
-      const editableFields = ['title', 'description', 'endTime', 'durationMinutes', 'maxAttempts'];
+      const editableFields = ['title', 'description', 'endTime', 'durationMinutes', 'maxAttempts', 'flashcardsTimeLimitMinutes'];
       Object.keys(this.assessmentForm.controls).forEach(key => {
         if (!editableFields.includes(key)) {
           this.assessmentForm.get(key)?.disable();
@@ -96,7 +97,8 @@ export class AssessmentFormDialogComponent implements OnInit {
         description: formValue.description,
         endTime: new Date(formValue.endTime).toISOString(),
         durationMinutes: formValue.durationMinutes,
-        maxAttempts: formValue.maxAttempts
+        maxAttempts: formValue.maxAttempts,
+        flashcardsTimeLimitMinutes: formValue.flashcardsTimeLimitMinutes
       };
       this.assessmentsService.updateAssessment(this.assessmentData._id, updateData).subscribe({
         next: (res) => {

@@ -48,13 +48,16 @@ export class AssessmentResultsComponent implements OnInit, OnDestroy {
 
         this.processFeedback();
         
-        const REVIEW_LIMIT_MS = 180000; // 3 minutos para revisar
+        const REVIEW_LIMIT_MS = 30000; // 30 segundos para revisar
         const endTimeMs = new Date(this.attempt.endTime).getTime();
         const nowMs = Date.now();
         
-        if (nowMs - endTimeMs < REVIEW_LIMIT_MS) {
+        let timeDiff = nowMs - endTimeMs;
+        if (timeDiff < 0) timeDiff = 0;
+        
+        if (timeDiff < REVIEW_LIMIT_MS) {
           this.canReviewQuestions = true;
-          this.reviewTimeRemaining = Math.floor((REVIEW_LIMIT_MS - (nowMs - endTimeMs)) / 1000);
+          this.reviewTimeRemaining = Math.floor((REVIEW_LIMIT_MS - timeDiff) / 1000);
           
           this.reviewTimerSub = interval(1000).subscribe(() => {
             this.reviewTimeRemaining--;

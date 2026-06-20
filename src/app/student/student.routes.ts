@@ -6,6 +6,7 @@ import { AssessmentWaitroomComponent } from './assessment-waitroom/assessment-wa
 import { AssessmentPlayerComponent } from './assessment-player/assessment-player.component';
 import { AssessmentResultsComponent } from './assessment-results/assessment-results.component';
 import { LateRequestsComponent } from './late-requests/late-requests.component';
+import { FlashcardsPlayerComponent } from './flashcards-player/flashcards-player.component';
 
 export const STUDENT_ROUTE: Route[] = [
   {
@@ -42,6 +43,10 @@ export const STUDENT_ROUTE: Route[] = [
   {
     path: 'late-requests',
     component: LateRequestsComponent,
+  },
+  {
+    path: 'assessments/:id/flashcards',
+    component: FlashcardsPlayerComponent,
   },
   {
     path: 'profile',

@@ -3,12 +3,12 @@
     <div class="block-header" *ngFor="let breadscrum of breadscrums">
       <app-breadcrumb [title]="breadscrum.title" [items]="breadscrum.items" [active_item]="breadscrum.active"></app-breadcrumb>
     </div>
-    
+
     <div class="row assessment-grid">
       <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12" *ngFor="let item of assessments">
         <div class="assessment-card" [class.simulator-card]="item.isSimulator" [class.closed-card]="filter === 'closed'">
           <div class="card-glow"></div>
-          
+
           <div class="card-header-section">
             <div class="d-flex justify-content-between align-items-start mb-2">
               <span class="topic-pill">{{ item.topicId?.name }}</span>
@@ -46,11 +46,11 @@
               <span>Docente: <strong>{{ item.teacherId?.name || 'Desconocido' }}</strong></span>
             </div>
             <div class="mb-2 d-flex align-items-center">
-              <mat-icon class="me-2 text-success">event</mat-icon> 
+              <mat-icon class="me-2 text-success">event</mat-icon>
               <span>Inicia: <strong>{{ item.startTime | date:'medium' }}</strong></span>
             </div>
             <div class="d-flex align-items-center">
-              <mat-icon class="me-2 text-danger">event_available</mat-icon> 
+              <mat-icon class="me-2 text-danger">event_available</mat-icon>
               <span>Cierra: <strong>{{ item.extensionUntil ? (item.extensionUntil | date:'medium') : (item.endTime | date:'medium') }}</strong></span>
             </div>
             <div *ngIf="item.extensionUntil" class="mt-2 text-success small d-flex align-items-center">
@@ -58,7 +58,7 @@
               <strong>Plazo extendido concedido</strong>
             </div>
           </div>
-            
+
           <div class="card-status-section" *ngIf="item.lastAttempt">
             <div class="status-indicator" *ngIf="item.lastAttempt.status === 'completed'">
               <div class="score-display">
@@ -68,12 +68,12 @@
               </div>
               <span class="status-label">Nota Final</span>
             </div>
-            
+
             <div class="status-indicator in-progress" *ngIf="item.lastAttempt.status === 'in-progress'">
               <mat-icon class="pulse-icon text-warning">play_circle_filled</mat-icon>
               <span class="status-label text-warning fw-bold">Intento en curso</span>
             </div>
-            
+
             <div class="attempts-counter">
               <mat-progress-bar mode="determinate" [value]="(item.attemptsCount / item.maxAttempts) * 100" class="mb-1 rounded-pill"></mat-progress-bar>
               <small class="text-muted d-block text-end">Intentos: {{ item.attemptsCount }} de {{ item.maxAttempts }}</small>
@@ -81,13 +81,21 @@
           </div>
 
           <div class="card-action-section" *ngIf="filter === 'open'">
-            <button class="btn-start-assessment w-100" 
+            <button class="btn-start-assessment w-100 mb-2"
+                    [ngStyle]="{'background': (item.attemptsCount > 0) ? '#e5e7eb' : '#10b981', 'color': (item.attemptsCount > 0) ? '#9ca3af' : 'white', 'cursor': (item.attemptsCount > 0) ? 'not-allowed' : 'pointer'}"
+                    [disabled]="item.attemptsCount > 0"
+                    (click)="goToFlashcards(item._id)"
+                    matTooltip="El repaso se deshabilita una vez que inicias un intento del examen">
+              <span class="btn-text">Repaso con Flashcards</span>
+              <mat-icon class="btn-icon">style</mat-icon>
+            </button>
+            <button class="btn-start-assessment w-100"
                     *ngIf="item.attemptsCount < item.maxAttempts || (item.lastAttempt && item.lastAttempt.status === 'in-progress')"
                     (click)="goToAssessment(item._id)">
               <span class="btn-text">{{ item.lastAttempt && item.lastAttempt.status === 'in-progress' ? 'Continuar Examen' : 'Rendir Examen' }}</span>
               <mat-icon class="btn-icon">arrow_forward</mat-icon>
             </button>
-            <button class="btn-view-results w-100 mt-2" 
+            <button class="btn-view-results w-100 mt-2"
                     *ngIf="item.attemptsCount >= item.maxAttempts && (!item.lastAttempt || item.lastAttempt.status === 'completed')"
                     (click)="goToResults(item._id, item.lastAttempt._id)">
               <span class="btn-text">Ver Calificaciones</span>
@@ -96,7 +104,7 @@
           </div>
 
           <div class="card-action-section" *ngIf="filter === 'closed' && item.lastAttempt && item.lastAttempt.status === 'completed'">
-            <button class="btn-view-results w-100" 
+            <button class="btn-view-results w-100"
                     (click)="goToResults(item._id, item.lastAttempt._id)">
               <span class="btn-text">Ver Calificaciones</span>
               <mat-icon class="btn-icon">visibility</mat-icon>
@@ -111,8 +119,8 @@
         <mat-icon>{{ filter === 'open' ? 'task_alt' : 'history' }}</mat-icon>
       </div>
       <h3>{{ filter === 'open' ? '¡Todo al día!' : 'Sin exámenes cerrados' }}</h3>
-      <p>{{ filter === 'open' 
-        ? 'No tienes exámenes abiertos en este momento. Tómate un descanso o repasa tus lecciones.' 
+      <p>{{ filter === 'open'
+        ? 'No tienes exámenes abiertos en este momento. Tómate un descanso o repasa tus lecciones.'
         : 'Aún no tienes exámenes finalizados. Cuando un examen cierre, aparecerá aquí con tus resultados.' }}</p>
     </div>
   </div>

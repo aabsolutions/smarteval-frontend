@@ -43,13 +43,25 @@
               
               <div class="flip-card-inner">
                 <!-- Front side -->
-                <div class="flip-card-front">
+                <div class="flip-card-front color-{{card.colorIndex}}">
                   <div class="front-content">
                     <div class="statement" [innerHTML]="card.statement"></div>
                     <img *ngIf="card.imageUrl" [src]="card.imageUrl" alt="Imagen de pregunta" />
-                    <div class="options-grid-front" *ngIf="card.options?.length">
-                      <div *ngFor="let opt of card.options; let j = index" class="option-card color-{{j % 4}}">
+                    
+                    <div class="options-grid-front" *ngIf="card.type !== 'matching' && card.options?.length">
+                      <div *ngFor="let opt of card.options" class="option-card">
                         <span [innerHTML]="opt"></span>
+                      </div>
+                    </div>
+
+                    <div class="matching-front-grid" *ngIf="card.type === 'matching'">
+                      <div class="matching-front-column">
+                        <div class="col-title">Empareja estos:</div>
+                        <div *ngFor="let opt of card.options" class="option-card" [innerHTML]="opt"></div>
+                      </div>
+                      <div class="matching-front-column">
+                        <div class="col-title">Con estos:</div>
+                        <div *ngFor="let target of card.matchingRightOptions" class="option-card target" [innerHTML]="target"></div>
                       </div>
                     </div>
                   </div>

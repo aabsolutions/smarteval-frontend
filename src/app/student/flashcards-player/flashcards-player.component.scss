@@ -175,9 +175,8 @@ $colors: (
   position: relative;
   height: auto;
   min-height: 400px;
-  background: white;
-  color: #1e293b;
-  border: 1px solid rgba(255,255,255,0.8);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.2);
 
   .front-content {
     flex-grow: 1;
@@ -192,9 +191,8 @@ $colors: (
     font-size: 1.5rem;
     font-weight: 700;
     line-height: 1.4;
-    background: linear-gradient(45deg, #1e293b, #475569);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
   }
 
   img {
@@ -207,26 +205,9 @@ $colors: (
     flex-shrink: 0;
   }
 
-  .progress-pill {
-    background: rgba(99, 102, 241, 0.1);
-    color: #4f46e5;
-    padding: 0.5rem 1rem;
-    border-radius: 2rem;
-    font-weight: 600;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    
-    &.timer-pill {
-      background: rgba(239, 68, 68, 0.1);
-      color: #ef4444;
-    }
-  }
-
   .hint {
     font-size: 0.875rem;
-    color: #94a3b8;
+    color: rgba(255, 255, 255, 0.8);
     font-weight: 500;
     display: flex;
     align-items: center;
@@ -255,7 +236,54 @@ $colors: (
       align-items: center;
       justify-content: center;
       min-height: 60px;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+  }
+
+  .matching-front-grid {
+    margin-top: 1.5rem;
+    width: 100%;
+    display: flex;
+    gap: 1rem;
+
+    .matching-front-column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+
+      .col-title {
+        font-size: 0.9rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.5rem;
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      .option-card {
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-align: center;
+        background: rgba(255, 255, 255, 0.25);
+        color: white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border: 1px solid rgba(255,255,255,0.3);
+        min-height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &.target {
+          background: rgba(0, 0, 0, 0.15);
+          border: 1px dashed rgba(255,255,255,0.4);
+        }
+      }
     }
   }
 }

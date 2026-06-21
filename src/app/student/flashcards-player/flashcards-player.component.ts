@@ -10,6 +10,8 @@ interface Flashcard {
   correctAnswers: string[];
   imageUrl?: string;
   type: string;
+  colorIndex?: number;
+  matchingRightOptions?: string[];
 }
 
 @Component({
@@ -50,7 +52,13 @@ export class FlashcardsPlayerComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.assessmentsService.getFlashcards(id).subscribe({
       next: (data) => {
-        this.cards = data.questions || [];
+        this.cards = (data.questions || []).map((q: any, idx: number) => {
+          q.colorIndex = idx % 5;
+          if (q.type === 'matching') {
+            q.matchingRightOptions = [...(q.correctAnswers || [])].sort(() => 0.5 - Math.random());
+          }
+          return q;
+        });
         this.isLoading = false;
         if (this.cards.length === 0) {
           this.isFinished = true;

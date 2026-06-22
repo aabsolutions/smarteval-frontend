@@ -2,152 +2,111 @@
   <div class="content-block">
     @for (breadscrum of breadscrums; track breadscrum) {
     <div class="block-header">
-      <!-- breadcrumb -->
-      <app-breadcrumb [title]="breadscrum.title" [items]="breadscrum.items" [active_item]="breadscrum.active">
-      </app-breadcrumb>
+      <app-breadcrumb [title]="breadscrum.title" [items]="breadscrum.items" [active_item]="breadscrum.active"></app-breadcrumb>
     </div>
     }
-    <!-- Widgets -->
-    <div class="row">
-      <div class="col-xl-8 col-lg-8 col-md-12 col-sm-12">
-        <div class="card">
-          <div class="body">
-            <div class="row align-items-center">
-              <div class="col-md-4 mb-0">
-                <div class="recent-report__chart">
-                  <canvas baseChart height="200px" width="200px" class="chart" [data]="doughnutChartData"
-                    [labels]="doughnutChartLabels" [options]="doughnutChartOptions" [type]="doughnutChartType"></canvas>
-                </div>
+
+    <!-- MAIN DASHBOARD GRID -->
+    <div class="dashboard-grid">
+      
+      <!-- HERO: Next Exam -->
+      <div class="hero-card glass-panel">
+        <div class="hero-content">
+          <span class="badge" [style.backgroundColor]="isExamActive ? '#e21b3c' : 'rgba(255, 255, 255, 0.2)'">
+            {{ isExamActive ? '¡EXAMEN EN CURSO!' : 'Próximo Examen' }}
+          </span>
+          @if (nextExam) {
+            <h2 class="exam-title">{{ nextExam.title }}</h2>
+            
+            <div class="exam-details">
+              <p><mat-icon>menu_book</mat-icon> <strong>Materia:</strong> {{ nextExam.topicId?.name || 'N/A' }}</p>
+              <p><mat-icon>person</mat-icon> <strong>Docente:</strong> {{ nextExam.teacherId?.name || 'N/A' }}</p>
+              <p><mat-icon>schedule</mat-icon> <strong>Inicio:</strong> {{ nextExam.startTime | date:'dd/MM/yyyy HH:mm' }}hs — <strong>Cierre:</strong> {{ nextExam.endTime | date:'dd/MM/yyyy HH:mm' }}hs</p>
+            </div>
+
+            <p style="color: white; font-weight: bold; margin-bottom: 8px;">
+              {{ isExamActive ? 'Tiempo restante para el cierre:' : 'Tiempo restante para apertura:' }}
+            </p>
+            <div class="countdown">
+              <div class="time-block">
+                <span class="number">{{ countdownDays | number:'2.0-0' }}</span>
+                <span class="label">Días</span>
               </div>
-              <div class="col-md-8">
-                <h4>
-                  <div class="weight-600 col-pink pt-1">Good Job, Sarah. Keep Going!! </div>
-                </h4>
-                <p class="font-15 max-width-600">You task are 80% completed this week. Keep it up and improve your
-                  result. Progress is very good!!!</p>
-                <div class="row">
-                  <div class="col-lg-6">
-                    <div><i class="fa fa-circle dot1 msr-2"></i> Development - 1 hour 50 Mins</div>
-                  </div>
-                  <div class="col-lg-6">
-                    <div><i class="fa fa-circle dot2 msr-2"></i> Java Class - 50 Mins</div>
-                  </div>
-                  <div class="col-lg-6">
-                    <div><i class="fa fa-circle dot3 msr-2"></i> painting - 1 hour 20 Mins</div>
-                  </div>
-                  <div class="col-lg-6">
-                    <div><i class="fa fa-circle dot4 msr-2"></i> Geography Class - 30 Mins</div>
-                  </div>
-                </div>
+              <div class="time-separator">:</div>
+              <div class="time-block">
+                <span class="number">{{ countdownHours | number:'2.0-0' }}</span>
+                <span class="label">Horas</span>
+              </div>
+              <div class="time-separator">:</div>
+              <div class="time-block">
+                <span class="number">{{ countdownMinutes | number:'2.0-0' }}</span>
+                <span class="label">Min</span>
+              </div>
+              <div class="time-separator">:</div>
+              <div class="time-block">
+                <span class="number">{{ countdownSeconds | number:'2.0-0' }}</span>
+                <span class="label">Seg</span>
               </div>
             </div>
+            <button mat-flat-button color="primary" class="join-btn" (click)="joinExam()">
+              <mat-icon>play_circle_filled</mat-icon> Ingresar al Waitroom
+            </button>
+          } @else {
+            <h2 class="exam-title">No hay exámenes próximos</h2>
+            <p style="color: white; font-size: 1.2rem;">¡Estás al día! Aprovechá a repasar.</p>
+          }
+        </div>
+      </div>
+
+      <!-- PROGRESS CHART -->
+      <div class="progress-card glass-panel">
+        <h3 class="panel-title">Efectividad Global</h3>
+        <div class="chart-container">
+          <canvas baseChart [data]="progressChartData" [options]="progressChartOptions" [type]="progressChartType"></canvas>
+          <div class="chart-center-text">
+            <span class="percentage">{{ progressPercentage }}%</span>
+            <span class="subtitle" style="color: #666">Efectividad</span>
           </div>
         </div>
       </div>
-      <div class="col-xl-4 col-lg-4 col-md-12 col-sm-12">
-        <div class="card l-bg-purple p-2 px-4 text-white py-3">
-          <div class="info d-flex justify-content-between align-items-center">
-            <div class="d-flex flex-column text-white"> <span class="font-22 font-b-500">English Vocabulary Test</span>
-              <small class="mt-2 font-16"><i class=" far fa-clock msr-2"></i> 25, Feb, 2020. 04:00 PM</small>
+
+      <!-- RECENT GRADES -->
+      <div class="grades-card glass-panel">
+        <h3 class="panel-title">Últimas Notas (Histórico)</h3>
+        <div class="grades-list">
+          @for (grade of recentGrades; track grade.subject) {
+          <div class="grade-item">
+            <div class="grade-info">
+              <h4>{{ grade.subject }}</h4>
+              <span class="date">{{ grade.date }}</span>
+            </div>
+            <div class="grade-score" [class.excellent]="grade.isExcellent">
+              {{ grade.grade | number:'1.0-1' }}/{{ grade.maxScore }}
             </div>
           </div>
+          }
         </div>
-        <div class="card l-bg-green p-2 px-4 text-white py-3">
-          <div class="info d-flex justify-content-between align-items-center">
-            <div class="d-flex flex-column text-white"> <span class="font-22 font-b-500">Science Homework
-                Submition</span>
-              <small class="mt-2 font-16"><i class="far fa-clock msr-2"></i> 28, Feb, 2020. 10:00 AM</small>
+      </div>
+
+      <!-- UPCOMING (ALERTS/CALENDAR) -->
+      <div class="upcoming-card glass-panel">
+        <h3 class="panel-title">Agenda Corta</h3>
+        <div class="agenda-list">
+          @for (item of upcomingClasses; track item.title) {
+          <div class="agenda-item">
+            <mat-icon class="agenda-icon">event</mat-icon>
+            <div class="agenda-details">
+              <h4>{{ item.title }}</h4>
+              <span>{{ item.time }}</span>
             </div>
           </div>
+          }
+          @if (upcomingClasses.length === 0) {
+            <p style="color: #666; font-weight: bold;">No hay más actividades pendientes.</p>
+          }
         </div>
       </div>
-    </div>
-    <!-- #END# Widgets -->
-    <div class="row clearfix">
-      <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
-        <app-course-progress></app-course-progress>
-      </div>
-      <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
-        <app-daily-timetable></app-daily-timetable>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-xl-4 col-lg-4 col-md-12 col-sm-12">
-        <mat-card>
-          <mat-card-header>
-            <mat-card-title>Your Progress</mat-card-title>
-          </mat-card-header>
-          <mat-card-content>
-            <ng-scrollbar style="height: 360px" visibility="hover">
-              <app-progress-table [subjects]="subjects"></app-progress-table>
-            </ng-scrollbar>
-          </mat-card-content>
-        </mat-card>
-      </div>
-      <div class="col-xl-4 col-lg-4 col-md-12 col-sm-12">
-        <mat-card>
-          <mat-card-header>
-            <mat-card-title>Time Spent On Learning</mat-card-title>
-          </mat-card-header>
-          <mat-card-content>
-            <apx-chart [series]="barChartOptions.series!" [chart]="barChartOptions.chart!"
-              [dataLabels]="barChartOptions.dataLabels!" [plotOptions]="barChartOptions.plotOptions!"
-              [responsive]="barChartOptions.responsive!" [xaxis]="barChartOptions.xaxis!" [grid]="barChartOptions.grid!"
-              [legend]="barChartOptions.legend!" [fill]="barChartOptions.fill!"></apx-chart>
-          </mat-card-content>
-        </mat-card>
-      </div>
-      <div class="col-xl-4 col-lg-4 col-md-12 col-sm-12">
-        <mat-card>
-          <mat-card-header class="header-style">
-            <mat-card-title> Upcomming Class</mat-card-title>
-            <a mat-button color="primary" href="#" (click)="$event.preventDefault();">View All</a>
-          </mat-card-header>
-          <mat-card-content>
-            <ng-scrollbar style="height: 360px" visibility="hover">
-              <div class="doc-file-type">
-                <app-emp-schedule [schedules]="scheduleList"></app-emp-schedule>
-              </div>
-            </ng-scrollbar>
-          </mat-card-content>
-        </mat-card>
-      </div>
-    </div>
-    <div class="row clearfix">
-      <div class="col-xs-12 col-sm-12 col-md-8 col-lg-8">
-        <div class="card">
-          <div class="header">
-            <h2>Test Results</h2>
-          </div>
-          <div class="body">
-            <apx-chart [series]="areaChartOptions.series!" [chart]="areaChartOptions.chart!"
-              [xaxis]="areaChartOptions.xaxis!" [yaxis]="areaChartOptions.yaxis!" [colors]="areaChartOptions.colors!"
-              [stroke]="areaChartOptions.stroke!" [legend]="areaChartOptions.legend!" [grid]="areaChartOptions.grid!"
-              [tooltip]="areaChartOptions.tooltip!" [dataLabels]="areaChartOptions.dataLabels!"></apx-chart>
-          </div>
-        </div>
-      </div>
-      <div class="col-xs-12 col-sm-12 col-md-4 col-lg-4">
-        <app-upcoming-assignments></app-upcoming-assignments>
-      </div>
-    </div>
-    <div class="row clearfix">
-      <div class="col-xs-12 col-sm-12 col-md-4 col-lg-4">
-        <app-recent-grades></app-recent-grades>
-      </div>
-      <div class="col-xs-12 col-sm-12 col-md-8 col-lg-8">
-        <mat-card>
-          <mat-card-header class="header-style">
-            <mat-card-title>Library Book Issue List</mat-card-title>
-            <a mat-button color="primary" href="#" (click)="$event.preventDefault();">View All</a>
-          </mat-card-header>
-          <mat-card-content>
-            <ng-scrollbar style="height: 400px" visibility="hover">
-              <app-table-card [dataSource]="booksData" [columnDefinitions]="libraryColumnDefinitions"></app-table-card>
-            </ng-scrollbar>
-          </mat-card-content>
-        </mat-card>
-      </div>
+
     </div>
   </div>
 </section>

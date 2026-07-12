@@ -5,6 +5,9 @@ import { Observable } from 'rxjs';
 export interface Institution {
   _id: string;
   name: string;
+  logoUrl?: string;
+  coverUrl?: string;
+  reportIdentification?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -16,12 +19,12 @@ export class InstitutionsService {
     return this.http.get<Institution[]>(this.apiUrl);
   }
 
-  createInstitution(institution: Partial<Institution>): Observable<Institution> {
-    return this.http.post<Institution>(this.apiUrl, institution);
+  createInstitution(formData: FormData): Observable<Institution> {
+    return this.http.post<Institution>(this.apiUrl, formData);
   }
 
-  updateInstitution(id: string, institution: Partial<Institution>): Observable<Institution> {
-    return this.http.put<Institution>(`${this.apiUrl}/${id}`, institution);
+  updateInstitution(id: string, formData: FormData): Observable<Institution> {
+    return this.http.put<Institution>(`${this.apiUrl}/${id}`, formData);
   }
 
   deleteInstitution(id: string): Observable<any> {

@@ -27,6 +27,10 @@ import { AlertService } from '@core/services/alert.service';
 export class InstitutionFormDialogComponent {
   institutionForm: FormGroup;
   isEdit = false;
+  logoFile: File | null = null;
+  coverFile: File | null = null;
+  logoPreview: string | ArrayBuffer | null = null;
+  coverPreview: string | ArrayBuffer | null = null;
 
   private institutionsService = inject(InstitutionsService);
   private fb = inject(FormBuilder);
@@ -40,16 +44,67 @@ export class InstitutionFormDialogComponent {
     
     this.institutionForm = this.fb.group({
       name: [data?.institution?.name || '', [Validators.required]],
+      reportIdentification: [data?.institution?.reportIdentification || ''],
     });
+
+    if (data?.institution?.logoUrl) {
+      this.logoPreview = data.institution.logoUrl;
+    }
+    if (data?.institution?.coverUrl) {
+      this.coverPreview = data.institution.coverUrl;
+    }
+  }
+
+  onFileChange(event: any, type: 'logo' | 'cover') {
+    const file = event.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        this.alertService.errorAlert('Error', 'El archivo supera el tamaño máximo permitido (2MB)');
+        return;
+      }
+      if (!file.type.match(/image\/(jpeg|png)/)) {
+        this.alertService.errorAlert('Error', 'Formato no válido. Solo se permiten imágenes JPG y PNG.');
+        return;
+      }
+
+      if (type === 'logo') {
+        this.logoFile = file;
+      } else {
+        this.coverFile = file;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (type === 'logo') {
+          this.logoPreview = e.target?.result || null;
+        } else {
+          this.coverPreview = e.target?.result || null;
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   }
 
   onSubmit() {
     if (this.institutionForm.invalid) return;
 
-    const institutionData = this.institutionForm.value;
+    const formData = new FormData();
+    formData.append('name', this.institutionForm.get('name')?.value);
+    
+    const reportId = this.institutionForm.get('reportIdentification')?.value;
+    if (reportId) {
+      formData.append('reportIdentification', reportId);
+    }
+
+    if (this.logoFile) {
+      formData.append('logo', this.logoFile);
+    }
+    if (this.coverFile) {
+      formData.append('cover', this.coverFile);
+    }
 
     if (this.isEdit && this.data.institution) {
-      this.institutionsService.updateInstitution(this.data.institution._id, institutionData).subscribe({
+      this.institutionsService.updateInstitution(this.data.institution._id, formData).subscribe({
         next: (res) => {
           this.alertService.successToast('Institución actualizada');
           this.dialogRef.close(res);
@@ -57,7 +112,7 @@ export class InstitutionFormDialogComponent {
         error: (err: any) => this.alertService.errorAlert('Error', err.error?.message || 'Error actualizando institución'),
       });
     } else {
-      this.institutionsService.createInstitution(institutionData).subscribe({
+      this.institutionsService.createInstitution(formData).subscribe({
         next: (res) => {
           this.alertService.successToast('Institución creada');
           this.dialogRef.close(res);

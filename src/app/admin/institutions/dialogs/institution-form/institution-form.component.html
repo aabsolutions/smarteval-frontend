@@ -6,6 +6,27 @@
       <input matInput formControlName="name" required />
       <mat-error *ngIf="institutionForm.get('name')?.hasError('required')">El nombre es requerido</mat-error>
     </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-100 mb-3">
+      <mat-label>Identificación para Reportes (Ej. Ministerio...)</mat-label>
+      <input matInput formControlName="reportIdentification" />
+    </mat-form-field>
+
+    <div class="mb-3">
+      <label class="form-label d-block">Logo Institucional (Max 2MB)</label>
+      <input type="file" (change)="onFileChange($event, 'logo')" accept="image/png, image/jpeg" class="form-control" />
+      <div *ngIf="logoPreview" class="mt-2">
+        <img [src]="logoPreview" alt="Logo preview" style="max-height: 100px; max-width: 100%; object-fit: contain; border: 1px solid #ccc; border-radius: 4px;" />
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label d-block">Portada Institucional (Max 2MB)</label>
+      <input type="file" (change)="onFileChange($event, 'cover')" accept="image/png, image/jpeg" class="form-control" />
+      <div *ngIf="coverPreview" class="mt-2">
+        <img [src]="coverPreview" alt="Cover preview" style="max-height: 150px; max-width: 100%; object-fit: cover; border: 1px solid #ccc; border-radius: 4px;" />
+      </div>
+    </div>
   </form>
 </mat-dialog-content>
 <mat-dialog-actions align="end">

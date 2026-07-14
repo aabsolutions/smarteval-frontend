@@ -1,1 +1,31 @@
 /* Assessments SCSS */
+
+.mat-column-actions {
+  white-space: nowrap !important;
+  width: 250px !important;
+  min-width: 250px !important;
+  text-align: right;
+  overflow: visible !important;
+}
+
+.mat-column-title {
+  width: 25%;
+}
+
+.mat-column-topic {
+  width: 15%;
+}
+
+.mat-column-groups {
+  width: 15%;
+}
+
+.mat-column-startTime, .mat-column-endTime {
+  white-space: nowrap;
+  width: 12%;
+}
+
+.tbl-action-btn {
+  margin-left: 2px !important; /* Reduce space between buttons */
+  margin-right: 2px !important;
+}

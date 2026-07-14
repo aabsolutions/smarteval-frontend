@@ -261,7 +261,7 @@ export class AssessmentResultsComponent implements OnInit {
     if (!studentAnswers || studentAnswers.length === 0) return false;
 
     if (type === 'fill-blank') {
-      const normalizeStr = (str: string) => (str || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+      const normalizeStr = (str: string) => (str || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/\s+/g, ' ');
       const userAns = normalizeStr(studentAnswers[0]);
       return correctAnswers.some(c => normalizeStr(c) === userAns);
     }

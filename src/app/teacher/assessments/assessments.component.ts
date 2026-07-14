@@ -1,7 +1,8 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ViewChild, AfterViewInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -32,12 +33,13 @@ pdfMake.vfs = pdfFonts.pdfMake ? pdfFonts.pdfMake.vfs : pdfFonts.vfs;
     MatDialogModule,
     BreadcrumbComponent,
     FeatherIconsComponent,
-    RouterModule
+    RouterModule,
+    MatPaginatorModule
   ],
   templateUrl: './assessments.component.html',
   styleUrls: ['./assessments.component.scss'],
 })
-export class AssessmentsComponent implements OnInit {
+export class AssessmentsComponent implements OnInit, AfterViewInit {
   breadscrums = [
     {
       title: 'Gestión de Exámenes',
@@ -53,12 +55,25 @@ export class AssessmentsComponent implements OnInit {
   public dialog = inject(MatDialog);
   private alertService = inject(AlertService);
 
+  showArchived: boolean = false;
+
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+
   ngOnInit(): void {
     this.loadAssessments();
   }
 
+  ngAfterViewInit() {
+    this.dataSource.paginator = this.paginator;
+  }
+
+  toggleView() {
+    this.showArchived = !this.showArchived;
+    this.loadAssessments();
+  }
+
   loadAssessments() {
-    this.assessmentsService.getAllAssessments().subscribe({
+    this.assessmentsService.getAllAssessments(this.showArchived).subscribe({
       next: (data) => {
         this.dataSource.data = data;
       },
@@ -91,6 +106,21 @@ export class AssessmentsComponent implements OnInit {
             this.loadAssessments();
           },
           error: (err: any) => this.alertService.errorAlert('Error', err.error?.message || 'Error al eliminar examen'),
+        });
+      }
+    });
+  }
+
+  archiveAssessment(assessment: Assessment) {
+    const action = this.showArchived ? 'desarchivar' : 'archivar';
+    this.alertService.confirmAction(`¿Quieres ${action} el examen ${assessment.title}?`, `Si lo hacés, ${action === 'archivar' ? 'dejará de verse en la lista principal' : 'volverá a la lista principal'}.`, `Sí, ${action}`).then((confirmed: boolean) => {
+      if (confirmed) {
+        this.assessmentsService.toggleArchive(assessment._id).subscribe({
+          next: () => {
+            this.alertService.successToast(`Examen ${action}do con éxito`);
+            this.loadAssessments();
+          },
+          error: (err: any) => this.alertService.errorAlert('Error', err.error?.message || `Error al ${action} examen`),
         });
       }
     });

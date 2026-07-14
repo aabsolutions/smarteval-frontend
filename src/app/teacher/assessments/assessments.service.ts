@@ -23,8 +23,8 @@ export class AssessmentsService {
   private http = inject(HttpClient);
   private apiUrl = '/api/assessments';
 
-  getAllAssessments(): Observable<Assessment[]> {
-    return this.http.get<Assessment[]>(`${this.apiUrl}/teacher`);
+  getAllAssessments(archived: boolean = false): Observable<Assessment[]> {
+    return this.http.get<Assessment[]>(`${this.apiUrl}/teacher?archived=${archived}`);
   }
 
   createAssessment(assessment: Partial<Assessment>): Observable<Assessment> {
@@ -41,6 +41,10 @@ export class AssessmentsService {
 
   deleteAssessment(id: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`);
+  }
+
+  toggleArchive(id: string): Observable<Assessment> {
+    return this.http.post<Assessment>(`${this.apiUrl}/${id}/archive`, {});
   }
 
   getResults(id: string): Observable<any> {

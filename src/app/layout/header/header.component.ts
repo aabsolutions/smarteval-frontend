@@ -67,6 +67,7 @@ export class HeaderComponent
   userImg?: string;
   userName?: string;
   homePage?: string;
+  institutionLogo: string = 'assets/images/logo.png';
   isNavbarCollapsed = true;
   flagvalue: string | string[] | undefined;
   countryName: string | string[] = [];
@@ -89,10 +90,20 @@ export class HeaderComponent
     // Subscribe to user changes to dynamically update header
     this.subs.sink = this.authService.user$.subscribe(user => {
       if (user && Object.keys(user).length > 0) {
-        this.userImg = './assets/images/user/' + (user.avatar || 'user.jpg');
+        this.userImg = user.avatar?.startsWith('http') 
+          ? user.avatar 
+          : './assets/images/user/' + (user.avatar || 'user.jpg');
         const u: any = user;
         this.userName = u['name'] || (u['firstName'] ? u['firstName'] + ' ' + u['lastName'] : 'User');
         
+        if (u.institutionLogo) {
+          this.institutionLogo = u.institutionLogo.startsWith('http') 
+            ? u.institutionLogo 
+            : `/uploads/${u.institutionLogo}`;
+        } else {
+          this.institutionLogo = 'assets/images/logo.png';
+        }
+
         const userRole = user.roles?.[0]?.name;
         if (userRole === Role.Admin) {
           this.homePage = 'admin/dashboard/main';

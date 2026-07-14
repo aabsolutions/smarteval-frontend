@@ -10,6 +10,7 @@ export interface Group {
   jornada?: string;
   nivel?: string;
   teacher?: any;
+  students?: any[];
   createdBy?: any;
   createdAt?: string;
   updatedAt?: string;

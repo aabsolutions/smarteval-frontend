@@ -69,6 +69,14 @@
                   <td mat-cell *matCellDef="let row"> {{row.nivel}} </td>
                 </ng-container>
 
+                <!-- Total Students Column -->
+                <ng-container matColumnDef="totalStudents">
+                  <th mat-header-cell *matHeaderCellDef> Estudiantes </th>
+                  <td mat-cell *matCellDef="let row">
+                    <span class="badge badge-solid-blue">{{ row.students?.length || 0 }}</span>
+                  </td>
+                </ng-container>
+
                 <!-- Teacher Column -->
                 <ng-container matColumnDef="teacher">
                   <th mat-header-cell *matHeaderCellDef> Docente </th>

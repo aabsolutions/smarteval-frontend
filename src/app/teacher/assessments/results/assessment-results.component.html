@@ -176,9 +176,17 @@
                     <ng-container matColumnDef="status">
                       <th mat-header-cell *matHeaderCellDef> Estado </th>
                       <td mat-cell *matCellDef="let element">
-                        <span class="badge" [ngClass]="element.percentage >= 70 ? 'badge-solid-green' : 'badge-solid-red'">
+                        <span *ngIf="element.status === 'paper-pending'" class="badge badge-solid-orange">
+                          Pendiente de Carga
+                        </span>
+                        <span class="badge" *ngIf="element.status !== 'paper-pending'" [ngClass]="element.percentage >= 70 ? 'badge-solid-green' : 'badge-solid-red'">
                           {{ element.percentage >= 70 ? 'Aprobado' : 'Reprobado' }}
                         </span>
+                        <div class="mt-1">
+                          <span class="badge" [ngClass]="element.source === 'paper' ? 'badge-solid-blue' : 'badge-solid-cyan'">
+                            {{ element.source === 'paper' ? '📄 Papel' : '💻 Online' }}
+                          </span>
+                        </div>
                       </td>
                     </ng-container>
 
@@ -193,7 +201,10 @@
                     <ng-container matColumnDef="actions">
                       <th mat-header-cell *matHeaderCellDef aria-label="row actions">Acciones</th>
                       <td mat-cell *matCellDef="let element">
-                        <button mat-icon-button color="warn" (click)="archiveAttempt(element); $event.stopPropagation()" matTooltip="Eliminar Resultado y Restaurar Intento">
+                        <button *ngIf="element.status === 'paper-pending' && element.source === 'paper'" mat-icon-button color="primary" (click)="gradePaper(element); $event.stopPropagation()" matTooltip="Cargar Calificación Manual">
+                          <mat-icon>edit_note</mat-icon>
+                        </button>
+                        <button *ngIf="element.status !== 'paper-pending'" mat-icon-button color="warn" (click)="archiveAttempt(element); $event.stopPropagation()" matTooltip="Eliminar Resultado y Restaurar Intento">
                           <mat-icon>delete_sweep</mat-icon>
                         </button>
                       </td>

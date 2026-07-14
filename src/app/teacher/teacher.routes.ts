@@ -36,6 +36,10 @@ export const TEACHER_ROUTE: Route[] = [
     loadComponent: () => import('./assessments/results/assessment-results.component').then(m => m.AssessmentResultsComponent)
   },
   {
+    path: 'paper-grading/:attemptId',
+    loadComponent: () => import('./assessments/paper-grading/paper-grading.component').then(m => m.PaperGradingComponent)
+  },
+  {
     path: 'profile',
     loadComponent: () => import('@shared/components/profile/profile.component').then(m => m.ProfileComponent)
   },

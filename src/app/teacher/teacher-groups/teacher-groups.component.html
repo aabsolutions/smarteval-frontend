@@ -42,6 +42,17 @@
                   <td mat-cell *matCellDef="let row"> {{row.nivel}} </td>
                 </ng-container>
 
+                <!-- Students Column -->
+                <ng-container matColumnDef="students">
+                  <th mat-header-cell *matHeaderCellDef> Estudiantes </th>
+                  <td mat-cell *matCellDef="let row">
+                    <span class="badge badge-solid-blue me-2">{{ row.students?.length || 0 }}</span>
+                    <button mat-icon-button color="primary" matTooltip="Ver Nómina" (click)="openStudentRoster(row)" *ngIf="row.students?.length">
+                      <mat-icon>list</mat-icon>
+                    </button>
+                  </td>
+                </ng-container>
+
                 <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
                 <tr mat-row *matRowDef="let row; columns: displayedColumns;" matRipple></tr>
               </table>
@@ -55,3 +66,20 @@
     </div>
   </div>
 </section>
+
+<ng-template #studentsDialog let-data>
+  <h2 mat-dialog-title>Nómina de Estudiantes - {{data.name}}</h2>
+  <mat-dialog-content>
+    <div style="max-height: 400px; overflow-y: auto; padding-right: 1rem;">
+      <ol style="margin: 1rem 0; padding-left: 2.5rem; list-style-type: decimal;">
+        <li *ngFor="let student of data.students" style="padding: 6px 0; border-bottom: 1px solid #f0f0f0;">
+          <span style="font-weight: 500;">{{student.name}}</span> 
+          <small class="text-muted ms-2" *ngIf="student.email">({{student.email}})</small>
+        </li>
+      </ol>
+    </div>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close color="primary">Cerrar</button>
+  </mat-dialog-actions>
+</ng-template>

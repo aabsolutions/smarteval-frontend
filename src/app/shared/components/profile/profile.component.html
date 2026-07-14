@@ -10,8 +10,23 @@
         <mat-card>
           <mat-card-header>
             <mat-card-title>Datos Personales</mat-card-title>
+            @if (institutionLogo) {
+              <div class="ms-auto">
+                <img [src]="institutionLogo" alt="Institution Logo" style="max-height: 50px; max-width: 150px; object-fit: contain;">
+              </div>
+            }
           </mat-card-header>
           <mat-card-content>
+            <div class="text-center mb-4">
+              <img [src]="avatarUrl || 'assets/images/user/user.jpg'" alt="User Avatar" class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #f0f0f0;">
+              <div class="mt-3">
+                <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" style="display: none;">
+                <button mat-stroked-button type="button" color="primary" (click)="fileInput.click()">
+                  <mat-icon>camera_alt</mat-icon>
+                  Cambiar Foto
+                </button>
+              </div>
+            </div>
             <form [formGroup]="profileForm" (ngSubmit)="updateProfile()" class="pt-3">
               <mat-form-field appearance="outline" class="w-100 mb-3">
                 <mat-label>Nombre Completo</mat-label>
@@ -24,8 +39,8 @@
               <mat-form-field appearance="outline" class="w-100 mb-3">
                 <mat-label>Correo Electrónico</mat-label>
                 <input matInput formControlName="email" type="email">
-                @if (profileForm.get('email')?.hasError('required')) {
-                  <mat-error>El correo es obligatorio</mat-error>
+                @if (profileForm.get('email')?.hasError('email')) {
+                  <mat-error>El correo no tiene un formato válido</mat-error>
                 }
               </mat-form-field>
 
@@ -35,7 +50,7 @@
               </mat-form-field>
 
               <div class="d-flex justify-content-end">
-                <button mat-flat-button color="primary" type="submit" [disabled]="profileForm.invalid || !profileForm.dirty">
+                <button mat-flat-button color="primary" type="submit" [disabled]="profileForm.invalid || (!profileForm.dirty && !selectedFile)">
                   Guardar Cambios
                 </button>
               </div>

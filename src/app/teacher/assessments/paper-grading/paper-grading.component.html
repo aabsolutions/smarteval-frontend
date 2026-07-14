@@ -1,0 +1,102 @@
+<section class="content">
+  <div class="content-block">
+    <div class="block-header" *ngFor="let breadscrum of breadscrums">
+      <app-breadcrumb [title]="breadscrum.title" [items]="breadscrum.items" [active_item]="breadscrum.active">
+      </app-breadcrumb>
+    </div>
+
+    <div class="row" *ngIf="attemptData">
+      <div class="col-lg-12">
+        <div class="card mb-4">
+          <div class="header d-flex justify-content-between align-items-center bg-primary text-white p-4">
+            <div>
+              <h2 class="text-white mb-1">Carga de Respuestas - Examen Impreso</h2>
+              <h5 class="text-white opacity-75 mb-0">{{ attemptData.assessmentId?.title }}</h5>
+            </div>
+            <button mat-icon-button class="text-white" (click)="goBack()">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+          <div class="body p-4 bg-light">
+            <div class="row">
+              <div class="col-md-6">
+                <strong>Estudiante:</strong> {{ attemptData.studentId?.name }} ({{ attemptData.studentId?.username }})
+              </div>
+              <div class="col-md-6">
+                <strong>ID de Intento:</strong> {{ attemptId }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Questions -->
+        <div class="card mb-4" *ngFor="let q of attemptData.questionsPulled; let i = index">
+          <div class="body p-4">
+            <h5 class="mb-3 d-flex align-items-start">
+              <span class="badge bg-primary me-3 fs-5">{{ i + 1 }}</span>
+              <span [innerHTML]="q.statement"></span>
+            </h5>
+
+            <!-- Single Choice -->
+            <div *ngIf="q.type === 'single-choice' || q.type === 'true-false'" class="ms-5 mt-3">
+              <mat-radio-group class="d-flex flex-column gap-2" [name]="'q_' + q.questionId" (change)="onSingleChoiceChange(q.questionId, $event.value)">
+                <mat-radio-button *ngFor="let opt of q.options; let optIdx = index" [value]="opt" color="primary">
+                  <span class="fw-bold me-2">{{ ['A', 'B', 'C', 'D', 'E', 'F'][optIdx] }})</span>
+                  <span [innerHTML]="opt"></span>
+                </mat-radio-button>
+              </mat-radio-group>
+            </div>
+
+            <!-- Multiple Choice -->
+            <div *ngIf="q.type === 'multiple-choice'" class="ms-5 mt-3">
+              <div class="d-flex flex-column gap-2">
+                <mat-checkbox *ngFor="let opt of q.options; let optIdx = index" color="primary" 
+                  (change)="onMultipleChoiceChange(q.questionId, opt, $event.checked)">
+                  <span class="fw-bold me-2">{{ ['A', 'B', 'C', 'D', 'E', 'F'][optIdx] }})</span>
+                  <span [innerHTML]="opt"></span>
+                </mat-checkbox>
+              </div>
+            </div>
+
+            <!-- Fill Blank -->
+            <div *ngIf="q.type === 'fill-blank'" class="ms-5 mt-3">
+              <mat-form-field appearance="outline" class="w-100">
+                <mat-label>Respuesta escrita por el alumno</mat-label>
+                <input matInput [ngModel]="studentAnswers[q.questionId]?.[0] || ''" (ngModelChange)="studentAnswers[q.questionId] = [$event]" />
+              </mat-form-field>
+            </div>
+
+            <!-- Matching -->
+            <div *ngIf="q.type === 'matching'" class="ms-5 mt-3">
+              <div class="row align-items-center mb-3" *ngFor="let opt of q.options; let optIdx = index">
+                <div class="col-md-5">
+                  <span class="fw-bold me-2">{{ ['A', 'B', 'C', 'D', 'E', 'F'][optIdx] }})</span>
+                  <span [innerHTML]="opt"></span>
+                </div>
+                <div class="col-md-2 text-center">
+                  <mat-icon color="primary">arrow_forward</mat-icon>
+                </div>
+                <div class="col-md-5">
+                  <select class="form-select" [ngModel]="studentAnswers[q.questionId]?.[optIdx] || ''" (ngModelChange)="onMatchingChange(q.questionId, optIdx, $event)">
+                    <option value="">Selecciona la opción marcada</option>
+                    <option *ngFor="let mOpt of q.matchingOptions" [value]="mOpt">{{ mOpt | slice:0:50 }}...</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <div class="text-end mb-5">
+          <button mat-button class="me-3" (click)="goBack()">Cancelar</button>
+          <button mat-raised-button color="primary" class="px-5 py-2 fs-5" (click)="submitGrades()">
+            <mat-icon>save</mat-icon> Calificar Examen
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>

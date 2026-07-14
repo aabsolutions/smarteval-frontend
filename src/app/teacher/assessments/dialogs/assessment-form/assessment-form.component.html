@@ -13,10 +13,27 @@
     </mat-form-field>
 
     <div class="row">
-      <div class="col-md-6">
+      <div class="col-md-12">
+        <mat-checkbox formControlName="isCumulative" color="accent" class="mb-3">
+          <strong>Examen Acumulativo (Selección Manual de Preguntas)</strong>
+        </mat-checkbox>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6" *ngIf="!assessmentForm.get('isCumulative')?.value">
         <mat-form-field appearance="outline" class="w-100 mb-3">
           <mat-label>Banco de Preguntas (Tema)</mat-label>
-          <mat-select formControlName="topicId" required>
+          <mat-select formControlName="topicId">
+            <mat-option *ngFor="let topic of topics" [value]="topic._id">{{ topic.name }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+      <div class="col-md-6" *ngIf="assessmentForm.get('isCumulative')?.value">
+        <mat-form-field appearance="outline" class="w-100 mb-3" matTooltip="Opcional: Filtra las preguntas de abajo por tema">
+          <mat-label>Filtrar Preguntas por Tema</mat-label>
+          <mat-select formControlName="topicId">
+            <mat-option [value]="null">-- Todos los temas --</mat-option>
             <mat-option *ngFor="let topic of topics" [value]="topic._id">{{ topic.name }}</mat-option>
           </mat-select>
         </mat-form-field>
@@ -28,6 +45,27 @@
             <mat-option *ngFor="let group of groups" [value]="group._id">{{ group.name }}</mat-option>
           </mat-select>
         </mat-form-field>
+      </div>
+    </div>
+
+    <div class="row" *ngIf="assessmentForm.get('isCumulative')?.value">
+      <div class="col-12 mb-3">
+        <div class="p-3 border rounded" style="max-height: 250px; overflow-y: auto;">
+          <h4 class="mb-2">Selecciona las Preguntas ({{ cumulativeQuestionsControl?.value?.length || 0 }} seleccionadas)</h4>
+          <div *ngFor="let q of filteredQuestions" class="mb-1 d-flex align-items-center">
+            <mat-checkbox 
+              [checked]="cumulativeQuestionsControl?.value?.includes(q._id)" 
+              (change)="toggleQuestionSelection(q._id)">
+              <span class="text-truncate d-inline-block" style="max-width: 400px; vertical-align: middle;">
+                <span class="badge badge-solid-cyan me-2" style="font-size: 0.7em;">{{ q.points }} pts</span>
+                {{ q.statement }}
+              </span>
+            </mat-checkbox>
+          </div>
+          <div *ngIf="filteredQuestions.length === 0" class="text-muted small">
+            No hay preguntas en este tema.
+          </div>
+        </div>
       </div>
     </div>
 
@@ -53,10 +91,10 @@
           <input matInput type="number" formControlName="durationMinutes" min="1" required />
         </mat-form-field>
       </div>
-      <div class="col-md-6">
+      <div class="col-md-6" *ngIf="!assessmentForm.get('isCumulative')?.value">
         <mat-form-field appearance="outline" class="w-100 mb-3" matTooltip="Cuántas preguntas aleatorias sacará el motor">
           <mat-label>Total Preguntas</mat-label>
-          <input matInput type="number" formControlName="totalQuestionsToPull" min="1" required />
+          <input matInput type="number" formControlName="totalQuestionsToPull" min="1" />
         </mat-form-field>
       </div>
     </div>

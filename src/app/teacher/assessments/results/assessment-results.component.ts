@@ -215,6 +215,10 @@ export class AssessmentResultsComponent implements OnInit {
     this.router.navigate(['/teacher/assessments']);
   }
 
+  gradePaper(element: any) {
+    this.router.navigate(['/teacher/paper-grading', element._id]);
+  }
+
   getProgressBarColor(percentage: number): string {
     if (percentage >= 70) return 'primary'; // Verde/Azul
     if (percentage >= 40) return 'accent';  // Amarillo

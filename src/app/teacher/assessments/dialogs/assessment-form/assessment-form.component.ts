@@ -7,8 +7,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { AssessmentsService } from '../../assessments.service';
-import { TopicsService, Topic } from '../../../topics/topics.service';
 import { GroupsService } from '../../../../admin/groups/groups.service';
+import { QuestionsService, Question } from '../../../questions/questions.service';
+import { TopicsService, Topic } from '../../../topics/topics.service';
 import { AlertService } from '@core/services/alert.service';
 
 @Component({
@@ -29,6 +30,7 @@ export class AssessmentFormDialogComponent implements OnInit {
   assessmentForm!: FormGroup;
   topics: Topic[] = [];
   groups: any[] = [];
+  questions: Question[] = [];
   isEdit = false;
   assessmentData: any;
 
@@ -36,6 +38,7 @@ export class AssessmentFormDialogComponent implements OnInit {
   private assessmentsService = inject(AssessmentsService);
   private topicsService = inject(TopicsService);
   private groupsService = inject(GroupsService);
+  private questionsService = inject(QuestionsService);
   public dialogRef = inject(MatDialogRef<AssessmentFormDialogComponent>);
   private alertService = inject(AlertService);
   private dialogData = inject(MAT_DIALOG_DATA, { optional: true });
@@ -60,6 +63,8 @@ export class AssessmentFormDialogComponent implements OnInit {
       endTime: [toLocalIsoString(this.assessmentData.endTime), Validators.required],
       durationMinutes: [this.assessmentData.durationMinutes || 60, [Validators.required, Validators.min(1)]],
       totalQuestionsToPull: [this.assessmentData.totalQuestionsToPull || 10, [Validators.required, Validators.min(1)]],
+      isCumulative: [this.assessmentData.isCumulative ?? false],
+      cumulativeQuestionIds: [this.assessmentData.cumulativeQuestionIds || []],
       shuffleOptions: [this.assessmentData.shuffleOptions ?? true],
       antiCheat: [this.assessmentData.antiCheat ?? false],
       maxAttempts: [this.assessmentData.maxAttempts || 1, [Validators.required, Validators.min(1)]],
@@ -81,13 +86,36 @@ export class AssessmentFormDialogComponent implements OnInit {
       next: (data) => this.topics = data
     });
 
+    this.questionsService.getAllQuestions().subscribe({
+      next: (data) => this.questions = data
+    });
+
     this.groupsService.getAllGroups().subscribe({
       next: (data) => this.groups = data
     });
   }
 
   onSubmit(): void {
-    if (this.assessmentForm.invalid) return;
+    const isCumul = this.assessmentForm.get('isCumulative')?.value;
+    
+    // Custom validation
+    if (isCumul) {
+      this.assessmentForm.get('topicId')?.setErrors(null);
+      this.assessmentForm.get('totalQuestionsToPull')?.setErrors(null);
+      
+      const qIds = this.assessmentForm.get('cumulativeQuestionIds')?.value;
+      if (!qIds || qIds.length === 0) {
+        this.alertService.errorAlert('Error', 'Debes seleccionar al menos una pregunta para un examen acumulativo.');
+        return;
+      }
+    } else {
+      if (!this.assessmentForm.get('topicId')?.value) {
+        this.assessmentForm.get('topicId')?.setErrors({ required: true });
+        return;
+      }
+    }
+
+    if (this.assessmentForm.invalid && !isCumul) return;
 
     if (this.isEdit) {
       // Send allowed editable fields
@@ -114,6 +142,14 @@ export class AssessmentFormDialogComponent implements OnInit {
         endTime: new Date(this.assessmentForm.value.endTime).toISOString()
       };
       
+      // Fix validation for creation payload
+      if (isCumul) {
+        delete createData.topicId;
+        delete createData.totalQuestionsToPull;
+      } else {
+        delete createData.cumulativeQuestionIds;
+      }
+      
       this.assessmentsService.createAssessment(createData).subscribe({
         next: (res) => {
           this.alertService.successToast('Examen creado con éxito');
@@ -126,5 +162,27 @@ export class AssessmentFormDialogComponent implements OnInit {
 
   onCancel(): void {
     this.dialogRef.close();
+  }
+
+  // Helper getters
+  get filteredQuestions() {
+    const topicId = this.assessmentForm.get('topicId')?.value;
+    if (topicId) {
+      return this.questions.filter(q => q.topicId?._id === topicId);
+    }
+    return this.questions;
+  }
+
+  get cumulativeQuestionsControl() {
+    return this.assessmentForm.get('cumulativeQuestionIds');
+  }
+
+  toggleQuestionSelection(qId: string) {
+    const current = this.cumulativeQuestionsControl?.value || [];
+    if (current.includes(qId)) {
+      this.cumulativeQuestionsControl?.setValue(current.filter((id: string) => id !== qId));
+    } else {
+      this.cumulativeQuestionsControl?.setValue([...current, qId]);
+    }
   }
 }

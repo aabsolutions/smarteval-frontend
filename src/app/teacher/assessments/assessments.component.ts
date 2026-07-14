@@ -10,7 +10,15 @@ import { BreadcrumbComponent } from '@shared/components/breadcrumb/breadcrumb.co
 import { FeatherIconsComponent } from '@shared/components/feather-icons/feather-icons.component';
 import { AssessmentsService, Assessment } from './assessments.service';
 import { AssessmentFormDialogComponent } from './dialogs/assessment-form/assessment-form.component';
+import { SelectStudentsDialogComponent } from './dialogs/select-students-dialog/select-students-dialog.component';
 import { AlertService } from '@core/services/alert.service';
+import Swal from 'sweetalert2';
+import * as pdfMakeLib from 'pdfmake/build/pdfmake';
+import * as pdfFontsLib from 'pdfmake/build/vfs_fonts';
+
+const pdfMake: any = (pdfMakeLib as any).default || pdfMakeLib;
+const pdfFonts: any = (pdfFontsLib as any).default || pdfFontsLib;
+pdfMake.vfs = pdfFonts.pdfMake ? pdfFonts.pdfMake.vfs : pdfFonts.vfs;
 
 @Component({
   selector: 'app-assessments',
@@ -91,5 +99,127 @@ export class AssessmentsComponent implements OnInit {
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
     this.dataSource.filter = filterValue.trim().toLowerCase();
+  }
+
+  openPrintDialog(row: Assessment) {
+    Swal.fire({ title: 'Cargando estudiantes...', allowOutsideClick: false });
+    Swal.showLoading();
+    
+    this.assessmentsService.getEligibleStudents(row._id).subscribe({
+      next: (students) => {
+        Swal.close();
+        if (students.length === 0) {
+          this.alertService.successToast('Todos los alumnos de los grupos asignados ya tienen un intento activo.');
+          return;
+        }
+
+        const dialogRef = this.dialog.open(SelectStudentsDialogComponent, {
+          width: '600px',
+          data: { assessment: row, students: students }
+        });
+
+        dialogRef.afterClosed().subscribe((selectedIds) => {
+          if (selectedIds && selectedIds.length > 0) {
+            Swal.fire({ title: 'Generando...', allowOutsideClick: false });
+            Swal.showLoading();
+            this.assessmentsService.generatePaperAttempts(row._id, selectedIds).subscribe({
+              next: (attempts) => {
+                Swal.close();
+                if (attempts.length === 0) {
+                  this.alertService.successToast('No se generaron pruebas nuevas.');
+                  return;
+                }
+                this.generateBulkPdf(row, attempts);
+                this.alertService.successToast(`Se generaron ${attempts.length} pruebas impresas.`);
+              },
+              error: (err) => {
+                Swal.close();
+                this.alertService.errorAlert('Error', 'No se pudieron generar las pruebas');
+              }
+            });
+          }
+        });
+      },
+      error: () => {
+        Swal.close();
+        this.alertService.errorAlert('Error', 'No se pudieron cargar los estudiantes');
+      }
+    });
+  }
+
+  generateBulkPdf(assessment: Assessment, attempts: any[]) {
+    const content: any[] = [];
+    
+    attempts.forEach((attempt, index) => {
+      if (index > 0) {
+        content.push({ text: '', pageBreak: 'before' });
+      }
+
+      content.push({
+        text: `EVALUACIÓN: ${assessment.title.toUpperCase()}`,
+        style: 'header',
+        alignment: 'center',
+        margin: [0, 0, 0, 20]
+      });
+
+      content.push({
+        text: `ESTUDIANTE: ${attempt.studentId?.name || '__________________________'}    ID: ${attempt.studentId?.username || '______'}`,
+        style: 'subheader',
+        margin: [0, 0, 0, 20]
+      });
+
+      content.push({
+        text: `INSTRUCCIONES: Marca con una X la opción correcta. ID de Intento para cargar notas: ${attempt._id}`,
+        style: 'instructions',
+        margin: [0, 0, 0, 20]
+      });
+
+      attempt.questionsPulled.forEach((q: any, i: number) => {
+        const statementRaw = q.statement.replace(/<[^>]+>/g, '');
+        content.push({
+          text: `${i + 1}. ${statementRaw}`,
+          style: 'questionText',
+          margin: [0, 10, 0, 5]
+        });
+
+        if (q.type === 'matching') {
+          content.push({ text: '(Une con líneas o escribe al lado)', margin: [15, 0, 0, 10], color: 'gray' });
+          q.options.forEach((opt: string, idx: number) => {
+            const optRaw = opt.replace(/<[^>]+>/g, '');
+            const matchRaw = q.matchingOptions && q.matchingOptions[idx] ? q.matchingOptions[idx].replace(/<[^>]+>/g, '') : '__________';
+            content.push({
+              text: `${String.fromCharCode(65 + idx)}) ${optRaw}   ....................   [   ] ${matchRaw}`,
+              margin: [15, 2, 0, 2]
+            });
+          });
+        } else if (q.type === 'fill-blank') {
+          content.push({
+            text: 'R: __________________________________________________',
+            margin: [15, 5, 0, 15]
+          });
+        } else {
+          q.options.forEach((opt: string, idx: number) => {
+            const optRaw = opt.replace(/<[^>]+>/g, '');
+            content.push({
+              text: `( ) ${String.fromCharCode(65 + idx)}. ${optRaw}`,
+              margin: [15, 2, 0, 2]
+            });
+          });
+        }
+      });
+    });
+
+    const documentDefinition: any = {
+      content: content,
+      styles: {
+        header: { fontSize: 18, bold: true },
+        subheader: { fontSize: 14, bold: true },
+        instructions: { fontSize: 10, italics: true, color: 'gray' },
+        questionText: { fontSize: 12, bold: true }
+      },
+      defaultStyle: { fontSize: 11 }
+    };
+
+    pdfMake.createPdf(documentDefinition).open();
   }
 }

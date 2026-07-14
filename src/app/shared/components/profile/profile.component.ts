@@ -28,6 +28,9 @@ import { AuthService } from '@core/service/auth.service';
 export class ProfileComponent implements OnInit {
   profileForm!: FormGroup;
   passwordForm!: FormGroup;
+  institutionLogo: string | null = null;
+  avatarUrl: string | null = null;
+  selectedFile: File | null = null;
   
   private fb = inject(FormBuilder);
   private http = inject(HttpClient);
@@ -42,7 +45,7 @@ export class ProfileComponent implements OnInit {
   initForms() {
     this.profileForm = this.fb.group({
       name: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
+      email: ['', [Validators.email]],
       username: [{ value: '', disabled: true }]
     });
 
@@ -67,16 +70,44 @@ export class ProfileComponent implements OnInit {
         email: user['email'] || '', // Don't fallback to username
         username: user['username']
       });
+      
+      if (user.institutionLogo) {
+        this.institutionLogo = user.institutionLogo.startsWith('http') 
+          ? user.institutionLogo 
+          : `/uploads/${user.institutionLogo}`; // Fallback in case it's just a filename
+      }
+      
+      this.avatarUrl = user.avatar?.startsWith('http') 
+        ? user.avatar 
+        : (user.avatar ? `assets/images/user/${user.avatar}` : 'assets/images/user/user.jpg');
+    }
+  }
+
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.selectedFile = file;
+      const reader = new FileReader();
+      reader.onload = e => this.avatarUrl = reader.result as string;
+      reader.readAsDataURL(file);
+      this.profileForm.markAsDirty();
     }
   }
 
   updateProfile() {
     if (this.profileForm.invalid) return;
     
-    this.http.put('/api/users/me/profile', this.profileForm.value).subscribe({
-      next: () => {
+    const formData = new FormData();
+    formData.append('name', this.profileForm.get('name')?.value);
+    formData.append('email', this.profileForm.get('email')?.value);
+    if (this.selectedFile) {
+      formData.append('avatar', this.selectedFile);
+    }
+    
+    this.http.put('/api/users/me/profile', formData).subscribe({
+      next: (res: any) => {
         this.alertService.successToast('Perfil actualizado con éxito');
-        this.authService.updateCurrentUser(this.profileForm.value);
+        this.authService.updateCurrentUser(res);
       },
       error: (err: any) => {
         this.alertService.errorAlert('Error', err.error?.message || 'Hubo un error al actualizar el perfil');

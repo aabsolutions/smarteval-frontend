@@ -66,4 +66,12 @@ export class AssessmentsService {
   getArchivedAttempts(assessmentId: string): Observable<any> {
     return this.http.get(`/api/assessment-attempts/${assessmentId}/archived`);
   }
+
+  generatePaperAttempts(assessmentId: string, studentIds: string[]): Observable<any[]> {
+    return this.http.post<any[]>('/api/assessment-attempts/generate-paper', { assessmentId, studentIds });
+  }
+
+  getEligibleStudents(assessmentId: string): Observable<any[]> {
+    return this.http.get<any[]>(`/api/assessment-attempts/eligible-students/${assessmentId}`);
+  }
 }

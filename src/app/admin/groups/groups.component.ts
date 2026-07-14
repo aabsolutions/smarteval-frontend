@@ -48,6 +48,7 @@ export class GroupsComponent implements OnInit {
     { def: 'institution', label: 'Institución', visible: true },
     { def: 'jornada', label: 'Jornada', visible: true },
     { def: 'nivel', label: 'Nivel', visible: true },
+    { def: 'totalStudents', label: 'Estudiantes', visible: true },
     { def: 'teacher', label: 'Docente', visible: true },
     { def: 'actions', label: 'Acciones', visible: true }
   ];

@@ -86,7 +86,9 @@ export class SidebarComponent
       if (user && Object.keys(user).length > 0) {
         const userRole = user.roles?.[0]?.name;
         this.userFullName = user.name || (user as any)['firstName'] + ' ' + (user as any)['lastName'];
-        this.userImg = './assets/images/user/' + (user.avatar || 'user.jpg');
+        this.userImg = user.avatar?.startsWith('http') 
+          ? user.avatar 
+          : './assets/images/user/' + (user.avatar || 'user.jpg');
         
         if (userRole === Role.Admin) {
           this.userType = this.capitalizeString(Role.Admin);

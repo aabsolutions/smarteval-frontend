@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import * as XLSX from 'xlsx';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
@@ -124,5 +125,47 @@ export class LateRequestsComponent implements OnInit {
         }
       });
     }
+  }
+
+  deleteRequest(req: LateRequest) {
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: 'Esta acción eliminará la solicitud permanentemente.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.lateRequestsService.deleteRequest(req._id).subscribe({
+          next: () => {
+            Swal.fire('Eliminada', 'La solicitud ha sido eliminada.', 'success');
+            this.loadRequests();
+          },
+          error: () => {
+            Swal.fire('Error', 'Hubo un problema al eliminar la solicitud.', 'error');
+          }
+        });
+      }
+    });
+  }
+
+  exportToExcel() {
+    const dataToExport = this.requests.map(req => ({
+      'Estudiante': req.studentId?.name || 'Desconocido',
+      'Usuario': req.studentId?.username || '',
+      'Examen': req.assessmentId?.title || 'Desconocido',
+      'Estado': req.status,
+      'Motivo': req.reason,
+      'Fecha de Solicitud': new Date(req.createdAt).toLocaleString(),
+      'Comentario Docente': req.teacherComment || ''
+    }));
+
+    const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(dataToExport);
+    const wb: XLSX.WorkBook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Solicitudes');
+    XLSX.writeFile(wb, 'Solicitudes_Atrasadas.xlsx');
   }
 }

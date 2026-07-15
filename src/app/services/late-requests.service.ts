@@ -45,4 +45,8 @@ export class LateRequestsService {
   cancelRequest(id: string): Observable<any> {
     return this.http.patch(`${this.apiUrl}/${id}/cancel`, {});
   }
+
+  deleteRequest(id: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`);
+  }
 }

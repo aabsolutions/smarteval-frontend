@@ -56,12 +56,17 @@
                 <ng-container matColumnDef="actions">
                   <th mat-header-cell *matHeaderCellDef> Acciones </th>
                   <td mat-cell *matCellDef="let row" class="pr-0">
-                    <button mat-icon-button color="accent" (click)="$event.stopPropagation()" (click)="openTopicDialog(row)" class="tbl-action-btn" matTooltip="Editar">
-                      <app-feather-icons [icon]="'edit'" [class]="'tbl-fav-edit'"></app-feather-icons>
-                    </button>
-                    <button mat-icon-button color="accent" (click)="$event.stopPropagation()" (click)="deleteTopic(row)" class="tbl-action-btn" matTooltip="Eliminar">
-                      <app-feather-icons [icon]="'trash-2'" [class]="'tbl-fav-delete'"></app-feather-icons>
-                    </button>
+                    <div class="actions-container">
+                      <button mat-icon-button color="accent" (click)="$event.stopPropagation()" (click)="openTopicDialog(row)" class="tbl-action-btn" matTooltip="Editar">
+                        <app-feather-icons [icon]="'edit'" [class]="'tbl-fav-edit'"></app-feather-icons>
+                      </button>
+                      <button mat-icon-button color="accent" (click)="$event.stopPropagation()" (click)="exportDocx(row)" class="tbl-action-btn" matTooltip="Exportar DOCX">
+                        <app-feather-icons [icon]="'download'" [class]="'tbl-fav-download'"></app-feather-icons>
+                      </button>
+                      <button mat-icon-button color="accent" (click)="$event.stopPropagation()" (click)="deleteTopic(row)" class="tbl-action-btn" matTooltip="Eliminar">
+                        <app-feather-icons [icon]="'trash-2'" [class]="'tbl-fav-delete'"></app-feather-icons>
+                      </button>
+                    </div>
                   </td>
                 </ng-container>
 

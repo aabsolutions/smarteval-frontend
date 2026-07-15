@@ -162,7 +162,7 @@
         },
         {
           "path": "/teacher/late-requests",
-          "title": "Solicitudes Atrasadas",
+          "title": "Solicitudes",
           "iconType": "feather",
           "icon": "clock",
           "class": "",
@@ -226,7 +226,7 @@
     },
     {
       "path": "/student/late-requests",
-      "title": "Solicitudes Atrasadas",
+      "title": "Solicitudes",
       "iconType": "material-icons-outlined",
       "icon": "history_toggle_off",
       "class": "",

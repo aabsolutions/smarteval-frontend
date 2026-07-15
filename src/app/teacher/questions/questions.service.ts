@@ -58,4 +58,11 @@ export class QuestionsService {
     formData.append('image', file);
     return this.http.post<{ url: string; publicId: string }>(`${this.apiUrl}/upload-image`, formData);
   }
+
+  exportDocxByTopic(topicId: string): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/export-docx`, {
+      params: { topicId },
+      responseType: 'blob'
+    });
+  }
 }

@@ -6,7 +6,6 @@ import { ConfigService } from '@config';
 import {
   AuthService,
   InConfiguration,
-  LanguageService,
   RightSidebarService,
   Role,
 } from '@core';
@@ -16,7 +15,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { NotificationListComponent } from '../components/notification-list/notification-list.component';
 import { MatMenuModule } from '@angular/material/menu';
-import { LanguageListComponent } from '../components/language-list/language-list.component';
 import { UserProfileMenuComponent } from '../components/user-profile-menu/user-profile-menu.component';
 import { NotificationsService } from '../../core/service/notifications.service';
 
@@ -44,7 +42,6 @@ interface Notifications {
     MatToolbarModule,
     NotificationListComponent,
     MatMenuModule,
-    LanguageListComponent,
     UserProfileMenuComponent,
   ],
 })
@@ -59,7 +56,6 @@ export class HeaderComponent
   private configService = inject(ConfigService);
   private authService = inject(AuthService);
   private router = inject(Router);
-  languageService = inject(LanguageService);
   private localStorageService = inject(LocalStorageService);
   private notificationsService = inject(NotificationsService);
 
@@ -69,19 +65,10 @@ export class HeaderComponent
   homePage?: string;
   institutionLogo: string = 'assets/images/logo.png';
   isNavbarCollapsed = true;
-  flagvalue: string | string[] | undefined;
-  countryName: string | string[] = [];
-  langStoreValue?: string;
-  defaultFlag?: string;
   isOpenSidebar?: boolean;
   docElement?: HTMLElement;
   isFullScreen = false;
 
-  listLang = [
-    { text: 'English', flag: 'assets/images/flags/us.svg', lang: 'en' },
-    { text: 'Spanish', flag: 'assets/images/flags/spain.svg', lang: 'es' },
-    { text: 'German', flag: 'assets/images/flags/germany.svg', lang: 'de' },
-  ];
   notifications: Notifications[] = [];
 
   ngOnInit() {
@@ -123,17 +110,6 @@ export class HeaderComponent
     }
 
     this.docElement = document.documentElement;
-
-    this.langStoreValue = this.localStorageService.get('lang') as string;
-    const val = this.listLang.filter((x) => x.lang === this.langStoreValue);
-    this.countryName = val.map((element) => element.text);
-    if (val.length === 0) {
-      if (this.flagvalue === undefined) {
-        this.defaultFlag = 'assets/images/flags/us.svg';
-      }
-    } else {
-      this.flagvalue = val.map((element) => element.flag);
-    }
 
     this.loadNotifications();
   }
@@ -214,12 +190,6 @@ export class HeaderComponent
     }
     this.isFullScreen = !this.isFullScreen;
   }
-  setLanguage(text: string, lang: string, flag: string) {
-    this.countryName = text;
-    this.flagvalue = flag;
-    this.langStoreValue = lang;
-    this.languageService.setLanguage(lang);
-  }
   mobileMenuSidebarOpen(event: Event, className: string) {
     const hasClass = (event.target as HTMLInputElement).classList.contains(
       className
@@ -248,14 +218,6 @@ export class HeaderComponent
         this.router.navigate(['/authentication/signin']);
       }
     });
-  }
-
-  onLanguageChange(item: { text: string; flag: string; lang: string }) {
-    this.countryName = item.text;
-    this.flagvalue = item.flag;
-    this.langStoreValue = item.lang;
-    this.languageService.setLanguage(item.lang);
-    this.localStorageService.set('lang', item.lang);
   }
 
   onAccountClicked() {

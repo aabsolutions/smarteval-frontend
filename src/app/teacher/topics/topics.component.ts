@@ -11,6 +11,7 @@ import { TopicsService, Topic } from './topics.service';
 import { TopicFormDialogComponent } from './dialogs/topic-form/topic-form.component';
 import { MatInputModule } from '@angular/material/input';
 import { AlertService } from '@core/services/alert.service';
+import { QuestionsService } from '../questions/questions.service';
 
 @Component({
   selector: 'app-topics',
@@ -42,6 +43,7 @@ export class TopicsComponent implements OnInit {
   dataSource = new MatTableDataSource<Topic>([]);
   
   private topicsService = inject(TopicsService);
+  private questionsService = inject(QuestionsService);
   public dialog = inject(MatDialog);
   private alertService = inject(AlertService);
 
@@ -91,5 +93,24 @@ export class TopicsComponent implements OnInit {
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
     this.dataSource.filter = filterValue.trim().toLowerCase();
+  }
+
+  exportDocx(topic: Topic) {
+    this.questionsService.exportDocxByTopic(topic._id).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `banco_preguntas_${topic.name.replace(/\s+/g, '_')}.docx`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      },
+      error: (err: any) => {
+        const msg = err.error?.message || 'Error al descargar el archivo DOCX. Asegúrese de que haya preguntas para este tema.';
+        this.alertService.errorAlert('Error', msg);
+      }
+    });
   }
 }

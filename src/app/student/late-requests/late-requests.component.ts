@@ -17,8 +17,8 @@ import { StudentAssessmentsService } from '../services/student-assessments.servi
   selector: 'app-late-requests',
   standalone: true,
   imports: [
-    CommonModule, FormsModule, ReactiveFormsModule, 
-    MatTableModule, MatButtonModule, MatIconModule, 
+    CommonModule, FormsModule, ReactiveFormsModule,
+    MatTableModule, MatButtonModule, MatIconModule,
     MatDialogModule, MatChipsModule,
     BreadcrumbComponent
   ],
@@ -30,7 +30,7 @@ export class LateRequestsComponent implements OnInit {
   displayedColumns: string[] = ['assessment', 'teacher', 'status', 'createdAt', 'actions'];
 
   breadscrums = [
-    { title: 'Solicitudes Atrasadas', items: ['Estudiante'], active: 'Historial' }
+    { title: 'Solicitudes', items: ['Estudiante'], active: 'Historial' }
   ];
 
   assessments: any[] = [];
@@ -67,7 +67,7 @@ export class LateRequestsComponent implements OnInit {
       const now = new Date();
       // Filtrar solo los que ya pasaron de la fecha de cierre
       const closedAssessments = data.filter(a => new Date(a.endTime) <= now);
-      
+
       this.assessments = [];
       closedAssessments.forEach(a => {
         // Validar que NO lo haya rendido (intentos == 0)
@@ -159,7 +159,7 @@ export class LateRequestsComponent implements OnInit {
         icon: 'info'
       });
     }
-    
+
     this.editRequestId = req._id;
     this.selectedAssessmentId = req.assessmentId?._id || req.assessmentId;
     this.selectedTeacherId = req.teacherId?._id || req.teacherId;

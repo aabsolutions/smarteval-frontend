@@ -82,10 +82,10 @@
 
           <div class="card-action-section" *ngIf="filter === 'open'">
             <button class="btn-start-assessment w-100 mb-2"
-                    [ngStyle]="{'background': (item.attemptsCount > 0) ? '#e5e7eb' : '#10b981', 'color': (item.attemptsCount > 0) ? '#9ca3af' : 'white', 'cursor': (item.attemptsCount > 0) ? 'not-allowed' : 'pointer'}"
-                    [disabled]="item.attemptsCount > 0"
+                    [ngStyle]="{'background': (item.attemptsCount > 0 || item.hasDoneFlashcards || !item.flashcardsTimeLimitMinutes) ? '#e5e7eb' : '#10b981', 'color': (item.attemptsCount > 0 || item.hasDoneFlashcards || !item.flashcardsTimeLimitMinutes) ? '#9ca3af' : 'white', 'cursor': (item.attemptsCount > 0 || item.hasDoneFlashcards || !item.flashcardsTimeLimitMinutes) ? 'not-allowed' : 'pointer'}"
+                    [disabled]="item.attemptsCount > 0 || item.hasDoneFlashcards || !item.flashcardsTimeLimitMinutes"
                     (click)="goToFlashcards(item._id)"
-                    matTooltip="El repaso se deshabilita una vez que inicias un intento del examen">
+                    [matTooltip]="!item.flashcardsTimeLimitMinutes ? 'El repaso no está habilitado para este examen' : (item.hasDoneFlashcards ? 'Ya utilizaste tu única oportunidad de repaso' : 'El repaso se deshabilita una vez que inicias un intento del examen')">
               <span class="btn-text">Repaso con Flashcards</span>
               <mat-icon class="btn-icon">style</mat-icon>
             </button>

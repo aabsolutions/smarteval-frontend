@@ -26,8 +26,12 @@ export class AuthGuard {
         return false;
       }
 
-      // Check if the route requires a specific role and if the user's role matches
-      if (route.data['role'] && route.data['role'].indexOf(userRole) === -1) {
+      // Check if the route requires a specific role and if the user's role matches.
+      // Siempre tratamos route.data['role'] como array: si algún route lo configura mal
+      // (string suelto en vez de array), Array.isArray + includes deniega en vez de
+      // hacer substring matching como haría un .indexOf sobre un string.
+      const requiredRoles = route.data['role'];
+      if (requiredRoles && (!Array.isArray(requiredRoles) || !requiredRoles.includes(userRole))) {
         // If the role does not match, navigate to the signin page
         this.router.navigate(['/authentication/signin']);
         return false;

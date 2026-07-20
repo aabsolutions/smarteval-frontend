@@ -17,10 +17,13 @@ export class JwtInterceptor implements HttpInterceptor {
       });
     }
 
-    // add authorization header with jwt token if available
+    // add authorization header with jwt token if available — solo para requests hacia
+    // nuestra propia API. Sin este chequeo, el token viaja a cualquier host al que
+    // el HttpClient llame (ej. un SDK de terceros agregado después), leakeando el JWT.
     const token = this.tokenService.getBearerToken();
-    
-    if (token) {
+    const isOwnApiRequest = apiReq.url.startsWith(environment.apiUrl);
+
+    if (token && isOwnApiRequest) {
       apiReq = apiReq.clone({
         setHeaders: {
           Authorization: token

@@ -1,3 +1,4 @@
+@use "sass:color";
 // Kahoot Colors
 $kahoot-red: #e21b3c;
 $kahoot-blue: #1368ce;
@@ -145,7 +146,7 @@ $kahoot-purple: #864cbf;
     font-weight: 800;
     background-color: $kahoot-green !important;
     color: white !important;
-    box-shadow: 0 4px 0 darken($kahoot-green, 10%) !important;
+    box-shadow: 0 4px 0 color.adjust($kahoot-green, $lightness: -10%) !important;
     
     mat-icon {
       margin-right: 8px;

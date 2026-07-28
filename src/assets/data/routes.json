@@ -237,6 +237,20 @@
         "STUDENT"
       ],
       "submenu": []
+    },
+    {
+      "path": "/student/my-results",
+      "title": "Mis Resultados",
+      "iconType": "material-icons-outlined",
+      "icon": "fact_check",
+      "class": "",
+      "groupTitle": false,
+      "badge": "",
+      "badgeClass": "",
+      "role": [
+        "STUDENT"
+      ],
+      "submenu": []
     }
   ]
 }

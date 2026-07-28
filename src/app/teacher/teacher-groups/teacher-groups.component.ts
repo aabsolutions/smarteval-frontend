@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { TemplateRef, ViewChild } from '@angular/core';
 import { BreadcrumbComponent } from '@shared/components/breadcrumb/breadcrumb.component';
 import { GroupsService, Group } from '../../admin/groups/groups.service';
+import { StudentProgressDialogComponent } from './student-progress-dialog/student-progress-dialog.component';
 
 @Component({
   selector: 'app-teacher-groups',
@@ -56,8 +57,17 @@ export class TeacherGroupsComponent implements OnInit {
 
   openStudentRoster(group: Group) {
     this.dialog.open(this.studentsDialog, {
-      width: '400px',
+      width: '500px',
       data: group,
+      panelClass: 'custom-dialog-container',
+    });
+  }
+
+  viewStudentHistory(student: any) {
+    this.dialog.open(StudentProgressDialogComponent, {
+      width: '1000px',
+      maxWidth: '95vw',
+      data: { student, userId: student._id || student.id },
       panelClass: 'custom-dialog-container',
     });
   }

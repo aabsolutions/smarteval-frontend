@@ -41,6 +41,7 @@ export class AssessmentPlayerComponent implements OnInit, OnDestroy {
   timeRemaining = '00:00';
   private timerInterval: any;
   isSubmitting = false;
+  private serverTimeOffset = 0;
 
   breadscrums = [
     {
@@ -64,7 +65,11 @@ export class AssessmentPlayerComponent implements OnInit, OnDestroy {
     this.assessmentsService.getAssessment(this.assessmentId).subscribe(ass => {
       this.assessment = ass;
 
-      this.studentService.getAttemptStatus(this.assessmentId).subscribe(status => {
+      this.studentService.getAttemptStatus(this.assessmentId).subscribe((status: any) => {
+        if (status.serverTime) {
+          this.serverTimeOffset = new Date().getTime() - new Date(status.serverTime).getTime();
+        }
+
         const attempt = status.history.find((h: any) => h._id === this.attemptId);
         if (!attempt) {
           alert('Intento no encontrado');
@@ -109,19 +114,27 @@ export class AssessmentPlayerComponent implements OnInit, OnDestroy {
     const durationMs = this.assessment.durationMinutes * 60 * 1000;
     const endTime = startTime + durationMs;
 
-    this.timerInterval = setInterval(() => {
-      const now = new Date().getTime();
-      const distance = endTime - now;
+    const realNow = new Date().getTime() - this.serverTimeOffset;
+    let distanceMs = endTime - realNow;
+    
+    if (distanceMs < 0) distanceMs = 0;
+    let lastTick = performance.now();
 
-      if (distance <= 0) {
+    this.timerInterval = setInterval(() => {
+      const currentTick = performance.now();
+      distanceMs -= (currentTick - lastTick);
+      lastTick = currentTick;
+
+      if (distanceMs <= 0) {
         clearInterval(this.timerInterval);
         this.timeRemaining = '00:00';
         this.submit(true);
         return;
       }
 
-      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+      const totalSeconds = Math.ceil(distanceMs / 1000);
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
       this.timeRemaining = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }, 1000);
   }

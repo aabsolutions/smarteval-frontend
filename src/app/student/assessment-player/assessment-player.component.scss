@@ -1,3 +1,4 @@
+@use "sass:color";
 // Paleta vibrante estilo Kahoot
 $kahoot-red: #e21b3c;
 $kahoot-blue: #1368ce;
@@ -87,7 +88,7 @@ $colors: (
       font-weight: 800;
       font-size: 0.85rem;
       letter-spacing: 1px;
-      box-shadow: 0 4px 0 darken($kahoot-purple, 10%);
+      box-shadow: 0 4px 0 color.adjust($kahoot-purple, $lightness: -10%);
     }
     
     h2 {

@@ -49,6 +49,10 @@ export const STUDENT_ROUTE: Route[] = [
     component: FlashcardsPlayerComponent,
   },
   {
+    path: 'my-results',
+    loadComponent: () => import('./my-results/my-results.component').then(m => m.MyResultsComponent)
+  },
+  {
     path: 'profile',
     loadComponent: () => import('@shared/components/profile/profile.component').then(m => m.ProfileComponent)
   },

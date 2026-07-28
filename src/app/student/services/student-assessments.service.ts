@@ -50,4 +50,8 @@ export class StudentAssessmentsService {
   getFlashcards(assessmentId: string): Observable<{ flashcardsTimeLimitMinutes: number, questions: any[] }> {
     return this.http.get<{ flashcardsTimeLimitMinutes: number, questions: any[] }>(`/api/assessments/${assessmentId}/flashcards`);
   }
+
+  trackFlashcardTime(assessmentId: string, seconds: number): Observable<void> {
+    return this.http.post<void>(`/api/assessments/${assessmentId}/flashcards/track-time`, { seconds });
+  }
 }

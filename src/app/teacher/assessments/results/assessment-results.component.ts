@@ -382,8 +382,8 @@ export class AssessmentResultsComponent implements OnInit {
             { text: 'ESTADO', style: 'cardTitle' }
           ],
           [
-            { text: `${formattedScore} / ${element.maxScore}`, style: 'cardValue' },
-            { text: `${element.percentage}%`, style: 'cardValue', color: isApproved ? '#16a34a' : '#dc2626' },
+            { text: `${formattedScore} / ${element.maxScore}`, style: 'cardValue', color: isApproved ? '#16a34a' : '#dc2626' },
+            { text: `${element.percentage}%`, style: 'cardValue', color: '#6b7280', fontSize: 10 },
             { text: `${duration} min`, style: 'cardValue' },
             { text: isApproved ? 'APROBADO' : 'REPROBADO', style: 'cardValue', color: isApproved ? '#16a34a' : '#dc2626' }
           ]

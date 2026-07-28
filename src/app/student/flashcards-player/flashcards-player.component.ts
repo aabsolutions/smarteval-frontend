@@ -34,8 +34,11 @@ export class FlashcardsPlayerComponent implements OnInit, OnDestroy {
   timeIsUp = false;
   timeRemaining = '';
   private timerInterval: any;
+  private sessionStartTime: number = 0;
+  private timeReported: boolean = false;
 
   ngOnInit() {
+    this.sessionStartTime = Date.now();
     this.assessmentId = this.route.snapshot.paramMap.get('id');
     if (this.assessmentId) {
       this.loadFlashcards(this.assessmentId);
@@ -45,6 +48,18 @@ export class FlashcardsPlayerComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     if (this.timerInterval) {
       clearInterval(this.timerInterval);
+    }
+    this.reportTime();
+  }
+
+  private reportTime() {
+    if (this.timeReported || !this.assessmentId || this.sessionStartTime === 0) return;
+    this.timeReported = true;
+    const seconds = Math.floor((Date.now() - this.sessionStartTime) / 1000);
+    if (seconds > 0) {
+      this.assessmentsService.trackFlashcardTime(this.assessmentId, seconds).subscribe({
+        error: (err) => console.error('Error reporting flashcard time', err)
+      });
     }
   }
 

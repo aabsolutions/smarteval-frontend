@@ -74,7 +74,7 @@ export class AssessmentFormDialogComponent implements OnInit {
 
     if (this.isEdit) {
       // Disable all fields except allowed ones
-      const editableFields = ['title', 'description', 'endTime', 'durationMinutes', 'maxAttempts', 'flashcardsTimeLimitMinutes'];
+      const editableFields = ['title', 'description', 'endTime', 'durationMinutes', 'maxAttempts', 'flashcardsTimeLimitMinutes', 'totalQuestionsToPull'];
       Object.keys(this.assessmentForm.controls).forEach(key => {
         if (!editableFields.includes(key)) {
           this.assessmentForm.get(key)?.disable();
@@ -101,7 +101,6 @@ export class AssessmentFormDialogComponent implements OnInit {
     // Custom validation
     if (isCumul) {
       this.assessmentForm.get('topicId')?.setErrors(null);
-      this.assessmentForm.get('totalQuestionsToPull')?.setErrors(null);
       
       const qIds = this.assessmentForm.get('cumulativeQuestionIds')?.value;
       if (!qIds || qIds.length === 0) {
@@ -126,7 +125,8 @@ export class AssessmentFormDialogComponent implements OnInit {
         endTime: new Date(formValue.endTime).toISOString(),
         durationMinutes: formValue.durationMinutes,
         maxAttempts: formValue.maxAttempts,
-        flashcardsTimeLimitMinutes: formValue.flashcardsTimeLimitMinutes
+        flashcardsTimeLimitMinutes: formValue.flashcardsTimeLimitMinutes,
+        totalQuestionsToPull: formValue.totalQuestionsToPull
       };
       this.assessmentsService.updateAssessment(this.assessmentData._id, updateData).subscribe({
         next: (res) => {
@@ -145,7 +145,6 @@ export class AssessmentFormDialogComponent implements OnInit {
       // Fix validation for creation payload
       if (isCumul) {
         delete createData.topicId;
-        delete createData.totalQuestionsToPull;
       } else {
         delete createData.cumulativeQuestionIds;
       }

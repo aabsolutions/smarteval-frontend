@@ -1,12 +1,14 @@
-import { Component, OnInit, inject, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatSelectModule } from '@angular/material/select';
+import { MatOptionModule } from '@angular/material/core';
+import { FormsModule } from '@angular/forms';
 import { BreadcrumbComponent } from '@shared/components/breadcrumb/breadcrumb.component';
 import { FeatherIconsComponent } from '@shared/components/feather-icons/feather-icons.component';
 import { AssessmentsService, Assessment } from './assessments.service';
@@ -34,12 +36,14 @@ pdfMake.vfs = pdfFonts.pdfMake ? pdfFonts.pdfMake.vfs : pdfFonts.vfs;
     BreadcrumbComponent,
     FeatherIconsComponent,
     RouterModule,
-    MatPaginatorModule
+    MatSelectModule,
+    MatOptionModule,
+    FormsModule
   ],
   templateUrl: './assessments.component.html',
   styleUrls: ['./assessments.component.scss'],
 })
-export class AssessmentsComponent implements OnInit, AfterViewInit {
+export class AssessmentsComponent implements OnInit {
   breadscrums = [
     {
       title: 'Gestión de Exámenes',
@@ -49,22 +53,23 @@ export class AssessmentsComponent implements OnInit, AfterViewInit {
   ];
 
   displayedColumns: string[] = ['title', 'topic', 'groups', 'startTime', 'endTime', 'actions'];
-  dataSource = new MatTableDataSource<Assessment>([]);
+  dataSource = new MatTableDataSource<any>([]);
   
   private assessmentsService = inject(AssessmentsService);
   public dialog = inject(MatDialog);
   private alertService = inject(AlertService);
 
   showArchived: boolean = false;
+  
+  rawAssessments: Assessment[] = [];
+  uniqueGroups: any[] = [];
+  selectedGroup: string = '';
+  searchTerm: string = '';
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  isGroup = (index: number, item: any): boolean => item.isGroupBy;
 
   ngOnInit(): void {
     this.loadAssessments();
-  }
-
-  ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator;
   }
 
   toggleView() {
@@ -75,12 +80,86 @@ export class AssessmentsComponent implements OnInit, AfterViewInit {
   loadAssessments() {
     this.assessmentsService.getAllAssessments(this.showArchived).subscribe({
       next: (data) => {
-        this.dataSource.data = data;
+        this.rawAssessments = data;
+        
+        const groupsMap = new Map<string, any>();
+        data.forEach(assessment => {
+          if (assessment.groupIds && assessment.groupIds.length > 0) {
+            assessment.groupIds.forEach((g: any) => {
+              if (g._id && g.name) groupsMap.set(g._id, g);
+            });
+          } else {
+            groupsMap.set('no-group', { _id: 'no-group', name: 'Sin grupos asignados' });
+          }
+        });
+        this.uniqueGroups = Array.from(groupsMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+        
+        this.buildGroupedData();
       },
       error: (error) => {
         console.error('Error fetching assessments:', error);
       },
     });
+  }
+
+  buildGroupedData() {
+    let groupedData: any[] = [];
+    const pairs: { group: any, assessment: Assessment }[] = [];
+    
+    this.rawAssessments.forEach(assessment => {
+      const search = this.searchTerm.trim().toLowerCase();
+      if (search) {
+        const titleMatch = (assessment.title || '').toLowerCase().includes(search);
+        const topicMatch = (assessment.topicId?.name || '').toLowerCase().includes(search);
+        if (!titleMatch && !topicMatch) return;
+      }
+
+      if (assessment.groupIds && assessment.groupIds.length > 0) {
+        assessment.groupIds.forEach((g: any) => {
+          if (!this.selectedGroup || this.selectedGroup === g._id) {
+            pairs.push({ group: g, assessment });
+          }
+        });
+      } else {
+        if (!this.selectedGroup || this.selectedGroup === 'no-group') {
+          pairs.push({ group: { _id: 'no-group', name: 'Sin grupos asignados' }, assessment });
+        }
+      }
+    });
+
+    const groupedByGroupId = new Map<string, typeof pairs>();
+    pairs.forEach(pair => {
+      const groupId = pair.group._id || 'no-group';
+      if (!groupedByGroupId.has(groupId)) groupedByGroupId.set(groupId, []);
+      groupedByGroupId.get(groupId)!.push(pair);
+    });
+
+    const sortedGroups = Array.from(groupedByGroupId.keys()).sort((a, b) => {
+      const groupA = groupedByGroupId.get(a)![0].group;
+      const groupB = groupedByGroupId.get(b)![0].group;
+      return groupA.name.localeCompare(groupB.name);
+    });
+
+    sortedGroups.forEach(groupId => {
+      const groupItems = groupedByGroupId.get(groupId)!;
+      groupItems.sort((a, b) => new Date(a.assessment.startTime).getTime() - new Date(b.assessment.startTime).getTime());
+      
+      groupedData.push({
+        isGroupBy: true,
+        groupName: groupItems[0].group.name,
+        groupId: groupId
+      });
+      
+      groupItems.forEach(item => {
+        groupedData.push({
+          isGroupBy: false,
+          groupId: groupId,
+          ...item.assessment
+        });
+      });
+    });
+
+    this.dataSource.data = groupedData;
   }
 
   openAssessmentDialog(assessment?: Assessment) {
@@ -127,8 +206,12 @@ export class AssessmentsComponent implements OnInit, AfterViewInit {
   }
 
   applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
+    this.searchTerm = (event.target as HTMLInputElement).value;
+    this.buildGroupedData();
+  }
+
+  onGroupFilterChange() {
+    this.buildGroupedData();
   }
 
   openPrintDialog(row: Assessment) {

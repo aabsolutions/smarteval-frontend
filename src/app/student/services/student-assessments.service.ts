@@ -26,6 +26,10 @@ export class StudentAssessmentsService {
     return this.http.get<any[]>('/api/assessment-attempts/student/history');
   }
 
+  getStudentLeaderboard(): Observable<any[]> {
+    return this.http.get<any[]>('/api/assessment-attempts/student/leaderboard');
+  }
+
   startAttempt(assessmentId: string): Observable<AssessmentAttempt> {
     return this.http.post<AssessmentAttempt>(`/api/assessment-attempts/start/${assessmentId}`, {});
   }

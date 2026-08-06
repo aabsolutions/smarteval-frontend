@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angula
 import { forkJoin } from 'rxjs';
 import { ChartConfiguration } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
+import { TopStudentsCardComponent, Student } from '../../shared/components/top-students-card/top-students-card.component';
 import { BreadcrumbComponent } from '@shared/components/breadcrumb/breadcrumb.component';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -9,6 +10,39 @@ import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { StudentAssessmentsService } from '../services/student-assessments.service';
 import { Router } from '@angular/router';
+
+import {
+  ChartComponent,
+  ApexAxisChartSeries,
+  ApexChart,
+  ApexXAxis,
+  ApexDataLabels,
+  ApexTooltip,
+  ApexYAxis,
+  ApexStroke,
+  ApexLegend,
+  ApexMarkers,
+  ApexGrid,
+  ApexFill,
+  ApexTitleSubtitle,
+  NgApexchartsModule
+} from 'ng-apexcharts';
+
+export type PerformanceChartOptions = {
+  series: ApexAxisChartSeries;
+  chart: ApexChart;
+  xaxis: ApexXAxis;
+  stroke: ApexStroke;
+  dataLabels: ApexDataLabels;
+  markers: ApexMarkers;
+  colors: string[];
+  yaxis: ApexYAxis;
+  grid: ApexGrid;
+  tooltip: ApexTooltip;
+  legend: ApexLegend;
+  fill: ApexFill;
+  title: ApexTitleSubtitle;
+};
 
 @Component({
   selector: 'app-dashboard',
@@ -20,7 +54,9 @@ import { Router } from '@angular/router';
     BaseChartDirective,
     MatCardModule,
     MatButtonModule,
-    MatIconModule
+    MatIconModule,
+    NgApexchartsModule,
+    TopStudentsCardComponent
   ]
 })
 export class DashboardComponent implements OnInit, OnDestroy {
@@ -53,9 +89,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   public progressChartType: 'doughnut' = 'doughnut';
   public progressPercentage = Math.round((15 / 40) * 100);
 
-  recentGrades: any[] = [];
+  public performanceChartOptions!: Partial<PerformanceChartOptions>;
 
-  upcomingClasses: any[] = [];
+  recentGrades: any[] = [];
+  topClassmates: Student[] = [];
 
   countdownDays = 0;
   countdownHours = 0;
@@ -68,7 +105,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   ngOnInit() {
     forkJoin({
       assessments: this.assessmentsService.getAvailableAssessments(),
-      history: this.assessmentsService.getStudentHistory()
+      history: this.assessmentsService.getStudentHistory(),
+      leaderboard: this.assessmentsService.getStudentLeaderboard()
     }).subscribe({
       next: (results) => {
         const assessments = results.assessments || [];
@@ -83,18 +121,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
         if (activeAssessments.length > 0) {
           const sorted = activeAssessments.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
           this.nextExam = sorted[0];
-          
-          this.upcomingClasses = sorted.slice(1).map(a => ({
-            title: a.title,
-            time: new Date(a.startTime).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }),
-            type: 'Examen'
-          }));
 
           this.updateCountdown();
           this.timer = setInterval(() => this.updateCountdown(), 1000);
         } else {
           this.nextExam = null;
-          this.upcomingClasses = [];
         }
 
         // 2. History / Recent Grades
@@ -131,6 +162,98 @@ export class DashboardComponent implements OnInit, OnDestroy {
             borderRadius: 10,
           }]
         };
+
+        // 4. Performance Chart
+        const performanceCategories: string[] = [];
+        const performanceData: number[] = [];
+        const performanceFullNames: string[] = [];
+        
+        const sortedHistory = [...history].sort((a, b) => new Date(a.endTime).getTime() - new Date(b.endTime).getTime());
+        
+        sortedHistory.forEach(h => {
+           const dateStr = new Date(h.endTime).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
+           const title = h.assessmentId?.topicId?.name || h.assessmentId?.title || 'Examen';
+           
+           performanceCategories.push(`${title.substring(0,10)}...`);
+           const score10 = (h.score / (h.maxScore || 1)) * 10;
+           performanceData.push(Number(score10.toFixed(1)));
+           performanceFullNames.push(`${title} (${dateStr})`);
+        });
+
+        this.performanceChartOptions = {
+          series: [
+            {
+              name: 'Calificación',
+              data: performanceData.length > 0 ? performanceData : [0],
+            },
+          ],
+          chart: {
+            height: '100%',
+            type: 'line',
+            foreColor: '#ffffff',
+            dropShadow: {
+              enabled: true,
+              color: '#000',
+              top: 18,
+              left: 7,
+              blur: 10,
+              opacity: 0.2,
+            },
+            toolbar: { show: false },
+          },
+          stroke: { curve: 'smooth' },
+          xaxis: {
+            categories: performanceCategories.length > 0 ? performanceCategories : ['Sin datos'],
+            labels: { style: { colors: '#ffffff' } }
+          },
+          grid: {
+            show: true,
+            borderColor: 'rgba(255,255,255,0.2)',
+            strokeDashArray: 1,
+          },
+          yaxis: {
+            labels: { style: { colors: '#ffffff' } },
+            min: 0,
+            max: 10
+          },
+          fill: {
+            type: 'gradient',
+            gradient: {
+              shade: 'dark',
+              gradientToColors: ['#35fdd8'],
+              shadeIntensity: 1,
+              type: 'horizontal',
+              opacityFrom: 1,
+              opacityTo: 1,
+            },
+          },
+          markers: {
+            size: 4,
+            colors: ['#FFA41B'],
+            strokeColors: '#fff',
+            strokeWidth: 2,
+            hover: { size: 7 },
+          },
+          tooltip: {
+            theme: 'dark',
+            marker: { show: true },
+            x: { 
+              show: true,
+              formatter: function(val: any, { dataPointIndex }: any) {
+                return performanceFullNames[dataPointIndex] || val;
+              }
+            },
+            y: {
+              formatter: function(val: any) {
+                return val + ' / 10';
+              }
+            }
+          },
+        };
+
+        // 4. Real Top 5 Classmates from Backend (Classes not archived)
+        const leaderboardData = results.leaderboard || [];
+        this.topClassmates = leaderboardData;
 
         this.cdr.detectChanges();
       },

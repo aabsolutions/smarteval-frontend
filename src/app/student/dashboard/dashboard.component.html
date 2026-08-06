@@ -70,6 +70,34 @@
         </div>
       </div>
 
+      <!-- PERFORMANCE TREND CHART -->
+      <div class="trend-card glass-panel">
+        <h3 class="panel-title">Evolución de Resultados</h3>
+        <apx-chart 
+          *ngIf="performanceChartOptions"
+          [series]="performanceChartOptions.series!" 
+          [chart]="performanceChartOptions.chart!"
+          [xaxis]="performanceChartOptions.xaxis!" 
+          [stroke]="performanceChartOptions.stroke!"
+          [dataLabels]="performanceChartOptions.dataLabels!"
+          [markers]="performanceChartOptions.markers!"
+          [grid]="performanceChartOptions.grid!" 
+          [yaxis]="performanceChartOptions.yaxis!"
+          [tooltip]="performanceChartOptions.tooltip!"
+          [fill]="performanceChartOptions.fill!">
+        </apx-chart>
+      </div>
+
+      <!-- TOP 5 RANKING -->
+      <div class="ranking-card glass-panel">
+        <app-top-students-card 
+          [students]="topClassmates" 
+          title="Ranking de Clase (Top 5)"
+          scoreFormat="1.1-1"
+          scoreSuffix="">
+        </app-top-students-card>
+      </div>
+
       <!-- RECENT GRADES -->
       <div class="grades-card glass-panel">
         <h3 class="panel-title">Últimas Notas (Histórico)</h3>
@@ -84,25 +112,6 @@
               {{ grade.grade | number:'1.0-1' }}/{{ grade.maxScore }}
             </div>
           </div>
-          }
-        </div>
-      </div>
-
-      <!-- UPCOMING (ALERTS/CALENDAR) -->
-      <div class="upcoming-card glass-panel">
-        <h3 class="panel-title">Agenda Corta</h3>
-        <div class="agenda-list">
-          @for (item of upcomingClasses; track item.title) {
-          <div class="agenda-item">
-            <mat-icon class="agenda-icon">event</mat-icon>
-            <div class="agenda-details">
-              <h4>{{ item.title }}</h4>
-              <span>{{ item.time }}</span>
-            </div>
-          </div>
-          }
-          @if (upcomingClasses.length === 0) {
-            <p style="color: #666; font-weight: bold;">No hay más actividades pendientes.</p>
           }
         </div>
       </div>

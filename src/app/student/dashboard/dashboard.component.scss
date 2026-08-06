@@ -42,6 +42,28 @@ $kahoot-purple: #864cbf;
   border: none;
 }
 
+.trend-card {
+  grid-column: span 8;
+  background: linear-gradient(135deg, #1f1c2c 0%, #928DAB 100%);
+  color: white;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  .panel-title { color: white; flex-shrink: 0; }
+  apx-chart { 
+    flex: 1; 
+    min-height: 310px; 
+    display: block; 
+  }
+}
+
+.ranking-card {
+  grid-column: span 4;
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
 .progress-card {
   grid-column: span 4;
   background: $kahoot-yellow;
@@ -50,16 +72,11 @@ $kahoot-purple: #864cbf;
 }
 
 .grades-card {
-  grid-column: span 6;
+  grid-column: span 12;
   background: $kahoot-blue;
   .panel-title { color: white; }
 }
 
-.upcoming-card {
-  grid-column: span 6;
-  background: $kahoot-red;
-  .panel-title { color: white; }
-}
 
 // Hero Content
 .hero-content {

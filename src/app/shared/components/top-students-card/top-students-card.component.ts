@@ -39,6 +39,8 @@ export class TopStudentsCardComponent implements OnInit {
   @Input() title = 'Top Performing Students';
   @Input() students: Student[] = [];
   @Input() maxStudents = 5;
+  @Input() scoreSuffix = '%';
+  @Input() scoreFormat = '1.2-2';
 
   displayedColumns: string[] = [
     'rank',

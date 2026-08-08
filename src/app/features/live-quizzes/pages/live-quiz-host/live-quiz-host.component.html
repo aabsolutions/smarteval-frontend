@@ -1,0 +1,123 @@
+<div class="host-container">
+  
+  <!-- ESTADO DE ERROR -->
+  <div *ngIf="state.error" class="view-panel error-view">
+    <div class="error-box">
+      <h2>Error de Conexión</h2>
+      <p>{{ state.error }}</p>
+      <button class="primary-btn mt-4" (click)="openLobby(state.quizId!)">Reintentar</button>
+    </div>
+  </div>
+
+  <!-- ESTADO DESCONECTADO/CARGANDO -->
+  <div *ngIf="state.status === 'disconnected' && !state.error" class="view-panel loading-view">
+    <div class="loading-box">
+      <h2>Conectando a la Sala...</h2>
+      <p>Verificando credenciales con el servidor.</p>
+    </div>
+  </div>
+
+  <!-- LOBBY -->
+  <div *ngIf="state.status === 'lobby' && !state.error" class="view-panel lobby-view">
+    <div class="lobby-header">
+      <div class="pin-box">
+        <span>Únete con el PIN:</span>
+        <div class="pin">{{ state.pin }}</div>
+      </div>
+    </div>
+
+    <div class="lobby-body">
+      <div class="participants-count">
+        {{ state.participants.length }} Jugadores
+      </div>
+      
+      <div class="participants-grid">
+        <div class="participant-badge" *ngFor="let p of state.participants">
+          {{ p.name }}
+        </div>
+      </div>
+    </div>
+
+    <div class="lobby-footer">
+      <button class="primary-btn" (click)="startQuiz()" [disabled]="state.participants.length === 0">
+        Comenzar Quiz
+      </button>
+    </div>
+  </div>
+
+  <!-- PREGUNTA (Proyectada) -->
+  <div *ngIf="state.status === 'question'" class="view-panel question-view">
+    <div class="question-header">
+      <div class="timer">{{ state.secondsRemaining }}</div>
+      <h2>{{ state.currentQuestion?.statement }}</h2>
+      <div class="answered-count">{{ state.answeredCount }} respuestas</div>
+    </div>
+
+    <!-- Imagen opcional -->
+    <div class="image-container" *ngIf="state.currentQuestion?.imageUrl">
+      <img [src]="state.currentQuestion?.imageUrl" alt="Imagen de la pregunta" />
+    </div>
+
+    <!-- Opciones -->
+    <div class="options-grid">
+      <div class="option-card shape-{{ i % 4 }}" *ngFor="let option of state.currentQuestion?.options; let i = index">
+        {{ option }}
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTADOS DE LA PREGUNTA (Estadísticas) -->
+  <div *ngIf="state.status === 'stats'" class="view-panel stats-view">
+    <h2>Resultados</h2>
+    
+    <div class="chart-container">
+      <div class="bar-col" *ngFor="let option of state.currentQuestion?.options; let i = index">
+        <div class="bar-wrapper">
+          <div class="bar shape-{{ i % 4 }}" [style.height.%]="getAnswerPercentage(option)">
+            <span class="count" *ngIf="getAnswerCount(option) > 0">{{ getAnswerCount(option) }}</span>
+          </div>
+        </div>
+        <div class="option-label" [class.is-correct]="isOptionCorrect(option)">
+          <span *ngIf="isOptionCorrect(option)" class="check">✔</span>
+          {{ option }}
+        </div>
+      </div>
+    </div>
+
+    <button class="primary-btn mt-4" (click)="nextQuestion()">
+      Siguiente
+    </button>
+  </div>
+
+  <!-- PODIO FINAL -->
+  <div *ngIf="state.status === 'podium'" class="view-panel podium-view">
+    <h2>🏆 Podio Final 🏆</h2>
+    
+    <div class="podium-stage">
+      <!-- 2do Lugar -->
+      <div class="podium-place second" *ngIf="state.podium?.top3[1]">
+        <div class="avatar">{{ state.podium.top3[1].name | slice:0:2 }}</div>
+        <div class="name">{{ state.podium.top3[1].name }}</div>
+        <div class="points">{{ state.podium.top3[1].totalScore }} pts</div>
+        <div class="block">2</div>
+      </div>
+
+      <!-- 1er Lugar -->
+      <div class="podium-place first" *ngIf="state.podium?.top3[0]">
+        <div class="avatar">{{ state.podium.top3[0].name | slice:0:2 }}</div>
+        <div class="name">{{ state.podium.top3[0].name }}</div>
+        <div class="points">{{ state.podium.top3[0].totalScore }} pts</div>
+        <div class="block">1</div>
+      </div>
+
+      <!-- 3er Lugar -->
+      <div class="podium-place third" *ngIf="state.podium?.top3[2]">
+        <div class="avatar">{{ state.podium.top3[2].name | slice:0:2 }}</div>
+        <div class="name">{{ state.podium.top3[2].name }}</div>
+        <div class="points">{{ state.podium.top3[2].totalScore }} pts</div>
+        <div class="block">3</div>
+      </div>
+    </div>
+  </div>
+
+</div>

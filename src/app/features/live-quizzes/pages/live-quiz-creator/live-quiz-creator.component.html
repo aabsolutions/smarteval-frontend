@@ -1,0 +1,87 @@
+<section class="content">
+  <div class="content-block">
+    <div class="block-header">
+      <app-breadcrumb [title]="'Crear Live Quiz'" [items]="['Docente', 'Live Quizzes']" [active_item]="'Crear Live Quiz'"></app-breadcrumb>
+    </div>
+
+    <div class="creator-container">
+      <div class="header">
+        <div class="title-area">
+          <button class="back-btn" (click)="cancel()">← Volver</button>
+          <h1>Nuevo Live Quiz</h1>
+        </div>
+        <div class="actions">
+          <button class="primary-btn" (click)="createQuiz()" [disabled]="isLoading || !quizTitle || selectedQuestionIds.size === 0">
+            {{ isLoading ? 'Creando...' : 'Crear Quiz (' + selectedQuestionIds.size + ')' }}
+          </button>
+        </div>
+      </div>
+
+  <div class="content-grid">
+    <!-- Configuración del Quiz -->
+    <div class="config-panel">
+      <h2>Configuración General</h2>
+      
+      <div class="form-group">
+        <label>Título del Quiz</label>
+        <input type="text" [(ngModel)]="quizTitle" placeholder="Ej: Repaso de Mitad de Término" class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label>Tiempo por pregunta (segundos)</label>
+        <input type="number" [(ngModel)]="defaultTimeLimit" min="5" max="120" class="form-control">
+        <small>Este tiempo se aplicará a todas las preguntas seleccionadas.</small>
+      </div>
+
+      <div class="summary-box">
+        <h3>Resumen</h3>
+        <p>Preguntas seleccionadas: <strong>{{ selectedQuestionIds.size }}</strong></p>
+        <p>Tiempo total aprox: <strong>{{ (selectedQuestionIds.size * defaultTimeLimit / 60) | number:'1.0-1' }} min</strong></p>
+      </div>
+    </div>
+
+    <!-- Banco de Preguntas -->
+    <div class="questions-panel">
+      <div class="panel-header">
+        <h2>Selecciona Preguntas del Banco</h2>
+        <button class="text-btn" (click)="selectAll()">
+          {{ selectedQuestionIds.size === bankQuestions.length ? 'Deseleccionar Todas' : 'Seleccionar Todas' }}
+        </button>
+      </div>
+
+      <div class="loading-state" *ngIf="isLoading && bankQuestions.length === 0">
+        Cargando banco de preguntas...
+      </div>
+
+      <div class="empty-state" *ngIf="!isLoading && bankQuestions.length === 0">
+        No tienes preguntas en tu banco. Crea algunas primero en la sección de Banco de Preguntas.
+      </div>
+
+      <div class="questions-list" *ngIf="bankQuestions.length > 0">
+        <div 
+          class="question-item" 
+          *ngFor="let q of bankQuestions" 
+          [class.selected]="selectedQuestionIds.has(q._id)"
+          (click)="toggleSelection(q._id)"
+        >
+          <div class="checkbox">
+            <span class="check-icon" *ngIf="selectedQuestionIds.has(q._id)">✔</span>
+          </div>
+          <div class="question-content">
+            <div class="q-header">
+              <span class="badge type-{{q.type}}">{{ q.type }}</span>
+              <span class="badge difficulty-{{q.difficulty}}">{{ q.difficulty }}</span>
+            </div>
+            <p class="statement">{{ q.statement }}</p>
+            <div class="options-preview">
+              <span class="opt" *ngFor="let opt of q.options | slice:0:3">{{ opt }}</span>
+              <span class="opt more" *ngIf="q.options.length > 3">+{{ q.options.length - 3 }} más</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+      </div>
+    </div>
+  </div>
+</section>

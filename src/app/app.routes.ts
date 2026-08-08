@@ -62,5 +62,19 @@ export const APP_ROUTE: Route[] = [
     loadChildren: () =>
       import('./authentication/auth.routes').then((m) => m.AUTH_ROUTE),
   },
+  {
+    path: 'live-quiz',
+    canActivate: [AuthGuard],
+    children: [
+      {
+        path: 'student',
+        loadComponent: () => import('./features/live-quizzes/pages/live-quiz-student/live-quiz-student.component').then(c => c.LiveQuizStudentComponent)
+      },
+      {
+        path: 'host/:id',
+        loadComponent: () => import('./features/live-quizzes/pages/live-quiz-host/live-quiz-host.component').then(c => c.LiveQuizHostComponent)
+      }
+    ]
+  },
   { path: '**', component: Page404Component },
 ];

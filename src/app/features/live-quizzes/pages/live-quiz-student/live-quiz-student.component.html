@@ -1,0 +1,189 @@
+<div class="quiz-student-container">
+  <!-- PANTALLA 1: INGRESAR PIN (Disconnected) -->
+  <div *ngIf="state.status === 'disconnected'" class="view-panel pin-view">
+    <div class="glass-card">
+      <div class="logo-area">
+        <h1>SmartEval <span class="badge">Live</span></h1>
+      </div>
+      
+      <div class="input-group">
+        <input 
+          type="text" 
+          inputmode="numeric" 
+          placeholder="PIN del Juego" 
+          [ngModel]="pinInput()" 
+          (ngModelChange)="pinInput.set($event)"
+          (keyup.enter)="joinQuiz()"
+          class="pin-input"
+        />
+        <button class="join-btn" [disabled]="pinInput().length < 5" (click)="joinQuiz()">
+          Ingresar
+        </button>
+      </div>
+
+      <div *ngIf="state.error" class="error-msg">
+        {{ state.error }}
+      </div>
+    </div>
+  </div>
+
+  <!-- PANTALLA 2: LOBBY -->
+  <div *ngIf="state.status === 'lobby'" class="view-panel lobby-view">
+    <div class="lobby-content">
+      <h2>¡Estás dentro!</h2>
+      <p class="quiz-title-label">{{ state.title }}</p>
+      <div class="loader">
+        <div class="pulse"></div>
+      </div>
+      <p class="waiting-text">Esperando al profesor para empezar...</p>
+    </div>
+  </div>
+
+  <!-- PANTALLA 3: PREGUNTA (Jugando) -->
+  <div *ngIf="state.status === 'question'" class="view-panel question-view">
+    <div class="top-bar">
+      <div class="progress-indicator">Pregunta {{ state.questionIndex + 1 }} de {{ state.totalQuestions }}</div>
+      <div class="timer-pill" [class.urgent]="state.secondsRemaining <= 5">
+        ⏳ {{ state.secondsRemaining }}s
+      </div>
+    </div>
+
+    <!-- Si es SINGLE CHOICE o TRUE/FALSE (envía con 1 clic) -->
+    <div class="options-grid" *ngIf="state.currentQuestion?.type !== 'multiple-choice'">
+      <button 
+        *ngFor="let option of state.currentQuestion?.options; let i = index" 
+        class="option-btn shape-{{ i % 4 }}"
+        [disabled]="state.hasAnswered"
+        (click)="submitSingle(option)"
+      >
+        <span class="shape-icon"></span>
+        {{ option }}
+      </button>
+    </div>
+
+    <!-- Si es MULTIPLE CHOICE (selecciona varias y confirmar) -->
+    <div class="multiple-choice-container" *ngIf="state.currentQuestion?.type === 'multiple-choice'">
+      <p class="mc-instruction">Selecciona una o más respuestas correctas:</p>
+      <div class="options-grid mc-grid">
+        <button 
+          *ngFor="let option of state.currentQuestion?.options; let i = index" 
+          class="option-btn shape-{{ i % 4 }}"
+          [class.selected]="selectedOptions().includes(option)"
+          [disabled]="state.hasAnswered"
+          (click)="toggleOption(option)"
+        >
+          <span class="checkbox">
+            <span class="check-mark" *ngIf="selectedOptions().includes(option)">✔</span>
+          </span>
+          {{ option }}
+        </button>
+      </div>
+      <button class="join-btn confirm-btn mt-4" (click)="submitMultiple()" 
+              [disabled]="selectedOptions().length === 0 || state.hasAnswered">
+        Confirmar Selección
+      </button>
+    </div>
+  </div>
+
+  <!-- PANTALLA 3.5: RESPUESTA ENVIADA ✓ -->
+  <div *ngIf="state.status === 'answer-sent'" class="view-panel answer-sent-view">
+    <div class="sent-content">
+      <div class="checkmark-container">
+        <svg class="checkmark-svg" viewBox="0 0 52 52">
+          <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+          <path class="checkmark-path" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+        </svg>
+      </div>
+      <h2>¡Respuesta Enviada!</h2>
+      <div class="loader" style="margin: 20px auto;">
+        <div class="pulse"></div>
+      </div>
+      <p class="waiting-text">Esperando a los demás...</p>
+    </div>
+  </div>
+
+  <!-- PANTALLA 4: RESULTADO INDIVIDUAL (con efectos) -->
+  <div *ngIf="state.status === 'result'" class="view-panel result-view" 
+       [class.correct]="state.lastResult?.isCorrect" 
+       [class.incorrect]="!state.lastResult?.isCorrect"
+       [class.timed-out]="state.lastResult?.timedOut">
+    
+    <!-- 🔥 Fire Overlay para rachas (streak >= 2) -->
+    <div class="fire-overlay" *ngIf="state.lastResult?.isCorrect && (state.lastResult?.streak ?? 0) >= 2"
+         [class.fire-warm]="streakLevel === 'warm'"
+         [class.fire-blaze]="streakLevel === 'blaze'"
+         [class.fire-inferno]="streakLevel === 'inferno'">
+      <div class="fire-particle" *ngFor="let p of fireParticles" [attr.style]="p.style"></div>
+      <div class="fire-base"></div>
+      <div class="streak-badge" *ngIf="(state.lastResult?.streak ?? 0) >= 4">
+        🔥 ON FIRE! 🔥
+      </div>
+    </div>
+
+    <!-- 🎉 Confeti (respuesta correcta) -->
+    <div class="confetti-container" *ngIf="state.lastResult?.isCorrect">
+      <div class="confetti-piece" *ngFor="let p of confettiParticles" [attr.style]="p.style"></div>
+    </div>
+    
+    <!-- 😔 Lluvia (respuesta incorrecta, no timeout) -->
+    <div class="rain-container" *ngIf="!state.lastResult?.isCorrect && !state.lastResult?.timedOut">
+      <div class="rain-drop" *ngFor="let p of rainParticles" [attr.style]="p.style"></div>
+    </div>
+
+    <div class="result-card" 
+         [class.bounce-in]="state.lastResult?.isCorrect" 
+         [class.shake-in]="!state.lastResult?.isCorrect">
+      
+      <div class="result-emoji">
+        {{ state.lastResult?.timedOut ? '⏰' : (state.lastResult?.isCorrect ? '🎉' : '😔') }}
+      </div>
+      
+      <h2>{{ state.lastResult?.timedOut ? '¡Tiempo!' : (state.lastResult?.isCorrect ? '¡Genial!' : '¡Casi!') }}</h2>
+      
+      <div class="score-badge" [class.glow-gold]="state.lastResult?.isCorrect">
+        + {{ state.lastResult?.pointsAwarded }} pts
+      </div>
+      
+      <div class="stats-row">
+        <div class="stat">
+          <label>Racha</label>
+          <span class="streak-value" [class.on-fire]="(state.lastResult?.streak ?? 0) >= 2">
+            🔥 {{ state.lastResult?.streak }}
+          </span>
+        </div>
+        <div class="stat">
+          <label>Puesto</label>
+          <span>#{{ state.lastResult?.currentRank }}</span>
+        </div>
+        <div class="stat">
+          <label>Total</label>
+          <span>{{ state.lastResult?.totalScore }} pts</span>
+        </div>
+      </div>
+      
+      <p class="waiting-text">Esperando la próxima pregunta...</p>
+    </div>
+  </div>
+
+  <!-- PANTALLA 5: PODIO FINAL -->
+  <div *ngIf="state.status === 'podium'" class="view-panel final-view">
+    <div class="glass-card podium-card">
+      <h2>¡Juego Terminado!</h2>
+      
+      <div class="final-rank">
+        <span class="rank-number">#{{ state.podium?.yourRank }}</span>
+      </div>
+      
+      <div class="final-stats">
+        <div class="stat-box">
+          <span class="value">{{ state.podium?.totalPoints }}</span>
+          <span class="label">Puntos Totales</span>
+        </div>
+        <div class="stat-box">
+          <span class="value">{{ state.podium?.correctCount }} / {{ state.podium?.totalQuestions }}</span>
+          <span class="label">Correctas</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

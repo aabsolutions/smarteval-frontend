@@ -43,5 +43,13 @@ export const TEACHER_ROUTE: Route[] = [
     path: 'profile',
     loadComponent: () => import('@shared/components/profile/profile.component').then(m => m.ProfileComponent)
   },
+  {
+    path: 'live-quizzes',
+    loadComponent: () => import('../features/live-quizzes/pages/teacher-live-quizzes/teacher-live-quizzes.component').then(m => m.TeacherLiveQuizzesComponent)
+  },
+  {
+    path: 'live-quizzes/create',
+    loadComponent: () => import('../features/live-quizzes/pages/live-quiz-creator/live-quiz-creator.component').then(m => m.LiveQuizCreatorComponent)
+  },
   { path: '**', component: Page404Component },
 ];

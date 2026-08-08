@@ -167,8 +167,18 @@
           "icon": "clock",
           "class": "",
           "groupTitle": false,
-          "badge": "",
           "badgeClass": "",
+          "submenu": []
+        },
+        {
+          "path": "/teacher/live-quizzes",
+          "title": "Live Quizzes",
+          "iconType": "feather",
+          "icon": "play-circle",
+          "class": "",
+          "groupTitle": false,
+          "badge": "Nuevo",
+          "badgeClass": "badge bg-blue",
           "submenu": []
         }
       ]
@@ -243,6 +253,20 @@
       "title": "Mis Resultados",
       "iconType": "material-icons-outlined",
       "icon": "fact_check",
+      "class": "",
+      "groupTitle": false,
+      "badge": "",
+      "badgeClass": "",
+      "role": [
+        "STUDENT"
+      ],
+      "submenu": []
+    },
+    {
+      "path": "/live-quiz/student",
+      "title": "Jugar Live Quiz",
+      "iconType": "material-icons-outlined",
+      "icon": "sports_esports",
       "class": "",
       "groupTitle": false,
       "badge": "",

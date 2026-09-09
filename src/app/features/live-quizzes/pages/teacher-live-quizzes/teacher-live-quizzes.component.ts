@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { LiveQuizService } from '../../services/live-quiz.service';
+import { LiveQuizService, LiveQuizReport } from '../../services/live-quiz.service';
 import { LiveQuiz } from '../../models/live-quiz.model';
 import { BreadcrumbComponent } from '@shared/components/breadcrumb/breadcrumb.component';
 
@@ -41,6 +41,9 @@ import { BreadcrumbComponent } from '@shared/components/breadcrumb/breadcrumb.co
                 <button class="launch-btn" (click)="launchProjector(quiz._id)" *ngIf="quiz.status !== 'draft' && quiz.status !== 'finished'">
                   Reconectar Proyector
                 </button>
+                <button class="launch-btn" (click)="viewReport(quiz._id)" *ngIf="quiz.status === 'finished'">
+                  Ver Reporte
+                </button>
               </div>
             </div>
 
@@ -49,6 +52,46 @@ import { BreadcrumbComponent } from '@shared/components/breadcrumb/breadcrumb.co
               No tienes Live Quizzes todavía. ¡Crea uno para empezar a jugar!
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Modal de Reporte -->
+      <div class="report-overlay" *ngIf="selectedReport" (click)="closeReport()">
+        <div class="report-modal" (click)="$event.stopPropagation()">
+          <div class="report-header">
+            <h2>{{ selectedReport.title }}</h2>
+            <button class="close-btn" (click)="closeReport()">✕</button>
+          </div>
+
+          <h3>Ranking Final</h3>
+          <table class="report-table">
+            <thead>
+              <tr><th>#</th><th>Nombre</th><th>Puntaje</th><th>Correctas</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let r of selectedReport.ranking">
+                <td>{{ r.rank }}</td>
+                <td>{{ r.name }}</td>
+                <td>{{ r.totalScore }}</td>
+                <td>{{ r.correctAnswers }} / {{ selectedReport.totalQuestions }}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>Por Pregunta</h3>
+          <table class="report-table">
+            <thead>
+              <tr><th>#</th><th>Enunciado</th><th>Aciertos</th><th>% Correcto</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let q of selectedReport.perQuestion">
+                <td>{{ q.questionIndex + 1 }}</td>
+                <td>{{ q.statement }}</td>
+                <td>{{ q.correctCount }} / {{ q.totalAnswered }}</td>
+                <td>{{ q.correctPercentage | number:'1.0-0' }}%</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </section>
@@ -80,10 +123,20 @@ import { BreadcrumbComponent } from '@shared/components/breadcrumb/breadcrumb.co
     .delete-btn:hover { background: #dc2626; }
     
     .empty-state { grid-column: 1 / -1; text-align: center; padding: 50px; color: #64748b; background: white; border-radius: 12px; border: 1px dashed #cbd5e1; }
+
+    .report-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .report-modal { background: white; border-radius: 12px; padding: 30px; max-width: 700px; width: 90%; max-height: 85vh; overflow-y: auto; }
+    .report-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .report-header h2 { font-size: 1.5rem; font-weight: 700; color: #0f172a; }
+    .close-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #64748b; }
+    .report-table { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
+    .report-table th, .report-table td { text-align: left; padding: 10px; border-bottom: 1px solid #e2e8f0; }
+    .report-table th { color: #64748b; font-size: 0.85rem; text-transform: uppercase; }
   `]
 })
 export class TeacherLiveQuizzesComponent implements OnInit {
   public quizzes: LiveQuiz[] = [];
+  public selectedReport: LiveQuizReport | null = null;
   private quizService = inject(LiveQuizService);
   private router = inject(Router);
 
@@ -113,6 +166,17 @@ export class TeacherLiveQuizzesComponent implements OnInit {
     // Construimos la ruta absoluta usando el origin actual para que el navegador no se maree
     const absoluteUrl = window.location.origin + window.location.pathname + url;
     window.open(absoluteUrl, '_blank');
+  }
+
+  viewReport(id: string) {
+    this.quizService.getReport(id).subscribe({
+      next: (report) => this.selectedReport = report,
+      error: () => alert('No se pudo cargar el reporte.')
+    });
+  }
+
+  closeReport() {
+    this.selectedReport = null;
   }
 
   deleteQuiz(id: string) {

@@ -16,11 +16,12 @@ interface Particle {
 })
 export class LiveQuizStudentComponent implements OnDestroy {
   public quizService = inject(StudentLiveQuizService);
-  
+
   public pinInput = signal<string>('');
-  private responseStartTime = 0;
-  
+
   public selectedOptions = signal<string[]>([]);
+  public fillBlankAnswer = signal<string>('');
+  public matchingAnswers = signal<string[]>([]);
   private lastQuestionIndex = -1;
 
   // Partículas para efectos visuales
@@ -34,8 +35,9 @@ export class LiveQuizStudentComponent implements OnDestroy {
       const state = this.state;
       if (state.status === 'question' && state.questionIndex !== this.lastQuestionIndex) {
         this.lastQuestionIndex = state.questionIndex;
-        this.responseStartTime = Date.now();
         this.selectedOptions.set([]);
+        this.fillBlankAnswer.set('');
+        this.matchingAnswers.set(new Array(state.currentQuestion?.options?.length ?? 0).fill(''));
         this.confettiParticles = [];
         this.rainParticles = [];
         this.fireParticles = [];
@@ -87,14 +89,34 @@ export class LiveQuizStudentComponent implements OnDestroy {
 
   submitSingle(option: string) {
     if (this.state.hasAnswered) return;
-    const responseTime = Date.now() - this.responseStartTime;
-    this.quizService.submitAnswer([option], responseTime);
+    this.quizService.submitAnswer([option]);
   }
 
   submitMultiple() {
     if (this.selectedOptions().length === 0 || this.state.hasAnswered) return;
-    const responseTime = Date.now() - this.responseStartTime;
-    this.quizService.submitAnswer(this.selectedOptions(), responseTime);
+    this.quizService.submitAnswer(this.selectedOptions());
+  }
+
+  submitFillBlank() {
+    const answer = this.fillBlankAnswer().trim();
+    if (!answer || this.state.hasAnswered) return;
+    this.quizService.submitAnswer([answer]);
+  }
+
+  setMatchingAnswer(index: number, value: string) {
+    const current = [...this.matchingAnswers()];
+    current[index] = value;
+    this.matchingAnswers.set(current);
+  }
+
+  get matchingComplete(): boolean {
+    const answers = this.matchingAnswers();
+    return answers.length > 0 && answers.every(a => !!a);
+  }
+
+  submitMatching() {
+    if (!this.matchingComplete || this.state.hasAnswered) return;
+    this.quizService.submitAnswer(this.matchingAnswers());
   }
 
   private generateConfetti() {

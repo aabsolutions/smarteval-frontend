@@ -34,4 +34,38 @@ export class LiveQuizService {
   importQuestions(id: string, payload: ImportQuestionsPayload): Observable<LiveQuiz> {
     return this.http.post<LiveQuiz>(`${this.apiUrl}/${id}/import-questions`, payload);
   }
+
+  getReport(id: string): Observable<LiveQuizReport> {
+    return this.http.get<LiveQuizReport>(`${this.apiUrl}/${id}/report`);
+  }
+}
+
+export interface LiveQuizReportRanking {
+  rank: number;
+  userId: string;
+  name: string;
+  totalScore: number;
+  correctAnswers: number;
+  totalResponseTimeMs: number;
+}
+
+export interface LiveQuizReportQuestion {
+  questionIndex: number;
+  statement: string;
+  type: string;
+  totalAnswered: number;
+  correctCount: number;
+  correctPercentage: number;
+  averageResponseTimeMs: number;
+}
+
+export interface LiveQuizReport {
+  quizId: string;
+  title: string;
+  startedAt: string;
+  finishedAt: string;
+  totalQuestions: number;
+  totalParticipants: number;
+  ranking: LiveQuizReportRanking[];
+  perQuestion: LiveQuizReportQuestion[];
 }

@@ -42,6 +42,10 @@ export class LiveQuizHostComponent implements OnInit, OnDestroy {
     this.hostService.showPodium();
   }
 
+  kickStudent(studentUserId: string) {
+    this.hostService.kickStudent(studentUserId);
+  }
+
   ngOnDestroy() {
     this.hostService.disconnect();
   }

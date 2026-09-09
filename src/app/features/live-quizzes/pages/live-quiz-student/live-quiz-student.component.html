@@ -49,9 +49,9 @@
     </div>
 
     <!-- Si es SINGLE CHOICE o TRUE/FALSE (envía con 1 clic) -->
-    <div class="options-grid" *ngIf="state.currentQuestion?.type !== 'multiple-choice'">
-      <button 
-        *ngFor="let option of state.currentQuestion?.options; let i = index" 
+    <div class="options-grid" *ngIf="state.currentQuestion?.type === 'single-choice' || state.currentQuestion?.type === 'true-false'">
+      <button
+        *ngFor="let option of state.currentQuestion?.options; let i = index"
         class="option-btn shape-{{ i % 4 }}"
         [disabled]="state.hasAnswered"
         (click)="submitSingle(option)"
@@ -65,8 +65,8 @@
     <div class="multiple-choice-container" *ngIf="state.currentQuestion?.type === 'multiple-choice'">
       <p class="mc-instruction">Selecciona una o más respuestas correctas:</p>
       <div class="options-grid mc-grid">
-        <button 
-          *ngFor="let option of state.currentQuestion?.options; let i = index" 
+        <button
+          *ngFor="let option of state.currentQuestion?.options; let i = index"
           class="option-btn shape-{{ i % 4 }}"
           [class.selected]="selectedOptions().includes(option)"
           [disabled]="state.hasAnswered"
@@ -78,9 +78,50 @@
           {{ option }}
         </button>
       </div>
-      <button class="join-btn confirm-btn mt-4" (click)="submitMultiple()" 
+      <button class="join-btn confirm-btn mt-4" (click)="submitMultiple()"
               [disabled]="selectedOptions().length === 0 || state.hasAnswered">
         Confirmar Selección
+      </button>
+    </div>
+
+    <!-- Si es FILL-BLANK (texto libre) -->
+    <div class="multiple-choice-container" *ngIf="state.currentQuestion?.type === 'fill-blank'">
+      <p class="mc-instruction">Escribe tu respuesta:</p>
+      <input
+        type="text"
+        class="pin-input"
+        placeholder="Tu respuesta..."
+        [ngModel]="fillBlankAnswer()"
+        (ngModelChange)="fillBlankAnswer.set($event)"
+        (keyup.enter)="submitFillBlank()"
+        [disabled]="state.hasAnswered"
+      />
+      <button class="join-btn confirm-btn mt-4" (click)="submitFillBlank()"
+              [disabled]="!fillBlankAnswer().trim() || state.hasAnswered">
+        Confirmar Respuesta
+      </button>
+    </div>
+
+    <!-- Si es MATCHING (emparejar cada concepto con su par) -->
+    <div class="multiple-choice-container" *ngIf="state.currentQuestion?.type === 'matching'">
+      <p class="mc-instruction">Empareja cada concepto con su par correcto:</p>
+      <div class="matching-row" *ngFor="let concept of state.currentQuestion?.options; let i = index">
+        <div class="option-btn shape-{{ i % 4 }}" style="cursor:default">{{ concept }}</div>
+        <select
+          class="pin-input"
+          [ngModel]="matchingAnswers()[i]"
+          (ngModelChange)="setMatchingAnswer(i, $event)"
+          [disabled]="state.hasAnswered"
+        >
+          <option value="" disabled selected>Seleccionar par...</option>
+          <option *ngFor="let target of state.currentQuestion?.matchingOptions" [value]="target">
+            {{ target }}
+          </option>
+        </select>
+      </div>
+      <button class="join-btn confirm-btn mt-4" (click)="submitMatching()"
+              [disabled]="!matchingComplete || state.hasAnswered">
+        Confirmar Emparejamiento
       </button>
     </div>
   </div>

@@ -34,6 +34,7 @@
       <div class="participants-grid">
         <div class="participant-badge" *ngFor="let p of state.participants">
           {{ p.name }}
+          <button class="kick-btn" title="Expulsar" (click)="kickStudent(p.userId)">✕</button>
         </div>
       </div>
     </div>
@@ -58,10 +59,31 @@
       <img [src]="state.currentQuestion?.imageUrl" alt="Imagen de la pregunta" />
     </div>
 
-    <!-- Opciones -->
-    <div class="options-grid">
+    <!-- Opciones (choice cerrado) -->
+    <div class="options-grid" *ngIf="state.currentQuestion?.type !== 'fill-blank' && state.currentQuestion?.type !== 'matching'">
       <div class="option-card shape-{{ i % 4 }}" *ngFor="let option of state.currentQuestion?.options; let i = index">
         {{ option }}
+      </div>
+    </div>
+
+    <!-- FILL-BLANK: no se proyectan opciones, solo se espera texto libre -->
+    <div class="options-grid" *ngIf="state.currentQuestion?.type === 'fill-blank'">
+      <p>Los estudiantes están escribiendo su respuesta...</p>
+    </div>
+
+    <!-- MATCHING: se proyectan las dos columnas para que la clase vea el desafío -->
+    <div class="matching-projection" *ngIf="state.currentQuestion?.type === 'matching'">
+      <div class="matching-columns">
+        <div class="matching-col">
+          <div class="option-card shape-{{ i % 4 }}" *ngFor="let concept of state.currentQuestion?.options; let i = index">
+            {{ concept }}
+          </div>
+        </div>
+        <div class="matching-col">
+          <div class="option-card shape-{{ i % 4 }}" *ngFor="let target of state.currentQuestion?.matchingOptions; let i = index">
+            {{ target }}
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -69,8 +91,9 @@
   <!-- RESULTADOS DE LA PREGUNTA (Estadísticas) -->
   <div *ngIf="state.status === 'stats'" class="view-panel stats-view">
     <h2>Resultados</h2>
-    
-    <div class="chart-container">
+
+    <!-- Choice cerrado: distribución por opción -->
+    <div class="chart-container" *ngIf="state.currentQuestion?.type !== 'fill-blank' && state.currentQuestion?.type !== 'matching'">
       <div class="bar-col" *ngFor="let option of state.currentQuestion?.options; let i = index">
         <div class="bar-wrapper">
           <div class="bar shape-{{ i % 4 }}" [style.height.%]="getAnswerPercentage(option)">
@@ -82,6 +105,23 @@
           {{ option }}
         </div>
       </div>
+    </div>
+
+    <!-- FILL-BLANK: no hay distribución por opción, se muestra la respuesta aceptada -->
+    <div class="answer-reveal" *ngIf="state.currentQuestion?.type === 'fill-blank'">
+      <p>Respuesta correcta:</p>
+      <div class="option-card shape-0" *ngFor="let ans of state.currentQuestion?.correctAnswers">{{ ans }}</div>
+      <p class="answered-count">{{ state.lastStats?.totalAnswered }} respuestas, {{ state.lastStats?.correctCount }} correctas</p>
+    </div>
+
+    <!-- MATCHING: se muestra el emparejamiento correcto, no hay barras por opción -->
+    <div class="answer-reveal" *ngIf="state.currentQuestion?.type === 'matching'">
+      <p>Emparejamiento correcto:</p>
+      <div class="matching-row" *ngFor="let concept of state.currentQuestion?.options; let i = index">
+        <div class="option-card shape-{{ i % 4 }}">{{ concept }}</div>
+        <div class="option-card shape-{{ i % 4 }}">{{ state.currentQuestion?.correctAnswers?.[i] }}</div>
+      </div>
+      <p class="answered-count">{{ state.lastStats?.totalAnswered }} respuestas, {{ state.lastStats?.correctCount }} completas</p>
     </div>
 
     <button class="primary-btn mt-4" (click)="nextQuestion()">

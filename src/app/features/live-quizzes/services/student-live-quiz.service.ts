@@ -121,11 +121,57 @@ export class StudentLiveQuizService {
         podium: data
       }));
     });
+
+    this.socket.on('quiz:kicked', (data) => {
+      this.state.update(s => ({ ...s, status: 'disconnected', error: data.message || 'Fuiste expulsado de la sala' }));
+      this.socketService.disconnect();
+    });
+
+    // Reconexión: si el socket cae (WiFi, tab en background) y vuelve a conectar,
+    // el server no recuerda la room -> pedimos resync en vez de arrancar de cero.
+    this.socket.on('connect', () => {
+      const s = this.state();
+      if (s.quizId && s.status !== 'disconnected') {
+        this.socket!.emit('student:rejoin', { quizId: s.quizId });
+      }
+    });
+
+    this.socket.on('quiz:resync', (data: any) => {
+      switch (data.status) {
+        case 'lobby':
+          this.state.update(s => ({
+            ...s,
+            status: 'lobby',
+            quizId: data.quizId,
+            title: data.quizTitle,
+            participantCount: data.participantCount,
+          }));
+          break;
+        case 'answer-sent':
+          this.state.update(s => ({ ...s, status: 'answer-sent', hasAnswered: true }));
+          break;
+        case 'question':
+          this.state.update(s => ({
+            ...s,
+            status: 'question',
+            questionIndex: data.index,
+            totalQuestions: data.total,
+            currentQuestion: data.question,
+            timeLimit: data.timeLimit,
+            secondsRemaining: data.secondsRemaining,
+            hasAnswered: false,
+          }));
+          break;
+        case 'podium':
+          this.state.update(s => ({ ...s, status: 'podium', podium: data }));
+          break;
+      }
+    });
   }
 
-  submitAnswer(answers: string[], responseTimeMs: number) {
+  submitAnswer(answers: string[]) {
     if (!this.socket) return;
-    
+
     const currentState = this.state();
     if (currentState.status !== 'question' || !currentState.quizId || currentState.hasAnswered) return;
 
@@ -133,7 +179,6 @@ export class StudentLiveQuizService {
       quizId: currentState.quizId,
       questionIndex: currentState.questionIndex,
       answers,
-      responseTimeMs
     });
 
     // Transicionar inmediatamente a "respuesta enviada" sin esperar al resto

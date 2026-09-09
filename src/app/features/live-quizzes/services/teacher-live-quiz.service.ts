@@ -68,6 +68,12 @@ export class TeacherLiveQuizService {
     this.socket.emit('teacher:show-podium', { quizId: currentState.quizId });
   }
 
+  kickStudent(studentUserId: string) {
+    const currentState = this.state();
+    if (!this.socket || !currentState.quizId) return;
+    this.socket.emit('teacher:kick-student', { quizId: currentState.quizId, studentUserId });
+  }
+
   private setupListeners() {
     if (!this.socket) return;
 
@@ -89,6 +95,13 @@ export class TeacherLiveQuizService {
         const parts = [...s.participants, { userId: data.userId, name: data.name }];
         return { ...s, participants: parts };
       });
+    });
+
+    this.socket.on('lobby:student-left', (data) => {
+      this.state.update(s => ({
+        ...s,
+        participants: s.participants.filter(p => p.userId !== data.userId),
+      }));
     });
 
     this.socket.on('quiz:question-projected', (data) => {

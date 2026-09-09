@@ -9,7 +9,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { NgScrollbarModule } from 'ngx-scrollbar';
 
 export interface Student {
-  id: number;
+  id: number | string;
   name: string;
   avatar?: string;
   score: number;
@@ -50,90 +50,11 @@ export class TopStudentsCardComponent implements OnInit {
     'badges',
   ];
 
-  // Default student data if none is provided
-  defaultStudents: Student[] = [
-    {
-      id: 1,
-      name: 'Emma Thompson',
-      avatar: 'assets/images/user/user1.jpg',
-      score: 98,
-      rank: 1,
-      subject: 'Mathematics',
-      improvement: 5,
-      badges: ['star', 'trending_up', 'emoji_events'],
-    },
-    {
-      id: 2,
-      name: 'James Wilson',
-      avatar: 'assets/images/user/user8.jpg',
-      score: 96,
-      rank: 2,
-      subject: 'Science',
-      improvement: 3,
-      badges: ['star', 'emoji_events'],
-    },
-    {
-      id: 3,
-      name: 'Sophia Garcia',
-      avatar: 'assets/images/user/user9.jpg',
-      score: 95,
-      rank: 3,
-      subject: 'English',
-      improvement: 7,
-      badges: ['trending_up', 'emoji_events'],
-    },
-    {
-      id: 4,
-      name: 'Liam Johnson',
-      avatar: 'assets/images/user/user2.jpg',
-      score: 93,
-      rank: 4,
-      subject: 'History',
-      improvement: 2,
-      badges: ['star'],
-    },
-    {
-      id: 5,
-      name: 'Olivia Brown',
-      avatar: 'assets/images/user/user7.jpg',
-      score: 91,
-      rank: 5,
-      subject: 'Art',
-      improvement: 4,
-      badges: ['trending_up'],
-    },
-    {
-      id: 6,
-      name: 'Noah Martinez',
-      avatar: 'assets/images/user/user5.jpg',
-      score: 90,
-      rank: 6,
-      subject: 'Physics',
-      improvement: 1,
-      badges: [],
-    },
-    {
-      id: 7,
-      name: 'Ava Davis',
-      avatar: 'assets/images/user/user11.jpg',
-      score: 89,
-      rank: 7,
-      subject: 'Chemistry',
-      improvement: 0,
-      badges: [],
-    },
-  ];
-
   constructor() {}
 
   ngOnInit(): void {
-    // Use default data if none is provided
-    if (!this.students || this.students.length === 0) {
-      this.students = this.defaultStudents;
-    }
-
     // Limit the number of students displayed
-    this.students = this.students.slice(0, this.maxStudents);
+    this.students = (this.students || []).slice(0, this.maxStudents);
   }
 
   getBadgeTooltip(badge: string): string {

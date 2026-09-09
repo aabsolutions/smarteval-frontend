@@ -7,6 +7,9 @@
 
   <mat-card-content>
     <div class="students-container">
+        @if (students.length === 0) {
+          <p class="text-muted p-3">Sin datos todavía.</p>
+        }
         @for (student of students; track student; let i = $index) {
           <div class="student-card">
             <div class="student-rank" [ngClass]="'rank-' + student.rank">

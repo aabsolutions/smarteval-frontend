@@ -1,11 +1,14 @@
 <mat-card class="student-progress-card">
   <mat-card-header>
-    <mat-card-title>Student Progress</mat-card-title>
+    <mat-card-title>{{title}}</mat-card-title>
   </mat-card-header>
   <mat-card-content>
     <div class="progress-list">
       <ng-scrollbar style="height: 400px" visibility="hover">
-        @for (student of students; track student) {
+        @if (students.length === 0) {
+          <p class="text-muted p-3">{{emptyMessage}}</p>
+        }
+        @for (student of students; track student.name) {
           <div class="progress-item">
             <div class="student-info">
               <h4 class="student-name">{{student.name}}</h4>
@@ -16,7 +19,7 @@
               </mat-progress-bar>
               <div class="progress-details">
                 <span class="progress-percentage">{{student.progress}}%</span>
-                <span class="grade">Grade: {{student.grade}}</span>
+                <span class="grade">{{student.grade}}</span>
               </div>
             </div>
           </div>
@@ -24,7 +27,4 @@
       </ng-scrollbar>
     </div>
   </mat-card-content>
-  <mat-card-actions align="end" class="action-bar">
-    <button mat-button color="primary">VIEW DETAILS</button>
-  </mat-card-actions>
 </mat-card>

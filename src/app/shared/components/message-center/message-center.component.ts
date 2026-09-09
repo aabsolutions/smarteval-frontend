@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -9,7 +9,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { NgScrollbar } from 'ngx-scrollbar';
 
 export interface Message {
-  id: number;
+  id: number | string;
   title: string;
   content: string;
   sender: string;
@@ -39,114 +39,19 @@ export class MessageCenterComponent implements OnInit {
   @Input() title = 'Message Center';
   @Input() messages: Message[] = [];
   @Input() maxMessages = 10;
+  @Output() markRead = new EventEmitter<number | string>();
+  @Output() markAllRead = new EventEmitter<void>();
 
-  expandedMessageId: number | null = null;
-
-  // Default messages if none are provided
-  defaultMessages: Message[] = [
-    {
-      id: 1,
-      title: 'Staff Meeting Reminder',
-      content:
-        'This is a reminder that we have a staff meeting tomorrow at 3:30 PM in the conference room. Please bring your quarterly reports and be prepared to discuss curriculum changes for the next semester.',
-      sender: 'Principal Johnson',
-      date: new Date(new Date().setDate(new Date().getDate() - 1)),
-      read: false,
-      type: 'announcement',
-      priority: 'high',
-    },
-    {
-      id: 2,
-      title: 'New Grading System Update',
-      content:
-        'The IT department has completed the update to our grading system. Please log in and verify that all your class data has been transferred correctly. If you encounter any issues, contact technical support immediately.',
-      sender: 'IT Department',
-      date: new Date(new Date().setDate(new Date().getDate() - 2)),
-      read: true,
-      type: 'announcement',
-      priority: 'medium',
-    },
-    {
-      id: 3,
-      title: 'Parent-Teacher Conference Schedule',
-      content:
-        'The parent-teacher conferences will be held next week on Thursday and Friday. Please check your assigned schedule in the attached document and let me know if you need any adjustments by end of day tomorrow.',
-      sender: 'Vice Principal Smith',
-      date: new Date(new Date().setDate(new Date().getDate() - 3)),
-      read: false,
-      type: 'message',
-      priority: 'medium',
-    },
-    {
-      id: 4,
-      title: 'Fire Drill Scheduled',
-      content:
-        'There will be a fire drill tomorrow at 10:15 AM. Please review the evacuation procedures with your students during your first period class.',
-      sender: 'Safety Committee',
-      date: new Date(new Date().setDate(new Date().getDate() - 4)),
-      read: true,
-      type: 'alert-msg',
-      priority: 'high',
-    },
-    {
-      id: 5,
-      title: 'Professional Development Opportunity',
-      content:
-        'Registration is now open for the summer professional development workshop on "Integrating Technology in the Classroom". Space is limited, so please register by the end of the month if you are interested.',
-      sender: 'Academic Affairs',
-      date: new Date(new Date().setDate(new Date().getDate() - 5)),
-      read: true,
-      type: 'message',
-      priority: 'low',
-    },
-    {
-      id: 6,
-      title: 'Classroom Supply Requests',
-      content:
-        'Please submit your classroom supply requests for the next semester by Friday. The form is available on the school portal under "Administrative Forms".',
-      sender: 'Administrative Office',
-      date: new Date(new Date().setDate(new Date().getDate() - 6)),
-      read: false,
-      type: 'message',
-      priority: 'medium',
-    },
-    {
-      id: 7,
-      title: 'Sports Day Announcement',
-      content:
-        'The annual Sports Day will be held on Saturday, starting at 9:00 AM in the school grounds. All staff members are requested to guide their respective houses and ensure student participation.',
-      sender: 'Sports Coordinator',
-      date: new Date(new Date().setDate(new Date().getDate() - 7)),
-      read: false,
-      type: 'announcement',
-      priority: 'high',
-    },
-    {
-      id: 8,
-      title: 'Library Book Return Reminder',
-      content:
-        'Teachers are kindly reminded to return any borrowed library books by the end of this week so the inventory can be updated for the new semester.',
-      sender: 'Library Staff',
-      date: new Date(new Date().setDate(new Date().getDate() - 8)),
-      read: true,
-      type: 'alert-msg',
-      priority: 'low',
-    },
-  ];
+  expandedMessageId: number | string | null = null;
 
   constructor() {}
 
   ngOnInit(): void {
-    // Use default data if none is provided
-    if (!this.messages || this.messages.length === 0) {
-      this.messages = this.defaultMessages;
-    }
-
     // Limit the number of messages displayed
-    this.messages = this.messages.slice(0, this.maxMessages);
+    this.messages = (this.messages || []).slice(0, this.maxMessages);
   }
 
-  toggleMessageExpansion(messageId: number): void {
+  toggleMessageExpansion(messageId: number | string): void {
     if (this.expandedMessageId === messageId) {
       this.expandedMessageId = null;
     } else {
@@ -155,10 +60,11 @@ export class MessageCenterComponent implements OnInit {
     }
   }
 
-  markAsRead(messageId: number): void {
+  markAsRead(messageId: number | string): void {
     const message = this.messages.find((m) => m.id === messageId);
     if (message && !message.read) {
       message.read = true;
+      this.markRead.emit(messageId);
     }
   }
 
@@ -166,6 +72,7 @@ export class MessageCenterComponent implements OnInit {
     this.messages.forEach((message) => {
       message.read = true;
     });
+    this.markAllRead.emit();
   }
 
   getUnreadCount(): number {

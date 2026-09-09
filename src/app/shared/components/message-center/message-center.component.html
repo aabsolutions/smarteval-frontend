@@ -14,11 +14,7 @@
       <mat-menu #messageMenu="matMenu">
         <button mat-menu-item (click)="markAllAsRead()">
           <mat-icon>done_all</mat-icon>
-          <span>Mark all as read</span>
-        </button>
-        <button mat-menu-item>
-          <mat-icon>settings</mat-icon>
-          <span>Notification settings</span>
+          <span>Marcar todas como leídas</span>
         </button>
       </mat-menu>
     </div>
@@ -28,7 +24,7 @@
     @if (messages.length === 0) {
     <div class="empty-messages">
       <mat-icon>inbox</mat-icon>
-      <p>No messages to display</p>
+      <p>No hay notificaciones</p>
     </div>
     } @else {
     <div class="messages-list">
@@ -66,11 +62,6 @@
           @if (expandedMessageId === message.id) {
           <div class="message-content">
             <p>{{ message.content }}</p>
-            <div class="message-actions">
-              <button mat-button color="primary">REPLY</button>
-              <button mat-button>FORWARD</button>
-              <button mat-button color="warn">DELETE</button>
-            </div>
           </div>
           }
         </div>

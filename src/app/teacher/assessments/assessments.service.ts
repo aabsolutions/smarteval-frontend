@@ -18,6 +18,18 @@ export interface Assessment {
   isSimulator?: boolean;
 }
 
+export interface TeacherSummary {
+  totalAssessments: number;
+  activeAssessments: number;
+  totalAttempts: number;
+  averageScorePercentage: number;
+  approvalRate: number;
+  scoreTrend: { assessmentId: string; title: string; averagePercentage: number; date: string }[];
+  topStudents: { studentId: string; name: string; averagePercentage: number; attemptsCount: number }[];
+  studentsNeedingSupport: { studentId: string; name: string; averagePercentage: number; attemptsCount: number }[];
+  recentAssessments: { id: string; title: string; status: 'scheduled' | 'active' | 'closed'; startTime: string; endTime: string }[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class AssessmentsService {
   private http = inject(HttpClient);
@@ -57,6 +69,10 @@ export class AssessmentsService {
 
   getAnalytics(id: string): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/${id}/analytics`);
+  }
+
+  getTeacherSummary(): Observable<TeacherSummary> {
+    return this.http.get<TeacherSummary>(`${this.apiUrl}/teacher/summary`);
   }
 
   exportExcel(id: string): Observable<Blob> {

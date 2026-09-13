@@ -180,6 +180,17 @@
           "badge": "Nuevo",
           "badgeClass": "badge bg-blue",
           "submenu": []
+        },
+        {
+          "path": "/teacher/word-clouds",
+          "title": "Nubes de Palabras",
+          "iconType": "feather",
+          "icon": "cloud",
+          "class": "",
+          "groupTitle": false,
+          "badge": "Nuevo",
+          "badgeClass": "badge bg-blue",
+          "submenu": []
         }
       ]
     },
@@ -267,6 +278,20 @@
       "title": "Jugar Live Quiz",
       "iconType": "material-icons-outlined",
       "icon": "sports_esports",
+      "class": "",
+      "groupTitle": false,
+      "badge": "",
+      "badgeClass": "",
+      "role": [
+        "STUDENT"
+      ],
+      "submenu": []
+    },
+    {
+      "path": "/word-cloud/student",
+      "title": "Nube de Palabras",
+      "iconType": "material-icons-outlined",
+      "icon": "cloud",
       "class": "",
       "groupTitle": false,
       "badge": "",

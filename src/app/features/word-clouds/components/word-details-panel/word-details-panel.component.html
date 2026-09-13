@@ -1,0 +1,51 @@
+<aside class="wd-panel" *ngIf="details" role="dialog" aria-label="Explicaciones de la palabra">
+  <header class="wd-header">
+    <div>
+      <h3 class="wd-title">{{ details.text }}</h3>
+      <p class="wd-count">
+        {{ details.count }} {{ details.count === 1 ? 'mención' : 'menciones' }}
+      </p>
+    </div>
+    <button type="button" class="wd-close" (click)="close.emit()" aria-label="Cerrar panel">
+      ×
+    </button>
+  </header>
+
+  <ul class="wd-list">
+    <li class="wd-item" *ngFor="let entry of details.entries">
+      <div class="wd-item-head">
+        <span class="wd-name">{{ entry.name }}</span>
+        <span class="wd-username">{{ entry.username }}</span>
+      </div>
+
+      <p class="wd-word">Escribió: <strong>{{ entry.displayText }}</strong></p>
+
+      <p class="wd-explanation" *ngIf="entry.explanation; else noExplanation">
+        {{ entry.explanation }}
+      </p>
+      <ng-template #noExplanation>
+        <p class="wd-explanation wd-explanation--empty">Sin explicación</p>
+      </ng-template>
+
+      <div class="wd-actions" *ngIf="canModerate">
+        <ng-container *ngIf="confirmingUserId !== entry.userId; else confirming">
+          <button type="button" class="wd-remove" (click)="askRemove(entry.userId)">
+            Eliminar participación
+          </button>
+        </ng-container>
+
+        <ng-template #confirming>
+          <span class="wd-confirm-text">¿Eliminar la participación de {{ entry.name }}?</span>
+          <button type="button" class="wd-remove wd-remove--confirm" (click)="doRemove(entry.userId)">
+            Sí, eliminar
+          </button>
+          <button type="button" class="wd-cancel" (click)="cancelRemove()">Cancelar</button>
+        </ng-template>
+      </div>
+    </li>
+  </ul>
+
+  <p class="wd-empty" *ngIf="details.entries.length === 0">
+    No quedan participaciones para esta palabra.
+  </p>
+</aside>

@@ -1,0 +1,135 @@
+.wcc-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  max-width: 780px;
+  padding: 1.25rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+}
+
+.wcc-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.wcc-row {
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.wcc-label,
+.wcc-legend {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.wcc-input,
+.wcc-textarea,
+.wcc-select {
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: #0f172a;
+  background: #ffffff;
+}
+
+.wcc-input:focus,
+.wcc-textarea:focus,
+.wcc-select:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+
+.wcc-input--narrow {
+  max-width: 140px;
+}
+
+.wcc-textarea {
+  resize: vertical;
+}
+
+.wcc-color {
+  width: 56px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: none;
+  cursor: pointer;
+}
+
+.wcc-hint {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+
+.wcc-error {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #b91c1c;
+}
+
+.wcc-check,
+.wcc-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  color: #334155;
+  cursor: pointer;
+}
+
+.wcc-groups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.wcc-fieldset {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0.9rem 1rem 1.1rem;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.wcc-actions {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.wcc-btn {
+  padding: 0.6rem 1.15rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #334155;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.wcc-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.wcc-btn--primary {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+}
+
+.wcc-btn--primary:not(:disabled):hover {
+  background: #1d4ed8;
+}

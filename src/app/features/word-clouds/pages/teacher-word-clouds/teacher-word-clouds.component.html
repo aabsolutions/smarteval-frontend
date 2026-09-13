@@ -1,0 +1,85 @@
+<section class="content">
+  <div class="content-block">
+    <div class="block-header">
+      <app-breadcrumb
+        [title]="'Nubes de Palabras'"
+        [items]="['Docente']"
+        [active_item]="'Nubes de Palabras'"
+      ></app-breadcrumb>
+    </div>
+
+    <div class="wcl-container">
+      <div class="wcl-header">
+        <h1>Mis Nubes de Palabras</h1>
+        <button type="button" class="wcl-create" (click)="create()">+ Nueva Nube</button>
+      </div>
+
+      <p class="wcl-error" *ngIf="error">{{ error }}</p>
+      <p class="wcl-loading" *ngIf="loading">Cargando…</p>
+
+      <p class="wcl-empty" *ngIf="!loading && sessions.length === 0">
+        Todavía no creaste ninguna. Empezá con una consigna corta y clara:
+        los alumnos responden con una palabra y una explicación.
+      </p>
+
+      <div class="wcl-grid">
+        <article class="wcl-card" *ngFor="let session of sessions">
+          <header class="wcl-card-head">
+            <h3 class="wcl-card-title">{{ session.title }}</h3>
+            <span class="wcl-badge wcl-badge--{{ session.status }}">
+              {{ statusLabel(session.status) }}
+            </span>
+          </header>
+
+          <p class="wcl-card-prompt">{{ session.prompt }}</p>
+
+          <div class="wcl-meta">
+            <span>{{ entriesCount(session) }} participaciones</span>
+
+            <!--
+              El PIN se muestra desde que la nube se crea. Antes se escondía
+              hasta que `pinActive` pasaba a true (o sea, hasta lanzar el
+              proyector), y el docente no tenía forma de anticiparlo.
+              En borrador va marcado porque recién se reserva al lanzar.
+            -->
+            <span class="wcl-pin" *ngIf="session.pin">
+              PIN {{ session.pin }}
+              <em class="wcl-pin-note" *ngIf="!session.pinActive">se activa al lanzar</em>
+            </span>
+          </div>
+
+          <div class="wcl-actions" *ngIf="confirmingId !== session._id">
+            <button
+              type="button"
+              class="wcl-btn wcl-btn--primary"
+              (click)="launch(session._id)"
+            >
+              {{ session.status === 'draft' ? 'Lanzar proyector' : 'Reconectar proyector' }}
+            </button>
+
+            <button
+              type="button"
+              class="wcl-btn"
+              *ngIf="session.status !== 'finished'"
+              (click)="edit(session._id)"
+            >
+              Editar
+            </button>
+
+            <button type="button" class="wcl-btn wcl-btn--danger" (click)="askDelete(session._id)">
+              Eliminar
+            </button>
+          </div>
+
+          <div class="wcl-actions" *ngIf="confirmingId === session._id">
+            <span class="wcl-confirm">¿Eliminar "{{ session.title }}"?</span>
+            <button type="button" class="wcl-btn wcl-btn--danger" (click)="doDelete(session._id)">
+              Sí, eliminar
+            </button>
+            <button type="button" class="wcl-btn" (click)="cancelDelete()">Cancelar</button>
+          </div>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>

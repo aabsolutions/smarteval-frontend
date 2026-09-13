@@ -1,0 +1,143 @@
+.wd-panel {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 420px;
+  max-height: 100%;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.22);
+  overflow: hidden;
+}
+
+.wd-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.wd-title {
+  margin: 0;
+  font-size: 1.35rem;
+  color: #0f172a;
+  word-break: break-word;
+}
+
+.wd-count {
+  margin: 0.15rem 0 0;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.wd-close {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.wd-close:hover {
+  background: #e2e8f0;
+}
+
+.wd-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+}
+
+.wd-item {
+  padding: 0.9rem 1.25rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.wd-item-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.wd-name {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.wd-username {
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+
+.wd-word {
+  margin: 0.3rem 0 0.4rem;
+  font-size: 0.85rem;
+  color: #475569;
+}
+
+.wd-explanation {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: #1e293b;
+  white-space: pre-wrap;
+}
+
+.wd-explanation--empty {
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.wd-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.6rem;
+}
+
+.wd-confirm-text {
+  font-size: 0.82rem;
+  color: #b91c1c;
+  width: 100%;
+}
+
+.wd-remove,
+.wd-cancel {
+  border: none;
+  border-radius: 8px;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.wd-remove {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.wd-remove--confirm {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+.wd-cancel {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.wd-empty {
+  padding: 1.5rem 1.25rem;
+  margin: 0;
+  color: #94a3b8;
+  text-align: center;
+}

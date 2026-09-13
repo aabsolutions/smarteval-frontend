@@ -58,24 +58,43 @@
       </div>
 
       <div class="questions-list" *ngIf="bankQuestions.length > 0">
-        <div 
-          class="question-item" 
-          *ngFor="let q of bankQuestions" 
-          [class.selected]="selectedQuestionIds.has(q._id)"
-          (click)="toggleSelection(q._id)"
-        >
-          <div class="checkbox">
-            <span class="check-icon" *ngIf="selectedQuestionIds.has(q._id)">✔</span>
-          </div>
-          <div class="question-content">
-            <div class="q-header">
-              <span class="badge type-{{q.type}}">{{ q.type }}</span>
-              <span class="badge difficulty-{{q.difficulty}}">{{ q.difficulty }}</span>
+        <div class="topic-group" *ngFor="let group of topicGroups">
+          <div class="topic-header" (click)="toggleTopicCollapse(group.topicId)">
+            <span class="collapse-icon">{{ collapsedTopics.has(group.topicId) ? '▶' : '▼' }}</span>
+            <div
+              class="checkbox topic-checkbox"
+              [class.selected]="isTopicFullySelected(group)"
+              [class.partial]="isTopicPartiallySelected(group)"
+              (click)="$event.stopPropagation(); toggleTopicSelection(group)"
+            >
+              <span class="check-icon" *ngIf="isTopicFullySelected(group)">✔</span>
+              <span class="check-icon partial-icon" *ngIf="isTopicPartiallySelected(group)">–</span>
             </div>
-            <p class="statement">{{ q.statement }}</p>
-            <div class="options-preview">
-              <span class="opt" *ngFor="let opt of q.options | slice:0:3">{{ opt }}</span>
-              <span class="opt more" *ngIf="q.options.length > 3">+{{ q.options.length - 3 }} más</span>
+            <h3 class="topic-name">{{ group.topicName }}</h3>
+            <span class="topic-count">{{ group.questions.length }} preguntas</span>
+          </div>
+
+          <div class="topic-questions" *ngIf="!collapsedTopics.has(group.topicId)">
+            <div
+              class="question-item"
+              *ngFor="let q of group.questions"
+              [class.selected]="selectedQuestionIds.has(q._id)"
+              (click)="toggleSelection(q._id)"
+            >
+              <div class="checkbox">
+                <span class="check-icon" *ngIf="selectedQuestionIds.has(q._id)">✔</span>
+              </div>
+              <div class="question-content">
+                <div class="q-header">
+                  <span class="badge type-{{q.type}}">{{ q.type }}</span>
+                  <span class="badge difficulty-{{q.difficulty}}">{{ q.difficulty }}</span>
+                </div>
+                <p class="statement">{{ q.statement }}</p>
+                <div class="options-preview">
+                  <span class="opt" *ngFor="let opt of q.options | slice:0:3">{{ opt }}</span>
+                  <span class="opt more" *ngIf="q.options.length > 3">+{{ q.options.length - 3 }} más</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

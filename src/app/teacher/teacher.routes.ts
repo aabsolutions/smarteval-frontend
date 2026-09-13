@@ -51,5 +51,13 @@ export const TEACHER_ROUTE: Route[] = [
     path: 'live-quizzes/create',
     loadComponent: () => import('../features/live-quizzes/pages/live-quiz-creator/live-quiz-creator.component').then(m => m.LiveQuizCreatorComponent)
   },
+  {
+    path: 'word-clouds',
+    loadComponent: () => import('../features/word-clouds/pages/teacher-word-clouds/teacher-word-clouds.component').then(m => m.TeacherWordCloudsComponent)
+  },
+  {
+    path: 'word-clouds/create',
+    loadComponent: () => import('../features/word-clouds/pages/word-cloud-creator/word-cloud-creator.component').then(m => m.WordCloudCreatorComponent)
+  },
   { path: '**', component: Page404Component },
 ];

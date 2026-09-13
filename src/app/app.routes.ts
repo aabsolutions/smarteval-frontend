@@ -76,5 +76,20 @@ export const APP_ROUTE: Route[] = [
       }
     ]
   },
+  {
+    // Full-screen, fuera del layout con sidebar: proyector y pantalla del alumno
+    path: 'word-cloud',
+    canActivate: [AuthGuard],
+    children: [
+      {
+        path: 'student',
+        loadComponent: () => import('./features/word-clouds/pages/word-cloud-student/word-cloud-student.component').then(c => c.WordCloudStudentComponent)
+      },
+      {
+        path: 'host/:id',
+        loadComponent: () => import('./features/word-clouds/pages/word-cloud-host/word-cloud-host.component').then(c => c.WordCloudHostComponent)
+      }
+    ]
+  },
   { path: '**', component: Page404Component },
 ];

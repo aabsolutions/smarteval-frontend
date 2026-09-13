@@ -61,7 +61,7 @@ export class StudentLiveQuizService {
 
     this.socket.on('quiz:error', (err) => {
       this.state.update(s => ({ ...s, error: err.message }));
-      this.socketService.disconnect();
+      this.socketService.disconnect('/live-quiz');
     });
 
     this.socket.on('lobby:joined', (data) => {
@@ -124,7 +124,7 @@ export class StudentLiveQuizService {
 
     this.socket.on('quiz:kicked', (data) => {
       this.state.update(s => ({ ...s, status: 'disconnected', error: data.message || 'Fuiste expulsado de la sala' }));
-      this.socketService.disconnect();
+      this.socketService.disconnect('/live-quiz');
     });
 
     // Reconexión: si el socket cae (WiFi, tab en background) y vuelve a conectar,
@@ -186,7 +186,7 @@ export class StudentLiveQuizService {
   }
 
   leave() {
-    this.socketService.disconnect();
+    this.socketService.disconnect('/live-quiz');
     this.state.set({
       status: 'disconnected',
       participantCount: 0,

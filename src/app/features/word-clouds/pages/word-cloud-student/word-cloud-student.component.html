@@ -1,0 +1,175 @@
+<div class="wcs">
+  <!-- ═══ Entrada por código ═══ -->
+  <section class="wcs-gate" *ngIf="state.status === 'disconnected' || state.status === 'joining'">
+    <div class="wcs-gate-card">
+      <span class="wcs-eyebrow">Nube de Palabras</span>
+      <h1 class="wcs-gate-title">Escribí el código</h1>
+      <p class="wcs-gate-sub">Está en la pantalla del aula</p>
+
+      <!-- Seis casillas: las mismas que el docente tiene proyectadas -->
+      <div class="wcs-code" role="group" aria-label="Código de 6 dígitos">
+        <input
+          *ngFor="let digit of pinDigits; let i = index"
+          [id]="'wcs-digit-' + i"
+          class="wcs-digit"
+          type="text"
+          inputmode="numeric"
+          autocomplete="one-time-code"
+          maxlength="6"
+          [value]="digit"
+          [attr.aria-label]="'Dígito ' + (i + 1)"
+          (input)="onPinInput(i, $event)"
+          (keydown)="onPinKeydown(i, $event)"
+        />
+      </div>
+
+      <button
+        type="button"
+        class="wcs-btn wcs-btn--primary wcs-btn--block"
+        [disabled]="!pinComplete || state.status === 'joining'"
+        (click)="join()"
+      >
+        {{ state.status === 'joining' ? 'Entrando…' : 'Entrar' }}
+      </button>
+
+      <p class="wcs-error" *ngIf="state.error" role="alert">{{ state.error }}</p>
+    </div>
+  </section>
+
+  <!-- ═══ Participación eliminada ═══ -->
+  <section class="wcs-gate" *ngIf="state.status === 'removed'">
+    <div class="wcs-gate-card">
+      <h2 class="wcs-gate-title">Tu participación se eliminó</h2>
+      <p class="wcs-gate-sub">{{ state.error }}</p>
+      <button type="button" class="wcs-btn wcs-btn--block" (click)="leave()">Volver</button>
+    </div>
+  </section>
+
+  <!-- ═══ Sesión ═══ -->
+  <ng-container *ngIf="state.status === 'joined'">
+    <header class="wcs-top">
+      <div class="wcs-top-text">
+        <span class="wcs-eyebrow">{{ state.title }}</span>
+        <h1 class="wcs-prompt">{{ state.prompt }}</h1>
+      </div>
+
+      <div class="wcs-top-meta">
+        <span class="wcs-tag wcs-tag--live" *ngIf="state.sessionStatus === 'open'">En vivo</span>
+        <span class="wcs-tag" *ngIf="state.sessionStatus === 'closed'">Envíos cerrados</span>
+        <span class="wcs-tag" *ngIf="state.sessionStatus === 'finished'">Finalizada</span>
+        <button type="button" class="wcs-exit" (click)="leave()" aria-label="Salir">Salir</button>
+      </div>
+    </header>
+
+    <main class="wcs-stage">
+      <div class="wcs-canvas">
+        <app-word-cloud-canvas
+          [cloud]="state.cloud"
+          [appearance]="state.appearance"
+          [interactive]="false"
+          emptyMessage="Todavía no hay palabras. Escribí la primera."
+        ></app-word-cloud-canvas>
+      </div>
+
+      <p class="wcs-count">
+        {{ state.submittedCount }}
+        {{ state.submittedCount === 1 ? 'participación' : 'participaciones' }} ·
+        {{ state.onlineCount }} en línea
+      </p>
+    </main>
+
+    <footer class="wcs-dock">
+      <!-- Formulario -->
+      <form class="wcs-compose" *ngIf="showForm" (ngSubmit)="submit()">
+        <label class="wcs-label" for="wcs-word">Tu palabra</label>
+        <input
+          id="wcs-word"
+          class="wcs-input"
+          type="text"
+          maxlength="40"
+          [(ngModel)]="word"
+          name="word"
+          placeholder="Una palabra o frase corta"
+          required
+        />
+
+        <label class="wcs-label" for="wcs-explanation">
+          ¿Por qué esa palabra?
+          <span class="wcs-optional" *ngIf="!state.explanationRequired">opcional</span>
+        </label>
+        <textarea
+          id="wcs-explanation"
+          class="wcs-textarea"
+          rows="2"
+          maxlength="500"
+          [(ngModel)]="explanation"
+          name="explanation"
+          placeholder="Contalo en tus palabras"
+          [required]="state.explanationRequired"
+        ></textarea>
+
+        <p class="wcs-hint">Solo tu docente lee tu explicación.</p>
+
+        <div class="wcs-compose-actions">
+          <button
+            type="submit"
+            class="wcs-btn wcs-btn--primary"
+            [disabled]="!word.trim() || state.saving || (state.explanationRequired && !explanation.trim())"
+          >
+            {{ state.saving ? 'Guardando…' : (state.myEntry ? 'Guardar' : 'Enviar') }}
+          </button>
+          <button type="button" class="wcs-btn" *ngIf="editing" (click)="cancelEditing()">
+            Cancelar
+          </button>
+        </div>
+
+        <p class="wcs-error" *ngIf="state.error" role="alert">{{ state.error }}</p>
+      </form>
+
+      <!-- Ya participó -->
+      <div class="wcs-mine" *ngIf="state.myEntry && !showForm">
+        <div class="wcs-mine-text">
+          <span class="wcs-label">Tu palabra</span>
+          <p class="wcs-mine-word">{{ state.myEntry.displayText }}</p>
+          <p class="wcs-mine-why" *ngIf="state.myEntry.explanation">
+            {{ state.myEntry.explanation }}
+          </p>
+        </div>
+
+        <div class="wcs-mine-actions">
+          <button type="button" class="wcs-btn" *ngIf="canEditNow" (click)="startEditing()">
+            Editar
+          </button>
+          <button
+            type="button"
+            class="wcs-btn wcs-btn--primary"
+            *ngIf="canDownload"
+            [disabled]="downloading"
+            (click)="download()"
+          >
+            {{ downloading ? 'Generando…' : 'Descargar' }}
+          </button>
+        </div>
+
+        <p class="wcs-hint" *ngIf="!canEditNow">
+          El docente cerró los envíos. Tu palabra quedó guardada.
+        </p>
+        <p class="wcs-error" *ngIf="downloadError" role="alert">{{ downloadError }}</p>
+      </div>
+
+      <!-- Sin participación y sin poder enviar -->
+      <div class="wcs-mine" *ngIf="!state.myEntry && !showForm">
+        <p class="wcs-hint">Los envíos están cerrados, pero podés ver la nube.</p>
+        <button
+          type="button"
+          class="wcs-btn wcs-btn--primary"
+          *ngIf="canDownload"
+          [disabled]="downloading"
+          (click)="download()"
+        >
+          {{ downloading ? 'Generando…' : 'Descargar' }}
+        </button>
+      </div>
+    </footer>
+  </ng-container>
+</div>

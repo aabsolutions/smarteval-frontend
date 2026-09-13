@@ -1,0 +1,141 @@
+<section class="content">
+  <div class="content-block">
+    <div class="block-header">
+      <app-breadcrumb
+        [title]="editingId ? 'Editar Nube de Palabras' : 'Nueva Nube de Palabras'"
+        [items]="['Docente', 'Nubes de Palabras']"
+        [active_item]="editingId ? 'Editar' : 'Nueva'"
+      ></app-breadcrumb>
+    </div>
+
+    <form class="wcc-form" (ngSubmit)="save()">
+      <div class="wcc-field">
+        <label class="wcc-label" for="wcc-title">Título</label>
+        <input
+          id="wcc-title"
+          class="wcc-input"
+          type="text"
+          maxlength="120"
+          name="title"
+          [(ngModel)]="model.title"
+          placeholder="Ej: Cierre de la unidad de Innovación"
+          required
+        />
+      </div>
+
+      <div class="wcc-field">
+        <label class="wcc-label" for="wcc-prompt">Consigna</label>
+        <input
+          id="wcc-prompt"
+          class="wcc-input"
+          type="text"
+          maxlength="300"
+          name="prompt"
+          [(ngModel)]="model.prompt"
+          placeholder="Ej: ¿Qué es para vos la innovación?"
+          required
+        />
+        <p class="wcc-hint">Es lo que van a leer los alumnos antes de escribir su palabra.</p>
+      </div>
+
+      <div class="wcc-field">
+        <label class="wcc-label" for="wcc-description">Notas internas (opcional)</label>
+        <textarea
+          id="wcc-description"
+          class="wcc-textarea"
+          rows="3"
+          maxlength="1000"
+          name="description"
+          [(ngModel)]="model.description"
+        ></textarea>
+      </div>
+
+      <div class="wcc-row">
+        <div class="wcc-field">
+          <label class="wcc-label" for="wcc-max">Máximo de participaciones</label>
+          <input
+            id="wcc-max"
+            class="wcc-input wcc-input--narrow"
+            type="number"
+            min="10"
+            max="500"
+            name="maxWords"
+            [(ngModel)]="model.maxWords"
+          />
+        </div>
+
+        <label class="wcc-check">
+          <input type="checkbox" name="explanationRequired" [(ngModel)]="model.explanationRequired" />
+          <span>Exigir explicación</span>
+        </label>
+      </div>
+
+      <div class="wcc-field" *ngIf="groups.length">
+        <span class="wcc-label">Grupos</span>
+        <div class="wcc-groups">
+          <label class="wcc-group" *ngFor="let group of groups">
+            <input
+              type="checkbox"
+              [checked]="isGroupSelected(group._id)"
+              (change)="toggleGroup(group._id)"
+            />
+            <span>{{ group.name }}</span>
+          </label>
+        </div>
+      </div>
+
+      <fieldset class="wcc-fieldset" *ngIf="model.appearance">
+        <legend class="wcc-legend">Apariencia inicial</legend>
+        <p class="wcc-hint">La podés seguir ajustando en vivo desde el proyector.</p>
+
+        <div class="wcc-row">
+          <div class="wcc-field">
+            <label class="wcc-label" for="wcc-bg">Color de fondo</label>
+            <input
+              id="wcc-bg"
+              type="color"
+              class="wcc-color"
+              name="backgroundColor"
+              [(ngModel)]="model.appearance.backgroundColor"
+            />
+          </div>
+
+          <div class="wcc-field">
+            <label class="wcc-label" for="wcc-font">Tipografía</label>
+            <select
+              id="wcc-font"
+              class="wcc-select"
+              name="fontFamily"
+              [(ngModel)]="model.appearance.fontFamily"
+            >
+              <option *ngFor="let font of options?.fonts" [value]="font">{{ font }}</option>
+            </select>
+          </div>
+
+          <div class="wcc-field">
+            <label class="wcc-label" for="wcc-palette">Paleta</label>
+            <select
+              id="wcc-palette"
+              class="wcc-select"
+              name="paletteKey"
+              [(ngModel)]="model.appearance.paletteKey"
+            >
+              <option *ngFor="let palette of options?.palettes" [value]="palette.key">
+                {{ palette.key }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </fieldset>
+
+      <p class="wcc-error" *ngIf="error">{{ error }}</p>
+
+      <div class="wcc-actions">
+        <button type="submit" class="wcc-btn wcc-btn--primary" [disabled]="!isValid || saving">
+          {{ saving ? 'Guardando…' : (editingId ? 'Guardar cambios' : 'Crear nube') }}
+        </button>
+        <button type="button" class="wcc-btn" (click)="cancel()">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</section>

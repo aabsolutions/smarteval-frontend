@@ -144,7 +144,7 @@ export class TeacherLiveQuizService {
   }
 
   disconnect() {
-    this.socketService.disconnect();
+    this.socketService.disconnect('/live-quiz');
     this.state.set({
       status: 'disconnected',
       participants: [],

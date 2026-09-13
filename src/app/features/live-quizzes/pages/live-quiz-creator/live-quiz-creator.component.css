@@ -240,3 +240,67 @@
   background: #e2e8f0;
   font-weight: 600;
 }
+
+.topic-group {
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.topic-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  background: #f8fafc;
+  cursor: pointer;
+  user-select: none;
+}
+
+.topic-header:hover {
+  background: #f1f5f9;
+}
+
+.collapse-icon {
+  font-size: 0.7rem;
+  color: #64748b;
+  width: 12px;
+  flex-shrink: 0;
+}
+
+.topic-checkbox.selected {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: white;
+}
+
+.topic-checkbox.partial {
+  background: #bfdbfe;
+  border-color: #3b82f6;
+}
+
+.topic-checkbox .partial-icon {
+  color: #1d4ed8;
+  font-weight: 900;
+}
+
+.topic-name {
+  flex: 1;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.topic-count {
+  font-size: 0.85rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.topic-questions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 15px;
+}

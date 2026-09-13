@@ -1,0 +1,30 @@
+<div class="wc-canvas-container" #container>
+  <canvas
+    #canvasEl
+    class="wc-canvas"
+    [class.wc-canvas--interactive]="interactive"
+    [class.wc-canvas--hovering]="interactive && hoveredKey"
+    (click)="onCanvasClick($event)"
+    (mousemove)="onCanvasMove($event)"
+    (mouseleave)="onCanvasLeave()"
+    role="img"
+    [attr.aria-label]="'Nube de palabras con ' + accessibleWords.length + ' palabras'"
+  ></canvas>
+
+  <div class="wc-empty" *ngIf="isEmpty">
+    <p>{{ emptyMessage }}</p>
+  </div>
+
+  <!--
+    El canvas no tiene accesibilidad nativa: esta lista la compensa.
+    Cubre lectores de pantalla y navegación por teclado con los MISMOS datos y
+    la misma acción que el clic sobre el dibujo.
+  -->
+  <ul class="wc-visually-hidden" *ngIf="!isEmpty">
+    <li *ngFor="let word of accessibleWords">
+      <button type="button" (click)="onAccessibleWordActivate(word.key)" [disabled]="!interactive">
+        {{ word.text }}, {{ word.count }} {{ word.count === 1 ? 'mención' : 'menciones' }}
+      </button>
+    </li>
+  </ul>
+</div>

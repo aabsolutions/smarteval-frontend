@@ -1,0 +1,110 @@
+<section class="ap-panel" *ngIf="appearance">
+  <h3 class="ap-title">Apariencia</h3>
+
+  <div class="ap-group">
+    <label class="ap-label" for="ap-color">Color de fondo</label>
+    <div class="ap-row">
+      <input
+        id="ap-color"
+        type="color"
+        class="ap-color"
+        [value]="appearance.backgroundColor"
+        (input)="onColorInput($any($event.target).value)"
+        (change)="onColorCommit($any($event.target).value)"
+      />
+      <span class="ap-hint">{{ appearance.backgroundColor }}</span>
+    </div>
+  </div>
+
+  <div class="ap-group" *ngIf="options?.presets?.length">
+    <span class="ap-label">Fondos preestablecidos</span>
+    <div class="ap-presets">
+      <button
+        type="button"
+        class="ap-preset"
+        *ngFor="let preset of options?.presets"
+        [class.ap-preset--active]="isPresetActive(preset.key)"
+        [style.background-color]="preset.fallbackColor"
+        [style.background-image]="preset.url ? 'url(' + preset.url + ')' : null"
+        (click)="onPresetSelect(preset.key)"
+        [attr.aria-label]="preset.label"
+        [attr.aria-pressed]="isPresetActive(preset.key)"
+      >
+        <span class="ap-preset-label">{{ preset.label }}</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="ap-group">
+    <label class="ap-label" for="ap-upload">Imagen propia</label>
+    <input
+      id="ap-upload"
+      type="file"
+      accept="image/jpeg,image/png,image/webp"
+      [disabled]="uploading"
+      (change)="onFileSelected($event)"
+    />
+    <p class="ap-hint" *ngIf="uploading">Subiendo imagen…</p>
+    <p class="ap-error" *ngIf="uploadError">{{ uploadError }}</p>
+  </div>
+
+  <div class="ap-group">
+    <label class="ap-label" for="ap-dim">
+      Oscurecer fondo ({{ (appearance.backgroundDim * 100).toFixed(0) }}%)
+    </label>
+    <input
+      id="ap-dim"
+      type="range"
+      min="0"
+      max="0.7"
+      step="0.05"
+      [value]="appearance.backgroundDim"
+      (input)="onDimInput($any($event.target).value)"
+      (change)="onDimCommit($any($event.target).value)"
+    />
+    <p class="ap-hint">Sobre una foto, subilo para que se lean las palabras.</p>
+  </div>
+
+  <div class="ap-group">
+    <label class="ap-label" for="ap-font">Tipografía</label>
+    <select
+      id="ap-font"
+      class="ap-select"
+      [value]="appearance.fontFamily"
+      (change)="onFontSelect($any($event.target).value)"
+    >
+      <option *ngFor="let font of options?.fonts" [value]="font">{{ font }}</option>
+    </select>
+  </div>
+
+  <div class="ap-group">
+    <label class="ap-label" for="ap-size">Tamaño base ({{ appearance.baseFontSize }}px)</label>
+    <input
+      id="ap-size"
+      type="range"
+      min="16"
+      max="96"
+      step="2"
+      [value]="appearance.baseFontSize"
+      (input)="onBaseSizeInput($any($event.target).value)"
+      (change)="onBaseSizeCommit($any($event.target).value)"
+    />
+  </div>
+
+  <div class="ap-group" *ngIf="options?.palettes?.length">
+    <span class="ap-label">Paleta</span>
+    <div class="ap-palettes">
+      <button
+        type="button"
+        class="ap-palette"
+        *ngFor="let palette of options?.palettes"
+        [class.ap-palette--active]="isPaletteActive(palette.key)"
+        (click)="onPaletteSelect(palette.key)"
+        [attr.aria-label]="'Paleta ' + palette.key"
+        [attr.aria-pressed]="isPaletteActive(palette.key)"
+      >
+        <span class="ap-swatch" *ngFor="let color of palette.colors" [style.background]="color"></span>
+      </button>
+    </div>
+  </div>
+</section>

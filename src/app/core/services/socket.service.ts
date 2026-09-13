@@ -7,46 +7,78 @@ import { TokenService } from '../service/token.service';
   providedIn: 'root'
 })
 export class SocketService {
-  private socket: Socket | null = null;
+  /**
+   * Un socket POR namespace.
+   *
+   * Antes había un único `socket` y `connect(ns)` devolvía el existente si estaba
+   * conectado, ignorando el namespace pedido: un alumno que venía de un Live Quiz
+   * y abría la Nube de Palabras recibía el socket de `/live-quiz` y nunca escuchaba
+   * los eventos de `/word-cloud`.
+   */
+  private sockets = new Map<string, Socket>();
   private tokenService = inject(TokenService);
 
   connect(namespace: string): Socket {
-    if (this.socket?.connected) {
-      return this.socket;
+    const existing = this.sockets.get(namespace);
+    if (existing?.connected) {
+      return existing;
+    }
+
+    // Socket del mismo namespace pero caído: lo descartamos antes de recrear
+    if (existing) {
+      existing.removeAllListeners();
+      existing.disconnect();
+      this.sockets.delete(namespace);
     }
 
     const bearerToken = this.tokenService.getBearerToken();
     const token = bearerToken.replace(/^Bearer\s/i, '');
 
-    this.socket = io(`${environment.apiUrl}${namespace}`, {
+    const socket = io(`${environment.apiUrl}${namespace}`, {
       auth: { token },
       autoConnect: true,
       transports: ['websocket'],
     });
 
-    this.socket.on('connect', () => {
-      console.log(`[Socket] Conectado a ${namespace} con ID:`, this.socket?.id);
+    socket.on('connect', () => {
+      console.log(`[Socket] Conectado a ${namespace} con ID:`, socket.id);
     });
 
-    this.socket.on('disconnect', (reason) => {
-      console.log(`[Socket] Desconectado: ${reason}`);
+    socket.on('disconnect', (reason) => {
+      console.log(`[Socket] Desconectado de ${namespace}: ${reason}`);
     });
 
-    this.socket.on('connect_error', (error) => {
-      console.error(`[Socket] Error de conexión:`, error.message);
+    socket.on('connect_error', (error) => {
+      console.error(`[Socket] Error de conexión en ${namespace}:`, error.message);
     });
 
-    return this.socket;
+    this.sockets.set(namespace, socket);
+    return socket;
   }
 
-  disconnect() {
-    if (this.socket) {
-      this.socket.disconnect();
-      this.socket = null;
+  /**
+   * Desconecta un namespace puntual. Sin argumento desconecta todos
+   * (útil en logout); pasar siempre el namespace desde las features.
+   */
+  disconnect(namespace?: string): void {
+    if (namespace) {
+      const socket = this.sockets.get(namespace);
+      if (socket) {
+        socket.removeAllListeners();
+        socket.disconnect();
+        this.sockets.delete(namespace);
+      }
+      return;
     }
+
+    this.sockets.forEach((socket) => {
+      socket.removeAllListeners();
+      socket.disconnect();
+    });
+    this.sockets.clear();
   }
 
-  getSocket(): Socket | null {
-    return this.socket;
+  getSocket(namespace: string): Socket | null {
+    return this.sockets.get(namespace) ?? null;
   }
 }

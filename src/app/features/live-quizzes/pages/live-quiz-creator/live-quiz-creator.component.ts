@@ -7,6 +7,12 @@ import { QuestionsService, Question } from '../../../../teacher/questions/questi
 import { LiveQuizQuestion } from '../../models/live-quiz.model';
 import { BreadcrumbComponent } from '@shared/components/breadcrumb/breadcrumb.component';
 
+export interface TopicGroup {
+  topicId: string;
+  topicName: string;
+  questions: Question[];
+}
+
 @Component({
   selector: 'app-live-quiz-creator',
   standalone: true,
@@ -17,9 +23,11 @@ import { BreadcrumbComponent } from '@shared/components/breadcrumb/breadcrumb.co
 export class LiveQuizCreatorComponent implements OnInit {
   public quizTitle = '';
   public defaultTimeLimit = 30;
-  
+
   public bankQuestions: Question[] = [];
+  public topicGroups: TopicGroup[] = [];
   public selectedQuestionIds: Set<string> = new Set();
+  public collapsedTopics: Set<string> = new Set();
 
   private liveQuizService = inject(LiveQuizService);
   private questionsService = inject(QuestionsService);
@@ -36,12 +44,53 @@ export class LiveQuizCreatorComponent implements OnInit {
     this.questionsService.getAllQuestions().subscribe({
       next: (questions) => {
         this.bankQuestions = questions;
+        this.topicGroups = this.groupByTopic(questions);
         this.isLoading = false;
       },
       error: () => {
         this.isLoading = false;
       }
     });
+  }
+
+  private groupByTopic(questions: Question[]): TopicGroup[] {
+    const groups = new Map<string, TopicGroup>();
+    for (const q of questions) {
+      const topic = q.topicId as { _id?: string; name?: string } | string;
+      const topicId = (typeof topic === 'object' && topic?._id) ? topic._id : String(topic ?? 'sin-tema');
+      const topicName = (typeof topic === 'object' && topic?.name) ? topic.name : 'Sin tema';
+
+      if (!groups.has(topicId)) {
+        groups.set(topicId, { topicId, topicName, questions: [] });
+      }
+      groups.get(topicId)!.questions.push(q);
+    }
+    return Array.from(groups.values()).sort((a, b) => a.topicName.localeCompare(b.topicName));
+  }
+
+  toggleTopicCollapse(topicId: string) {
+    if (this.collapsedTopics.has(topicId)) {
+      this.collapsedTopics.delete(topicId);
+    } else {
+      this.collapsedTopics.add(topicId);
+    }
+  }
+
+  isTopicFullySelected(group: TopicGroup): boolean {
+    return group.questions.every(q => this.selectedQuestionIds.has(q._id));
+  }
+
+  isTopicPartiallySelected(group: TopicGroup): boolean {
+    const selectedCount = group.questions.filter(q => this.selectedQuestionIds.has(q._id)).length;
+    return selectedCount > 0 && selectedCount < group.questions.length;
+  }
+
+  toggleTopicSelection(group: TopicGroup) {
+    if (this.isTopicFullySelected(group)) {
+      group.questions.forEach(q => this.selectedQuestionIds.delete(q._id));
+    } else {
+      group.questions.forEach(q => this.selectedQuestionIds.add(q._id));
+    }
   }
 
   toggleSelection(id: string) {

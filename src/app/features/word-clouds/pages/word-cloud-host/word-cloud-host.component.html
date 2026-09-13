@@ -1,0 +1,124 @@
+<div class="wch" [class.wch--panel-open]="state.selectedWord || showAppearancePanel">
+  <header class="wch-top">
+    <div class="wch-identity">
+      <span class="wch-eyebrow">Nube de Palabras</span>
+      <h1 class="wch-title">{{ title }}</h1>
+    </div>
+
+    <p class="wch-prompt">{{ prompt }}</p>
+
+    <!--
+      El PIN es el dato más importante de esta pantalla: un docente lo lee en
+      voz alta y 30 chicos lo tipean desde el fondo del aula. Por eso va en
+      casillas separadas, en lugar de seis dígitos pegados.
+
+      Label y casillas en UNA fila, no apilados: así el bloque mide lo mismo de
+      alto que el resto del header y deja de ser el elemento más alto que fuerza
+      la altura de la fila. Menos piezas, menos formas de que se descoloque.
+    -->
+    <div class="wch-code">
+      <span class="wch-code-label">Entrá con<br />este código</span>
+      <div class="wch-code-strip" [attr.aria-label]="'Código de acceso ' + pin">
+        <span class="wch-digit" *ngFor="let digit of pinDigits">{{ digit }}</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wch-stage">
+    <div class="wch-canvas">
+      <app-word-cloud-canvas
+        [cloud]="state.cloud"
+        [appearance]="appearance"
+        [interactive]="true"
+        (wordClick)="onWordClick($event)"
+        emptyMessage="Esperando las primeras palabras…"
+      ></app-word-cloud-canvas>
+    </div>
+
+    <aside class="wch-side" *ngIf="state.selectedWord || showAppearancePanel">
+      <app-word-details-panel
+        *ngIf="state.selectedWord"
+        [details]="state.selectedWord"
+        [canModerate]="!isFinished"
+        (close)="closeDetails()"
+        (removeEntry)="removeEntry($event)"
+      ></app-word-details-panel>
+
+      <app-appearance-panel
+        *ngIf="showAppearancePanel"
+        [sessionId]="sessionId"
+        [appearance]="appearance"
+        [options]="appearanceOptions"
+        (previewChange)="onAppearancePreview($event)"
+        (appearanceChange)="onAppearanceChange($event)"
+      ></app-appearance-panel>
+    </aside>
+  </main>
+
+  <footer class="wch-bar">
+    <!-- Un segmento por alumno conectado; encendido = ya escribió -->
+    <div class="wch-pulse" [attr.aria-label]="state.submittedCount + ' de ' + state.onlineCount + ' ya participaron'">
+      <div class="wch-pulse-track">
+        <span
+          class="wch-pulse-seg"
+          *ngFor="let filled of pulseSegments"
+          [class.is-on]="filled"
+        ></span>
+      </div>
+      <span class="wch-pulse-text">
+        <strong>{{ state.submittedCount }}</strong> participaciones ·
+        {{ state.cloud?.uniqueWords ?? 0 }} palabras ·
+        {{ state.onlineCount }} en línea
+      </span>
+    </div>
+
+    <div class="wch-actions">
+      <button type="button" class="wch-btn" (click)="toggleAppearancePanel()">
+        {{ showAppearancePanel ? 'Ocultar apariencia' : 'Apariencia' }}
+      </button>
+
+      <button type="button" class="wch-btn" (click)="reorganize()">Reorganizar</button>
+
+      <button
+        type="button"
+        class="wch-pill"
+        [class.wch-pill--reopen]="!entriesOpen"
+        *ngIf="!isFinished"
+        (click)="toggleEntries()"
+      >
+        {{ entriesOpen ? 'Cerrar envíos' : 'Reabrir envíos' }}
+      </button>
+
+      <span class="wch-status" *ngIf="isFinished">Sesión finalizada</span>
+
+      <button
+        type="button"
+        class="wch-btn"
+        [disabled]="!canDownload || downloading"
+        (click)="downloadJpg()"
+      >
+        {{ downloading ? 'Generando…' : 'Imagen' }}
+      </button>
+
+      <button type="button" class="wch-btn" (click)="downloadExcel()">Sumario</button>
+
+      <button type="button" class="wch-btn wch-btn--danger" *ngIf="!isFinished" (click)="finish()">
+        Finalizar
+      </button>
+
+      <button type="button" class="wch-btn wch-btn--quiet" (click)="exit()">Salir</button>
+    </div>
+  </footer>
+
+  <!--
+    Overlay, no un párrafo al final del flujo: `.wch` es `height:100vh` con
+    `overflow:hidden`, así que cualquier cosa después del footer se recorta y
+    el error quedaba invisible. Un fallo que no se ve es peor que no tenerlo.
+  -->
+  <div class="wch-alert" *ngIf="errorMessage" role="alert">
+    <span>{{ errorMessage }}</span>
+    <button type="button" class="wch-alert-close" (click)="dismissError()" aria-label="Cerrar">
+      ×
+    </button>
+  </div>
+</div>

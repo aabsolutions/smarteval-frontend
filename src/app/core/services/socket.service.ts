@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
 import { environment } from '../../../environments/environment';
-import { TokenService } from '../service/token.service';
+import { AuthTokenService } from '../service/auth-token.service';
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +16,7 @@ export class SocketService {
    * los eventos de `/word-cloud`.
    */
   private sockets = new Map<string, Socket>();
-  private tokenService = inject(TokenService);
+  private authTokenService = inject(AuthTokenService);
 
   connect(namespace: string): Socket {
     const existing = this.sockets.get(namespace);
@@ -31,11 +31,18 @@ export class SocketService {
       this.sockets.delete(namespace);
     }
 
-    const bearerToken = this.tokenService.getBearerToken();
-    const token = bearerToken.replace(/^Bearer\s/i, '');
-
     const socket = io(`${environment.apiUrl}${namespace}`, {
-      auth: { token },
+      // FUNCIÓN, no objeto: socket.io guarda el `auth` en la instancia y lo
+      // reenvía tal cual en el paquete CONNECT de CADA reconexión automática.
+      // Con un objeto el token quedaba congelado en la construcción, así que un
+      // alumno que perdía la red y volvía con el token ya vencido entraba en un
+      // loop de AUTH_REQUIRED. Como función se re-evalúa —y se renueva— en cada
+      // intento de conexión.
+      auth: (cb) => {
+        this.authTokenService
+          .ensureFreshToken()
+          .then((token) => cb({ token: token ?? '' }));
+      },
       autoConnect: true,
       transports: ['websocket'],
     });

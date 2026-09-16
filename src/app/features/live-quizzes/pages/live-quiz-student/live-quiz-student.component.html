@@ -27,6 +27,24 @@
     </div>
   </div>
 
+  <!-- PANTALLA 1B: SESIÓN EXPIRADA -->
+  <div *ngIf="state.status === 'auth-expired'" class="view-panel pin-view">
+    <div class="glass-card">
+      <div class="logo-area">
+        <h1>Sesión expirada</h1>
+      </div>
+
+      <div *ngIf="state.error" class="error-msg">
+        {{ state.error }}
+      </div>
+
+      <div class="input-group">
+        <button type="button" class="join-btn" (click)="retryAfterAuthError()">Reintentar</button>
+        <button type="button" class="join-btn" (click)="leaveQuiz()">Volver</button>
+      </div>
+    </div>
+  </div>
+
   <!-- PANTALLA 2: LOBBY -->
   <div *ngIf="state.status === 'lobby'" class="view-panel lobby-view">
     <div class="lobby-content">

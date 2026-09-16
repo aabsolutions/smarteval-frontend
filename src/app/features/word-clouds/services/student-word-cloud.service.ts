@@ -12,7 +12,7 @@ import {
 } from '../models/word-cloud.model';
 
 export interface StudentWordCloudState {
-  status: 'disconnected' | 'joining' | 'joined' | 'removed';
+  status: 'disconnected' | 'joining' | 'joined' | 'removed' | 'auth-expired';
   sessionStatus: WordCloudStatus | null;
   sessionId?: string;
   title?: string;
@@ -53,7 +53,12 @@ export class StudentWordCloudService {
 
   public state = signal<StudentWordCloudState>({ ...INITIAL_STATE });
 
+  /** Último PIN tipeado: hace falta para reintentar si la sesión expiró
+   *  antes de que el alumno llegara a entrar (todavía no hay sessionId). */
+  private lastPin = '';
+
   join(pin: string) {
+    this.lastPin = pin;
     this.state.set({ ...INITIAL_STATE, status: 'joining' });
     this.socket = this.socketService.connect(WORD_CLOUD_NAMESPACE);
     this.setupListeners();
@@ -83,6 +88,52 @@ export class StudentWordCloudService {
     this.socketService.disconnect(WORD_CLOUD_NAMESPACE);
     this.socket = null;
     this.state.set({ ...INITIAL_STATE });
+  }
+
+  /**
+   * El gateway rechazó el handshake. Para cuando llega acá, SocketService ya
+   * intentó renovar el token, así que el refresh_token también murió.
+   *
+   * Cortamos el socket a mano: socket.io reintenta la conexión de por vida y el
+   * gateway la rechaza cada vez (word-cloud.gateway.ts:150 emite y desconecta a
+   * los 100ms), o sea un loop de errores hasta que el alumno cierre la pestaña.
+   * No lo deslogueamos: si estaba escribiendo su palabra, un logout sorpresa se
+   * la come. Le mostramos el estado y que decida él.
+   */
+  private handleAuthExpired() {
+    this.socketService.disconnect(WORD_CLOUD_NAMESPACE);
+    this.socket = null;
+    this.state.update((s) => ({
+      ...s,
+      status: 'auth-expired',
+      saving: false,
+      errorCode: 'AUTH_REQUIRED',
+      error: 'Tu sesión expiró. Tocá "Reintentar" para volver a conectarte.',
+    }));
+  }
+
+  /** Reintenta tras una sesión expirada. Si el alumno ya había entrado usamos
+   *  el sessionId; si se cayó antes de entrar, el PIN que tipeó. */
+  retryAfterAuthError() {
+    const sessionId = this.state().sessionId;
+
+    if (!sessionId) {
+      if (this.lastPin) this.join(this.lastPin);
+      return;
+    }
+
+    this.state.update((s) => ({
+      ...s,
+      status: 'joining',
+      error: undefined,
+      errorCode: undefined,
+    }));
+
+    this.socket = this.socketService.connect(WORD_CLOUD_NAMESPACE);
+    this.setupListeners();
+    // El handler de 'connect' ya dispara rejoin(); si el socket vino conectado
+    // de entrada ese evento no llega y hay que pedirlo a mano.
+    if (this.socket.connected) this.rejoin();
   }
 
   private applySnapshot(data: StudentSnapshot) {
@@ -125,6 +176,11 @@ export class StudentWordCloudService {
     ].forEach((event) => socket.off(event));
 
     socket.on('wc:error', (err: WordCloudError) => {
+      if (err.code === 'AUTH_REQUIRED') {
+        this.handleAuthExpired();
+        return;
+      }
+
       this.state.update((s) => ({
         ...s,
         saving: false,

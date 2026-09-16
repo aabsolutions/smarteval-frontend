@@ -77,6 +77,14 @@ export class LiveQuizStudentComponent implements OnDestroy {
     this.quizService.join(this.pinInput().trim());
   }
 
+  retryAfterAuthError() {
+    this.quizService.retryAfterAuthError();
+  }
+
+  leaveQuiz() {
+    this.quizService.leave();
+  }
+
   toggleOption(option: string) {
     if (this.state.hasAnswered) return;
     const current = this.selectedOptions();

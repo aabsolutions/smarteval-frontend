@@ -13,7 +13,7 @@ export interface QuizResultData {
 }
 
 export interface QuizState {
-  status: 'disconnected' | 'lobby' | 'question' | 'answer-sent' | 'result' | 'podium';
+  status: 'disconnected' | 'lobby' | 'question' | 'answer-sent' | 'result' | 'podium' | 'auth-expired';
   quizId?: string;
   pin?: string;
   title?: string;
@@ -47,7 +47,12 @@ export class StudentLiveQuizService {
     hasAnswered: false,
   });
 
+  /** Último PIN tipeado: hace falta para reintentar si la sesión expiró antes
+   *  de que el alumno llegara a entrar a la sala (todavía no hay quizId). */
+  private lastPin = '';
+
   join(pin: string) {
+    this.lastPin = pin;
     this.socket = this.socketService.connect('/live-quiz');
     
     this.setupListeners();
@@ -56,12 +61,68 @@ export class StudentLiveQuizService {
     this.socket.emit('student:join', { pin });
   }
 
+  /**
+   * El gateway rechazó el handshake. Para cuando llega acá, SocketService ya
+   * intentó renovar el token, así que el refresh_token también murió.
+   *
+   * No deslogueamos: en medio de una pregunta con tiempo, un logout sorpresa es
+   * peor que el error. Le mostramos el estado y que decida él.
+   */
+  private handleAuthExpired() {
+    this.socketService.disconnect('/live-quiz');
+    this.socket = null;
+    this.state.update(s => ({
+      ...s,
+      status: 'auth-expired',
+      error: 'Tu sesión expiró. Tocá "Reintentar" para volver a conectarte.',
+    }));
+  }
+
+  /** Reintenta tras una sesión expirada. Si ya estaba en la sala usamos el
+   *  quizId; si se cayó antes de entrar, el PIN que tipeó. */
+  retryAfterAuthError() {
+    const quizId = this.state().quizId;
+
+    if (!quizId) {
+      if (this.lastPin) this.join(this.lastPin);
+      return;
+    }
+
+    // El handler de 'connect' dispara el rejoin, pero solo si el status no es
+    // 'disconnected'. Lo devolvemos a 'lobby' como estado neutro de "conectado
+    // a la sala"; el quiz:resync que responde el server corrige al estado real.
+    this.state.update(s => ({ ...s, status: 'lobby', error: undefined }));
+
+    this.socket = this.socketService.connect('/live-quiz');
+    this.setupListeners();
+
+    if (this.socket.connected) {
+      this.socket.emit('student:rejoin', { quizId });
+    }
+  }
+
   private setupListeners() {
     if (!this.socket) return;
 
     this.socket.on('quiz:error', (err) => {
-      this.state.update(s => ({ ...s, error: err.message }));
-      this.socketService.disconnect('/live-quiz');
+      if (err?.code === 'AUTH_REQUIRED') {
+        this.handleAuthExpired();
+        return;
+      }
+
+      // NO desconectamos. De todos los quiz:error del gateway, el ÚNICO que
+      // cierra el socket del lado del server es AUTH_REQUIRED
+      // (live-quiz.gateway.ts:73); el resto son `return client.emit(...)` y
+      // dejan la conexión viva a propósito. El cliente estaba matando el socket
+      // ante cualquier error: un PIN mal tipeado te dejaba sin conexión y sin
+      // forma de reintentar salvo recargando la página.
+      //
+      // Todos los quiz:error que ve el alumno vienen de student:join o de
+      // student:rejoin — o sea, siempre significan "no estás en ninguna sala".
+      // Por eso bajamos a 'disconnected': es el único estado cuya vista muestra
+      // state.error y ofrece el PIN. Sin esto, un rejoin fallido ("La sala ya no
+      // existe") dejaba al alumno mirando un lobby congelado, sin mensaje.
+      this.state.update(s => ({ ...s, status: 'disconnected', error: err.message }));
     });
 
     this.socket.on('lobby:joined', (data) => {

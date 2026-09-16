@@ -120,6 +120,10 @@ export class WordCloudStudentComponent implements OnDestroy {
     this.editing = false;
   }
 
+  retryAfterAuthError() {
+    this.service.retryAfterAuthError();
+  }
+
   leave() {
     this.service.leave();
     this.router.navigate(['/student/dashboard']);

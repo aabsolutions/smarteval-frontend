@@ -36,6 +36,18 @@
     </div>
   </section>
 
+  <!-- ═══ Sesión expirada ═══ -->
+  <section class="wcs-gate" *ngIf="state.status === 'auth-expired'">
+    <div class="wcs-gate-card">
+      <h2 class="wcs-gate-title">Sesión expirada</h2>
+      <p class="wcs-gate-sub">{{ state.error }}</p>
+      <button type="button" class="wcs-btn wcs-btn--block" (click)="retryAfterAuthError()">
+        Reintentar
+      </button>
+      <button type="button" class="wcs-btn wcs-btn--block" (click)="leave()">Volver</button>
+    </div>
+  </section>
+
   <!-- ═══ Participación eliminada ═══ -->
   <section class="wcs-gate" *ngIf="state.status === 'removed'">
     <div class="wcs-gate-card">

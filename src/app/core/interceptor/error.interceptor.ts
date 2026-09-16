@@ -1,18 +1,15 @@
 import { AuthService } from '../service/auth.service';
-import { Injectable, inject, Injector } from '@angular/core';
-import { HttpRequest, HttpHandler, HttpEvent, HttpInterceptor, HttpErrorResponse, HttpClient, HttpBackend } from '@angular/common/http';
-import { Observable, throwError, BehaviorSubject, of } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { HttpRequest, HttpHandler, HttpEvent, HttpInterceptor, HttpErrorResponse } from '@angular/common/http';
+import { Observable, throwError, BehaviorSubject, from } from 'rxjs';
 import { catchError, switchMap, filter, take } from 'rxjs/operators';
-import { TokenService } from '../service/token.service';
-import { LocalStorageService } from '@shared/services';
+import { AuthTokenService } from '../service/auth-token.service';
 
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {
   private authenticationService = inject(AuthService);
-  private tokenService = inject(TokenService);
-  private store = inject(LocalStorageService);
-  private httpBackend = inject(HttpBackend);
-  
+  private authTokenService = inject(AuthTokenService);
+
   private isRefreshing = false;
   private refreshTokenSubject: BehaviorSubject<any> = new BehaviorSubject<any>(null);
 
@@ -47,50 +44,30 @@ export class ErrorInterceptor implements HttpInterceptor {
       this.isRefreshing = true;
       this.refreshTokenSubject.next(null);
 
-      const tokenData: any = this.store.get('redstar-token');
-      const refreshToken = tokenData?.refresh_token;
-
-      if (!refreshToken) {
-        this.isRefreshing = false;
-        this.authenticationService.logout();
-        location.reload();
-        return throwError(() => new Error('No refresh token'));
-      }
-
-      // Use a fresh HttpClient to avoid triggering interceptors again in a loop
-      const http = new HttpClient(this.httpBackend);
-
-      return http.post<any>('/api/auth/refresh', { refresh_token: refreshToken }).pipe(
-        switchMap((tokenResponse: any) => {
+      // Delegado en AuthTokenService para compartir el single-flight con los
+      // sockets: si el websocket y una request HTTP caen juntos sale UN solo
+      // POST /auth/refresh y ambos esperan el mismo resultado.
+      return from(this.authTokenService.refresh()).pipe(
+        switchMap((accessToken) => {
           this.isRefreshing = false;
-          
-          if (tokenResponse?.access_token) {
-            const currentTokenData: any = this.store.get('redstar-token');
-            const newTokenData = {
-              ...currentTokenData,
-              access_token: tokenResponse.access_token,
-              expires_in: tokenResponse.expires_in
-            };
-            this.tokenService.set(newTokenData);
-            
-            this.refreshTokenSubject.next(tokenResponse.access_token);
-            
-            const authReq = request.clone({
-              setHeaders: {
-                Authorization: `Bearer ${tokenResponse.access_token}`
-              }
-            });
-            return next.handle(authReq);
+
+          if (!accessToken) {
+            this.authenticationService.logout();
+            location.reload();
+            return throwError(() => new Error('Session expired'));
           }
-          
-          this.authenticationService.logout();
-          location.reload();
-          return throwError(() => new Error('Session expired'));
+
+          this.refreshTokenSubject.next(accessToken);
+
+          const authReq = request.clone({
+            setHeaders: {
+              Authorization: `Bearer ${accessToken}`
+            }
+          });
+          return next.handle(authReq);
         }),
         catchError((err) => {
           this.isRefreshing = false;
-          this.authenticationService.logout();
-          location.reload();
           return throwError(() => err);
         })
       );

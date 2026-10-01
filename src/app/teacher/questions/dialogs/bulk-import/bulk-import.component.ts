@@ -79,8 +79,16 @@ export class BulkImportDialogComponent {
       const optionsRaw = row[4]?.toString() || '';
       const correctAnswersRaw = row[5]?.toString() || '';
 
-      const options = optionsRaw ? optionsRaw.split('|').map((o: string) => o.trim()) : [];
-      const correctAnswers = correctAnswersRaw ? correctAnswersRaw.split('|').map((o: string) => o.trim()) : [];
+      let options = optionsRaw ? optionsRaw.split('|').map((o: string) => o.trim()) : [];
+      let correctAnswers = correctAnswersRaw ? correctAnswersRaw.split('|').map((o: string) => o.trim()) : [];
+
+      // Verdadero/Falso: opciones fijas (igual que el formulario manual) y respuesta normalizada
+      if (type === 'true-false') {
+        options = ['Verdadero', 'Falso'];
+        correctAnswers = correctAnswers
+          .map((a: string) => this.normalizeTrueFalse(a))
+          .filter((a: string | null): a is string => a !== null);
+      }
 
       const isValid = this.validateRow(statement, type, difficulty, options, correctAnswers);
       if (!isValid) this.hasErrors = true;
@@ -104,8 +112,16 @@ export class BulkImportDialogComponent {
     if (!['easy', 'medium', 'hard'].includes(difficulty)) return false;
     if ((type === 'single-choice' || type === 'multiple-choice') && options.length < 2) return false;
     if (type === 'matching' && (options.length < 3 || correctAnswers.length !== options.length)) return false;
+    if (type === 'true-false' && correctAnswers.length !== 1) return false;
     if (correctAnswers.length === 0) return false;
     return true;
+  }
+
+  private normalizeTrueFalse(value: string): string | null {
+    const v = value.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    if (['verdadero', 'v', 'true', 't', 'si', '1'].includes(v)) return 'Verdadero';
+    if (['falso', 'f', 'false', 'no', '0'].includes(v)) return 'Falso';
+    return null;
   }
 
   importQuestions() {
